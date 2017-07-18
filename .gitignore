@@ -1,0 +1,8 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/Risk/bin/Debug/Risk.vshost.exe
+/Risk/.vs/Risk/v14
+/Risk/bin/Debug
+/Risk/obj/Debug
