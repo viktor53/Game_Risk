@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Risk
+namespace Risk.Model
 {
   enum UnitType
   {
@@ -15,6 +15,7 @@ namespace Risk
 
   abstract class Unit
   {
+    public int SizeOfArmy { get; protected set; }
     public UnitType TypeUnit { get; protected set; }
   }
 
@@ -22,7 +23,17 @@ namespace Risk
   {
     public Infantry()
     {
+      SizeOfArmy = 1;
       TypeUnit = UnitType.Infantry;
+    }
+  }
+
+  sealed class Cavalary: Unit
+  {
+    public Cavalary()
+    {
+      SizeOfArmy = 5;
+      TypeUnit = UnitType.Cannon;
     }
   }
 
@@ -30,14 +41,7 @@ namespace Risk
   {
     public Cannon()
     {
-      TypeUnit = UnitType.Cannon;
-    }
-  }
-
-  sealed class Tank: Unit
-  {
-    public Tank()
-    {
+      SizeOfArmy = 10;
       TypeUnit = UnitType.Tank;
     }
   }

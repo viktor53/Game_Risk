@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Risk
+namespace Risk.Model
 {
 
   enum Region
@@ -14,7 +14,7 @@ namespace Risk
     SouthAmerica,
     Africa,
     Asia,
-    Europe
+    Europa
   }
 
   class RiskCard

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Risk
+namespace Risk.Model
 {
   class Area
   {
