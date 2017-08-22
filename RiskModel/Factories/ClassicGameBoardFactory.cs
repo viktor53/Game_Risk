@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Risk.Model.Interfacies;
+using Risk.Model.GamePlan;
+using Risk.Model.Enums;
 
-namespace Risk.Model
+namespace Risk.Model.Factories
 {
-  class GameBoardCreator
+  sealed class ClassicGameBoardFactory: IGameBoardFactory
   {
     private const int _areasOfNorthAmerica = 9;
     private const int _areasOfSouthAmerica = 4;
@@ -15,15 +13,42 @@ namespace Risk.Model
     private const int _areasOfAsia = 12;
     private const int _areasOfEuropa = 7;
 
-    public static GameBoard CreateNormalBoard()
+    public GameBoard CreateGameBoard()
     {
       GameBoard board = new GameBoard(42);
 
+      int id1, id2, id3;
+
+      id1 = CreateNorthAmerica(board, 0);
+
+      id2 = CreateSouthAmerica(board, id1);
+
+      CreatingConNorthAmSouthAm(board, 0, id1);
+
+      id3 = CreateAfrica(board, id2);
+
+      CreatingConSouthAmAfrica(board, id1, id2);
+
+      id1 = CreateEurope(board, id3);
+
+      CreatingConNorthAmEurope(board, 0, id3);
+
+      CreatingConEuropeAfrica(board, id3, id2);
+
+      int id4 = CreateAsia(board, id1);
+
+      CreatingConEuropeAsia(board, id3, id1);
+
+      CreatingConAfricaAsia(board, id2, id1);
+
+      CreateAustralia(board, id4);
+
+      CreatingConAsiaAustralia(board, id1, id4);
 
       return board;
     }
 
-    private static int CreateNorthAmerica(GameBoard board, int id)
+    private int CreateNorthAmerica(GameBoard board, int id)
     {
       // creating areas
       for (int i = id; i < id + _areasOfNorthAmerica; i++)
@@ -70,7 +95,7 @@ namespace Risk.Model
     private static int CreateSouthAmerica(GameBoard board, int id)
     {
       // creating areas
-      for(int i = id; i < id + _areasOfSouthAmerica; i++)
+      for (int i = id; i < id + _areasOfSouthAmerica; i++)
       {
         board.Areas[i] = new Area(i, Region.SouthAmerica);
       }
@@ -94,7 +119,7 @@ namespace Risk.Model
     private static int CreateAfrica(GameBoard board, int id)
     {
       // creating areas
-      for(int i = id; i < id + _areasOfAfrica; i++)
+      for (int i = id; i < id + _areasOfAfrica; i++)
       {
         board.Areas[i] = new Area(i, Region.Africa);
       }
@@ -125,7 +150,7 @@ namespace Risk.Model
     private static int CreateAustralia(GameBoard board, int id)
     {
       // creating areas
-      for(int i = id; i < id + _areasOfAustralia; i++)
+      for (int i = id; i < id + _areasOfAustralia; i++)
       {
         board.Areas[i] = new Area(i, Region.Australie);
       }
@@ -149,7 +174,7 @@ namespace Risk.Model
     private static int CreateAsia(GameBoard board, int id)
     {
       // creating areas
-      for(int i = id; i < id + _areasOfAsia; i++)
+      for (int i = id; i < id + _areasOfAsia; i++)
       {
         board.Areas[i] = new Area(i, Region.Asia);
       }
@@ -201,7 +226,7 @@ namespace Risk.Model
     private static int CreateEurope(GameBoard board, int id)
     {
       // creating areas
-      for(int i = id; i < id + _areasOfEuropa; i++)
+      for (int i = id; i < id + _areasOfEuropa; i++)
       {
         board.Areas[i] = new Area(i, Region.Europa);
       }

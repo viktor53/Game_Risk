@@ -7,7 +7,7 @@
     <ProjectGuid>{03548D61-36FA-4F0D-8E74-B351FBABA23F}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Risk</RootNamespace>
+    <RootNamespace>Risk.Test</RootNamespace>
     <AssemblyName>Risk</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -55,13 +55,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Model\Dice.cs" />
-    <Compile Include="Model\GameBoard.cs" />
-    <Compile Include="Model\GameBoardCreator.cs" />
-    <Compile Include="Model\MoveController.cs" />
-    <Compile Include="Model\Player.cs" />
-    <Compile Include="Model\RiskCard.cs" />
-    <Compile Include="Model\Unit.cs" />
+    <Compile Include="Player.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -76,7 +70,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Model\MissionCard.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -103,9 +96,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="ViewModel\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

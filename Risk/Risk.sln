@@ -5,6 +5,10 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Risk", "Risk.csproj", "{03548D61-36FA-4F0D-8E74-B351FBABA23F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RiskModel", "..\RiskModel\RiskModel.csproj", "{D6D0C096-EFE2-43A5-A8BE-9098DBF7E792}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RiskViewModel", "..\RiskViewModel\RiskViewModel.csproj", "{706E3896-DB57-494A-AF7F-A2D6C3E3898E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{03548D61-36FA-4F0D-8E74-B351FBABA23F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{03548D61-36FA-4F0D-8E74-B351FBABA23F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{03548D61-36FA-4F0D-8E74-B351FBABA23F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D6D0C096-EFE2-43A5-A8BE-9098DBF7E792}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6D0C096-EFE2-43A5-A8BE-9098DBF7E792}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D6D0C096-EFE2-43A5-A8BE-9098DBF7E792}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D6D0C096-EFE2-43A5-A8BE-9098DBF7E792}.Release|Any CPU.Build.0 = Release|Any CPU
+		{706E3896-DB57-494A-AF7F-A2D6C3E3898E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{706E3896-DB57-494A-AF7F-A2D6C3E3898E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{706E3896-DB57-494A-AF7F-A2D6C3E3898E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{706E3896-DB57-494A-AF7F-A2D6C3E3898E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

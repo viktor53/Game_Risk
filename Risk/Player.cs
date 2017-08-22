@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Risk.Model
+namespace Risk.Test
 {
   class Player
   {
     private int _sizeOfArmy;
 
-    public Army ArmyColor { get; private set; }
+    public ArmyColor ArmyColor { get; private set; }
 
     public int SizeOfArmy { get
       {
@@ -25,7 +25,7 @@ namespace Risk.Model
       }
     }
 
-    public Player(Army armyColor, int sizeOfArmy)
+    public Player(ArmyColor armyColor, int sizeOfArmy)
     {
       ArmyColor = armyColor;
       _sizeOfArmy = sizeOfArmy;
