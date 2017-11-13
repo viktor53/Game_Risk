@@ -2,7 +2,7 @@
 
 namespace Risk.Model.Cards
 {
-  sealed class ConquerMission : MissionCard
+  public sealed class ConquerMission : MissionCard
   {
     public Region[] Targets { get; private set; }
 

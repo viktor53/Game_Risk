@@ -4,7 +4,7 @@ using Risk.Model.Enums;
 
 namespace Risk.Model.Factories
 {
-  sealed class ClassicGameBoardFactory: IGameBoardFactory
+  public sealed class ClassicGameBoardFactory: IGameBoardFactory
   {
     private const int _areasOfNorthAmerica = 9;
     private const int _areasOfSouthAmerica = 4;

@@ -1,6 +1,6 @@
 ﻿namespace Risk.Model.GamePlan
 {
-  class GameBoard
+  public sealed class GameBoard
   {
     public bool[][] Board { get; private set; }
 

@@ -1,6 +1,6 @@
 ﻿namespace Risk.Model.Enums
 {
-  enum Region
+  public enum Region
   {
     Australie = 0,
     NorthAmerica = 1,

@@ -4,7 +4,7 @@ using Risk.Model.Units;
 
 namespace Risk.Model.GamePlan
 {
-  class Area
+  public sealed class Area
   {
     public int ID { get; private set; }
 

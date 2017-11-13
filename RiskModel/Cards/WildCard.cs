@@ -2,7 +2,7 @@
 
 namespace Risk.Model.Cards
 {
-  sealed class WildCard : RiskCard
+  public sealed class WildCard : RiskCard
   {
     public WildCard()
     {

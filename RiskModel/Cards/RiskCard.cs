@@ -2,7 +2,7 @@
 
 namespace Risk.Model.Cards
 {
-  abstract class RiskCard
+  public abstract class RiskCard
   {
     public UnitType TypeUnit { get; set; }
   }

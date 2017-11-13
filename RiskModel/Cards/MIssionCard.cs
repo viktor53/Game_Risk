@@ -2,7 +2,7 @@
 
 namespace Risk.Model.Cards
 {
-  abstract class MissionCard
+  public abstract class MissionCard
   {
     public MissionTarget Target { get; protected set; }
   }

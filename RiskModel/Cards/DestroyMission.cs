@@ -2,7 +2,7 @@
 
 namespace Risk.Model.Cards
 {
-  sealed class DestroyMission : MissionCard
+  public sealed class DestroyMission : MissionCard
   {
     public ArmyColor ArmyColor { get; private set; }
 

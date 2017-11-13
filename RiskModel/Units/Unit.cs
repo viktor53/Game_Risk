@@ -2,7 +2,7 @@
 
 namespace Risk.Model.Units
 {
-  abstract class Unit
+  public abstract class Unit
   {
     public ArmyColor ArmyColor { get; protected set; }
     public int SizeOfArmy { get; protected set; }

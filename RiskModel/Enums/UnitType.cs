@@ -1,6 +1,6 @@
 ﻿namespace Risk.Model.Enums
 {
-  enum UnitType
+  public enum UnitType
   {
     Infantry,
     Cavalary,

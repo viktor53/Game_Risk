@@ -2,7 +2,7 @@
 
 namespace Risk.Model.Cards
 {
-  sealed class NormalCard : RiskCard
+  public sealed class NormalCard : RiskCard
   {
     public int Area { get; private set; }
 

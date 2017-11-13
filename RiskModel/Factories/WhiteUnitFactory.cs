@@ -3,7 +3,7 @@ using Risk.Model.Enums;
 
 namespace Risk.Model.Factories
 {
-  sealed class WhiteUnitFactory: UnitFactory
+  public sealed class WhiteUnitFactory: UnitFactory
   {
     public WhiteUnitFactory()
     {

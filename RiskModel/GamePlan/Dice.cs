@@ -2,7 +2,7 @@
 
 namespace Risk.Model.GamePlan
 {
-  sealed class Dice
+  public sealed class Dice
   {
     private Random _ran;
 

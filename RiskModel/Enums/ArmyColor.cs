@@ -1,6 +1,6 @@
 ﻿namespace Risk.Model.Enums
 {
-  enum ArmyColor
+  public enum ArmyColor
   {
     Red,
     Blue,

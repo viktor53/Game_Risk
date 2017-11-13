@@ -4,6 +4,6 @@
              xmlns:local="clr-namespace:Risk"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
-    </Application.Resources>
+    <ResourceDictionary Source="StylesOfRisk.xaml"/>
+  </Application.Resources>
 </Application>
