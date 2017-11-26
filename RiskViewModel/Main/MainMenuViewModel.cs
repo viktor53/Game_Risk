@@ -9,11 +9,13 @@ using System.Windows;
 
 namespace Risk.ViewModel.Main
 {
-  public class MainMenuViewModel: ViewModelBase
+  public class MainMenuViewModel: ViewModelBase, IMainMenuViewModel
   {
-    private ViewModelBase _currentViewModel;
-    private ViewModelBase _multiplayerViewModel;
-    private ViewModelBase _singleplayerViewModel;
+    private ViewModelBase _contentViewModel;
+
+    private IWindowManager _windowManager;
+
+    private bool _isEnabled = true;
 
     public ICommand Multiplayer_Click { get; private set; }
 
@@ -21,79 +23,59 @@ namespace Risk.ViewModel.Main
 
     public ICommand QuitGame_Click { get; private set; }
 
-    public ViewModelBase CurrentViewModel
+    public ViewModelBase ContentViewModel
     {
       get
       {
-        return _currentViewModel;
+        return _contentViewModel;
       }
 
       set
       {
-        _currentViewModel = value;
-        this.OnPropertyChanged("CurrentViewModel");
+        _contentViewModel = value;
+        this.OnPropertyChanged("ContentViewModel");
       }
     }
 
-    public bool VisibilityMultiplayerView => _multiplayerViewModel != null;
-
-    public ViewModelBase MultiplayerViewModel
+    public bool IsEnabled
     {
       get
       {
-        return _multiplayerViewModel;
+        return _isEnabled;
       }
       set
       {
-        _multiplayerViewModel = value;
-        this.OnPropertyChanged("MultiplayerViewModel");
-        this.OnPropertyChanged("VisibilityMultiplayerView");
-      }
-    }
-
-    public bool VisibilitySingleplayerView => _singleplayerViewModel != null;
-
-    public ViewModelBase SingleplayerViewModel
-    {
-      get
-      {
-        return _singleplayerViewModel;
-      }
-      set
-      {
-        _singleplayerViewModel = value;
-        this.OnPropertyChanged("SingleplayerViewModel");
-        this.OnPropertyChanged("VisibilitySingleplayerView");
+        _isEnabled = value;
+        OnPropertyChanged("IsEnabled");
       }
     }
 
 
-    public MainMenuViewModel()
+    public MainMenuViewModel(IWindowManager windowManager)
     {
-      Multiplayer_Click = new ParameterCommand(MultiplayerClick);
+      Multiplayer_Click = new Command(MultiplayerClick);
 
-      Singleplayer_Click = new ParameterCommand(SingleplayerClick);
+      Singleplayer_Click = new Command(SingleplayerClick);
 
-      QuitGame_Click = new ParameterCommand(QuitGameClick);
+      QuitGame_Click = new Command(QuitGameClick);
+
+      _windowManager = windowManager;
     }
 
-    private void SingleplayerClick(object parameter)
+    private void SingleplayerClick()
     {
-      CurrentViewModel = new IntroSinglePlayerViewModel();
+      ContentViewModel = new IntroSinglePlayerViewModel();
     }
 
-    private void MultiplayerClick(object parameter)
+    private void MultiplayerClick()
     {
-      CurrentViewModel = new ConnectionViewModel(this);
+      ContentViewModel = new ConnectionViewModel(_windowManager, this);
+      IsEnabled = false;
     }
 
-    private void QuitGameClick(object parameter)
+    private void QuitGameClick()
     {
-      Window w = parameter as Window;
-      if(w != null)
-      {
-        w.Close();
-      }
+      _windowManager.CloseWindow();
     }
   }
 }

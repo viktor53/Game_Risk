@@ -60,6 +60,9 @@
     <Compile Include="Views\ConnectionView.xaml.cs">
       <DependentUpon>ConnectionView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\CreateGameDialogView.xaml.cs">
+      <DependentUpon>CreateGameDialogView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\IntroSingleplayerView.xaml.cs">
       <DependentUpon>IntroSingleplayerView.xaml</DependentUpon>
     </Compile>
@@ -86,6 +89,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\ConnectionView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\CreateGameDialogView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

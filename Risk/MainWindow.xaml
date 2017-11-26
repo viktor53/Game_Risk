@@ -4,11 +4,24 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Risk"
-        xmlns:mainView="clr-namespace:Risk.Views"
+        xmlns:views="clr-namespace:Risk.Views"
+        xmlns:windowViewModels="clr-namespace:Risk.ViewModel;assembly=RiskViewModel"
         xmlns:mainViewModels="clr-namespace:Risk.ViewModel.Main;assembly=RiskViewModel"
+        xmlns:multiplayerViewModels="clr-namespace:Risk.ViewModel.Multiplayer;assembly=RiskViewModel"
         mc:Ignorable="d"
         Title="Risk" Height="350" Width="525" WindowStartupLocation="CenterScreen" WindowState="Maximized">
+  <Window.Resources>
+    <DataTemplate x:Name="MainMenu" DataType="{x:Type mainViewModels:MainMenuViewModel}">
+      <views:MainView/>
+    </DataTemplate>
+    <DataTemplate x:Name="Multiplayer" DataType="{x:Type multiplayerViewModels:MultiplayerViewModel}">
+      <views:MultiplayerView/>
+    </DataTemplate>
+  </Window.Resources>
+  <Window.DataContext>
+    <windowViewModels:WindowManagerViewModel/>
+  </Window.DataContext>
   <Grid>
-    <mainView:MainView/>
+    <ContentControl Content="{Binding Path=WindowViewModel}"/>
   </Grid>
 </Window>

@@ -4,9 +4,39 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Risk.Views"
+             xmlns:multiplViewModels="clr-namespace:Risk.ViewModel.Multiplayer;assembly=RiskViewModel"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    <Grid Background="Red">
-            
-    </Grid>
+  <UserControl.Resources>
+    <DataTemplate x:Name="createGameDialog" DataType="{x:Type multiplViewModels:CreateGameDialogViewModel}">
+      <local:CreateGameDialogView/>
+    </DataTemplate>
+  </UserControl.Resources>
+  <Grid Background="Black">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="auto"/>
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+    <Border Style="{StaticResource Menu}"  Grid.Column="0">
+      <Grid IsEnabled="{Binding Path=IsEnabled}">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="1">
+          <Button Content="Connect to Game" Style="{StaticResource MenuButton}" Command="{Binding Path=ConnectToGame_Click}" Margin="30,30,30,10"/>
+          <Button Content="Create Game" Style="{StaticResource MenuButton}" Command="{Binding Path=CreateGame_Click}" Margin="30,10,30,10"/>
+          <Button Content="Back to Menu" Style="{StaticResource MenuButton}" Margin="30,10,30,30" Command="{Binding Path=BackToMenu_Click}"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+    <DataGrid Grid.Column="1" Style="{StaticResource ListGames}" ItemsSource="{Binding TestData}" IsEnabled="{Binding Path=IsEnabled}">
+      <DataGrid.Columns>
+        <DataGridTextColumn Header="Name" Binding="{Binding Name}"/>
+        <DataGridTextColumn Header="Players" Binding="{Binding Players}"/>
+      </DataGrid.Columns>
+    </DataGrid>
+    <ContentControl Content="{Binding DialogViewModel}" Grid.Column="1"/>
+  </Grid>
 </UserControl>

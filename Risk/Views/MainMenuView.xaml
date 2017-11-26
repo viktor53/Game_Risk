@@ -8,8 +8,6 @@
              xmlns:mainViewModels="clr-namespace:Risk.ViewModel.Main;assembly=RiskViewModel"
              mc:Ignorable="d">
   <UserControl.Resources>
-    <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
-
     <DataTemplate x:Name="connectionView" DataType="{x:Type mainViewModels:ConnectionViewModel}">
       <local:ConnectionView/>
     </DataTemplate>
@@ -17,17 +15,13 @@
       <local:IntroSingleplayerView/>
     </DataTemplate>
   </UserControl.Resources>
-  <UserControl.DataContext>
-    <mainViewModels:MainMenuViewModel/>
-  </UserControl.DataContext>
-
   <Grid>
     <Grid Background="{StaticResource DarkBackground}">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto"/>
         <ColumnDefinition Width="*"/>
       </Grid.ColumnDefinitions>
-      <Border Style="{StaticResource Menu}"  Grid.Column="0">
+      <Border Style="{StaticResource Menu}"  Grid.Column="0" IsEnabled="{Binding IsEnabled}">
         <Grid>
           <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -37,14 +31,11 @@
           <StackPanel Grid.Row="1">
             <Button Content="Singleplayer" Style="{StaticResource MenuButton}" Command="{Binding Singleplayer_Click}" Margin="30,30,30,10"/>
             <Button Content="Multiplayer" Style="{StaticResource MenuButton}" Command="{Binding Multiplayer_Click}" Margin="30,10,30,10"/>
-            <Button Content="Quit Game" Style="{StaticResource MenuButton}" Margin="30,10,30,30" Command="{Binding QuitGame_Click}" CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+            <Button Content="Quit Game" Style="{StaticResource MenuButton}" Margin="30,10,30,30" Command="{Binding QuitGame_Click}"/>
           </StackPanel>
         </Grid>
       </Border>
-      <ContentControl Grid.Column="1" Grid.Row="0" Content="{Binding Path=CurrentViewModel}"/>
-    </Grid>
-    <Grid Visibility="{Binding VisibilityMultiplayerView, Converter={StaticResource BoolToVisibility}, Mode=OneWay}">
-      <local:MultiplayerView DataContext="{Binding MultiplayerViewModel}"/>
+      <ContentControl Grid.Column="1" Grid.Row="0" Content="{Binding Path=ContentViewModel}"/>
     </Grid>
   </Grid>
 </UserControl>

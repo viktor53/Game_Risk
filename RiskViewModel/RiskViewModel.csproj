@@ -44,15 +44,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Command.cs" />
+    <Compile Include="IWindowManager.cs" />
+    <Compile Include="Main\IMainMenuViewModel.cs" />
     <Compile Include="Main\MainMenuViewModel.cs" />
     <Compile Include="MoveController.cs" />
     <Compile Include="Main\ConnectionViewModel.cs" />
+    <Compile Include="Multiplayer\CreateGameDialogViewModel.cs" />
+    <Compile Include="Multiplayer\IMultiplayerMenuViewModel.cs" />
     <Compile Include="Multiplayer\MultiplayerViewModel.cs" />
     <Compile Include="ParameterCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Main\IntroSinglePlayerViewModel.cs" />
     <Compile Include="UnitManager.cs" />
     <Compile Include="ViewModelBase.cs" />
+    <Compile Include="WindowManagerViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Singleplayer\" />

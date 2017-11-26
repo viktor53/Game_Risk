@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Risk.Views"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300">
+             d:DesignHeight="300" d:DesignWidth="400">
     <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="*"/>
@@ -20,10 +20,13 @@
     <Border Background="{StaticResource MenuBg2}" CornerRadius="5" BorderThickness="3" BorderBrush="Black" Grid.Column="1" Grid.Row="1">
       <StackPanel>
         <StackPanel Orientation="Horizontal" Margin="30, 30, 30, 10">
-          <Label Style="{StaticResource LabelUnivers}" Content="Nickname:" Margin="0,5,5,5"/>
-          <TextBox Style="{StaticResource TextBoxUnivers}" Margin="5, 5, 0, 5" Width="200" Height="30" FontSize="15" FontWeight="Bold"/>
+          <Label Style="{StaticResource LabelUnivers}" Content="Nickname:" Margin="0,5,24,5"/>
+          <TextBox Style="{StaticResource TextBoxUnivers}" Margin="24, 5, 0, 5" Width="200" Height="30" FontSize="15" FontWeight="Bold"/>
         </StackPanel>
-        <Button Style="{StaticResource MenuButton}" Command="{Binding Connect_Click}" Content="Connect" Margin="30,10,30,30"/>
+        <StackPanel Orientation="Horizontal" Margin="30, 10, 30, 30" HorizontalAlignment="Center">
+          <Button Style="{StaticResource MenuButton}" Command="{Binding Path=Cancel_Click}" Content="Cancel" Margin="0,5,5,5"/>
+          <Button Style="{StaticResource MenuButton}" Command="{Binding Path=Connect_Click}" Content="Connect" Margin="5,5,0,5"/>
+        </StackPanel>
       </StackPanel>
     </Border>
   </Grid>
