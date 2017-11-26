@@ -36,6 +36,7 @@ namespace Risk.ViewModel.Multiplayer
       FakeData f = new FakeData("Hallooo", "Halloooo4");
       _multiplayerViewModel.TestData.Add(f);
       _multiplayerViewModel.DialogViewModel = null;
+      _multiplayerViewModel.IsEnabled = true;
     }
 
     private void CancelClick()
