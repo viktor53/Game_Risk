@@ -69,6 +69,9 @@
     <Compile Include="Views\MainMenuView.xaml.cs">
       <DependentUpon>MainMenuView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\MultiplayerRoomView.xaml.cs">
+      <DependentUpon>MultiplayerRoomView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\MultiplayerView.xaml.cs">
       <DependentUpon>MultiplayerView.xaml</DependentUpon>
     </Compile>
@@ -101,6 +104,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\MainMenuView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\MultiplayerRoomView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -72,13 +72,13 @@ namespace Risk.ViewModel.Multiplayer
 
     private void CreateGameClick()
     {
-      DialogViewModel = new CreateGameDialogViewModel(this);
+      DialogViewModel = new CreateGameDialogViewModel(_widnowManager, this);
       IsEnabled = false;
     }
 
     private void ConnectToGameClick()
     {
-
+      _widnowManager.WindowViewModel = new MultiplayerRoomViewModel(_widnowManager);
     }
   }
 

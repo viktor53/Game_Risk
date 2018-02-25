@@ -12,6 +12,8 @@ namespace Risk.ViewModel.Multiplayer
   {
     private IMultiplayerMenuViewModel _multiplayerViewModel;
 
+    private IWindowManager _windowManager;
+
     public ICommand Create_Click { get; private set; }
 
     public ICommand Cancel_Click { get; private set; }
@@ -20,9 +22,10 @@ namespace Risk.ViewModel.Multiplayer
 
     public ObservableCollection<int> NumberOfPlayers { get; private set; }
 
-    public CreateGameDialogViewModel(IMultiplayerMenuViewModel multiplayerViewModel)
+    public CreateGameDialogViewModel(IWindowManager windowManager, IMultiplayerMenuViewModel multiplayerViewModel)
     {
       _multiplayerViewModel = multiplayerViewModel;
+      _windowManager = windowManager;
 
       Create_Click = new Command(CreateClick);
       Cancel_Click = new Command(CancelClick);
@@ -33,10 +36,7 @@ namespace Risk.ViewModel.Multiplayer
 
     private void CreateClick()
     {
-      FakeData f = new FakeData("Hallooo", "Halloooo4");
-      _multiplayerViewModel.TestData.Add(f);
-      _multiplayerViewModel.DialogViewModel = null;
-      _multiplayerViewModel.IsEnabled = true;
+      _windowManager.WindowViewModel = new MultiplayerRoomViewModel(_windowManager);
     }
 
     private void CancelClick()

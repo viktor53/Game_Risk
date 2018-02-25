@@ -51,6 +51,7 @@
     <Compile Include="Main\ConnectionViewModel.cs" />
     <Compile Include="Multiplayer\CreateGameDialogViewModel.cs" />
     <Compile Include="Multiplayer\IMultiplayerMenuViewModel.cs" />
+    <Compile Include="Multiplayer\MultiplayerRoomViewModel.cs" />
     <Compile Include="Multiplayer\MultiplayerViewModel.cs" />
     <Compile Include="ParameterCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -17,6 +17,9 @@
     <DataTemplate x:Name="Multiplayer" DataType="{x:Type multiplayerViewModels:MultiplayerViewModel}">
       <views:MultiplayerView/>
     </DataTemplate>
+    <DataTemplate x:Name="MultiplayerRoom" DataType="{x:Type multiplayerViewModels:MultiplayerRoomViewModel}">
+      <views:MultiplayerRoomView/>
+    </DataTemplate>
   </Window.Resources>
   <Window.DataContext>
     <windowViewModels:WindowManagerViewModel/>
