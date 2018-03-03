@@ -34,6 +34,8 @@
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -44,7 +46,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Command.cs" />
+    <Compile Include="Game\AttackViewModel.cs" />
+    <Compile Include="Game\DraftViewModel.cs" />
+    <Compile Include="Game\IGameBoardViewModel.cs" />
     <Compile Include="IWindowManager.cs" />
+    <Compile Include="Game\GameBoardViewModel.cs" />
     <Compile Include="Main\IMainMenuViewModel.cs" />
     <Compile Include="Main\MainMenuViewModel.cs" />
     <Compile Include="MoveController.cs" />
@@ -56,12 +62,46 @@
     <Compile Include="ParameterCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Main\IntroSinglePlayerViewModel.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="UnitManager.cs" />
     <Compile Include="ViewModelBase.cs" />
     <Compile Include="WindowManagerViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Resources\" />
     <Folder Include="Singleplayer\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Background\bg1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Background\bg2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Planets\planet1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Planets\planet_07.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RiskModel\RiskModel.csproj">
+      <Project>{d6d0c096-efe2-43a5-a8be-9098dbf7e792}</Project>
+      <Name>RiskModel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RiskServer\RiskNetworking.csproj">
+      <Project>{837679E1-0DF3-4C20-983A-346DE5233715}</Project>
+      <Name>RiskNetworking</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

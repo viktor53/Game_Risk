@@ -9,3 +9,6 @@
 /ServerTest
 /ClientTest
 /builds/Debug
+/RiskModel/obj/Debug
+/RiskViewModel/obj/Debug
+/RiskServer/obj/Debug

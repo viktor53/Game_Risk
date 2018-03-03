@@ -1,5 +1,0 @@
-D:\Programming\C#_programs\Git\Game_Risk\builds\Debug\RiskViewModel.dll
-D:\Programming\C#_programs\Git\Game_Risk\builds\Debug\RiskViewModel.pdb
-D:\Programming\C#_programs\Git\Game_Risk\RiskViewModel\obj\Debug\RiskViewModel.dll
-D:\Programming\C#_programs\Git\Game_Risk\RiskViewModel\obj\Debug\RiskViewModel.pdb
-D:\Programming\C#_programs\Git\Game_Risk\RiskViewModel\obj\Debug\RiskViewModel.csprojResolveAssemblyReference.cache

@@ -8,6 +8,7 @@
         xmlns:windowViewModels="clr-namespace:Risk.ViewModel;assembly=RiskViewModel"
         xmlns:mainViewModels="clr-namespace:Risk.ViewModel.Main;assembly=RiskViewModel"
         xmlns:multiplayerViewModels="clr-namespace:Risk.ViewModel.Multiplayer;assembly=RiskViewModel"
+        xmlns:gameViewModels="clr-namespace:Risk.ViewModel.Game;assembly=RiskViewModel"
         mc:Ignorable="d"
         Title="Risk" Height="350" Width="525" WindowStartupLocation="CenterScreen" WindowState="Maximized">
   <Window.Resources>
@@ -19,6 +20,9 @@
     </DataTemplate>
     <DataTemplate x:Name="MultiplayerRoom" DataType="{x:Type multiplayerViewModels:MultiplayerRoomViewModel}">
       <views:MultiplayerRoomView/>
+    </DataTemplate>
+    <DataTemplate x:Name="Game" DataType="{x:Type gameViewModels:GameBoardViewModel}">
+      <views:GameBoardView/>
     </DataTemplate>
   </Window.Resources>
   <Window.DataContext>

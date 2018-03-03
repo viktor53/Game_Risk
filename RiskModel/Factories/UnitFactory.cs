@@ -5,7 +5,7 @@ using Risk.Model.Interfacies;
 
 namespace Risk.Model.Factories
 {
-  internal abstract class UnitFactory: IUnitFactory
+  public abstract class UnitFactory: IUnitFactory
   {
     protected Infantry _infatry;
     protected Cavalary _cavalary;

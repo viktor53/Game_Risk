@@ -2,7 +2,7 @@
 
 namespace Risk.Model.Units
 {
-  sealed class Cannon : Unit
+  public sealed class Cannon : Unit
   {
     internal Cannon(ArmyColor armyColor)
     {

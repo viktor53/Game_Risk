@@ -115,7 +115,60 @@
   <!-- Image backgroud -->
   <ImageBrush x:Key="MenuBg2" ImageSource="bg2.jpg"/>
 
+  <!-- ************************************************************** -->
+  <!-- ********************** Univers Path ************************** -->
+  <!-- ************************************************************** -->
+  
+  <Style x:Key="UniversPath" TargetType="Line">
+    <Setter Property="Stroke" Value="White"/>
+    <Setter Property="StrokeThickness" Value="2"/>
+    <Setter Property="StrokeDashArray" Value="5,1"/>
+  </Style>
+  
+  <!-- ************************************************************** -->
+  <!-- ********************** Planet Button ************************* -->
+  <!-- ************************************************************** -->
 
+  <Style x:Key="Planet" TargetType="Button">
+    <Setter Property="FontSize" Value="15"/>
+    <Setter Property="FontWeight" Value="Bold"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate>
+          <Grid>
+            <Grid.RenderTransform>
+              <TranslateTransform X="{Binding X}" Y="{Binding Y}"/>
+            </Grid.RenderTransform>
+            <Ellipse Width="70" Height="70">
+              <Ellipse.Fill>
+                <ImageBrush x:Name="planet" ImageSource="{Binding IMG}"/>
+              </Ellipse.Fill>
+            </Ellipse>
+            <Ellipse x:Name="GlowEllipse"  Width="71" Height="71" Stroke="Green" StrokeThickness="5" Opacity="0"/>
+            <Ellipse Width="50" Height="40" Fill="Red" Stroke="Black" StrokeThickness="5"/>
+            <ContentPresenter x:Name="ButtonContent"
+                              Content="{Binding Path=Content, 
+                              RelativeSource={RelativeSource TemplatedParent}}"
+                              HorizontalAlignment="center" 
+                              VerticalAlignment="center"
+                              >
+            </ContentPresenter>
+            <Ellipse x:Name="GrayEllipse" Width="70" Height="70" Fill="Gray" Opacity="0.3"/>
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter Property="Opacity" TargetName="GlowEllipse" Value="0.8"/>
+              <Setter Property="Opacity" TargetName="GrayEllipse" Value="0"/>
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter Property="Opacity" TargetName="GrayEllipse" Value="0.8"/>
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  
   <!-- ************************************************************** -->
   <!-- ********************* Univers Button ************************* -->
   <!-- ************************************************************** -->
@@ -296,8 +349,8 @@
   <Style x:Key="LabelUnivers" TargetType="Label">
     <Setter Property="SnapsToDevicePixels" Value="True"/>
     <Setter Property="Foreground" Value="Cyan"/>
-    <Setter Property="FontSize" Value="15"/>
-    <Setter Property="FontWeight" Value="Medium"/>
+    <Setter Property="FontSize" Value="{Binding FontSize}"/>
+    <Setter Property="FontWeight" Value="{Binding FontWeight}"/>
     <Setter Property="Effect">
       <Setter.Value>
         <DropShadowEffect Color="Black" BlurRadius="30" ShadowDepth="0" Opacity="1"/>
@@ -823,6 +876,80 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
+  </Style>
+
+  <DropShadowBitmapEffect x:Key="Selected" Color="#FF00E400" Softness=".9" Direction="0" ShadowDepth="0"/>
+
+  <!--*************************************************************-->
+  
+  <Style x:Key="SliderRepeatButton" TargetType="RepeatButton">
+    <Setter Property="Focusable" Value="false" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="RepeatButton">
+          <Grid>
+            <Border Height="10" CornerRadius="0,3,3,0" Background="Black"/>
+            <Border Height="10" CornerRadius="0,3,3,0" BorderBrush="#FF00BDBD" BorderThickness="0,1,1,1" Background="{StaticResource GlassFX}"/>
+          </Grid>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style x:Key="SliderRepeatButton1" TargetType="RepeatButton">
+    <Setter Property="Focusable" Value="false" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="RepeatButton">
+          <Border SnapsToDevicePixels="True" Background="Cyan"   Height="10"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style x:Key="SliderThumb" TargetType="Thumb">
+    <Setter Property="Focusable" Value="false" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Thumb">
+          <Grid>
+            <Border Width="15" Height="30" CornerRadius="3" Background="Black"/>
+            <Border Width="15" Height="30" CornerRadius="3" BorderBrush="#FF00BDBD" BorderThickness="1" Background="{StaticResource GlassFX}"/>
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <ControlTemplate x:Key="Slider"  TargetType="Slider">
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" MinHeight="{TemplateBinding MinHeight}" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <Track Grid.Row="1" x:Name="PART_Track"   >
+        <Track.DecreaseRepeatButton>
+          <RepeatButton Style="{StaticResource SliderRepeatButton1}"  Command="Slider.DecreaseLarge" />
+        </Track.DecreaseRepeatButton>
+        <Track.Thumb>
+          <Thumb Style="{StaticResource SliderThumb}"/>
+        </Track.Thumb>
+        <Track.IncreaseRepeatButton>
+          <RepeatButton Style="{StaticResource SliderRepeatButton}" Command="Slider.IncreaseLarge" />
+        </Track.IncreaseRepeatButton>
+      </Track>
+    </Grid>
+  </ControlTemplate>
+
+  <Style x:Key="Horizontal_Slider" TargetType="Slider">
+    <Setter Property="Focusable" Value="False"/>
+    <Style.Triggers>
+      <Trigger Property="Orientation" Value="Horizontal">
+        <Setter Property="Template" Value="{StaticResource Slider}" />
+      </Trigger>
+    </Style.Triggers>
   </Style>
 
 </ResourceDictionary>

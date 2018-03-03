@@ -1,0 +1,91 @@
+﻿<UserControl x:Class="Risk.Views.GameBoardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Risk.Views"
+             xmlns:gameViewModels="clr-namespace:Risk.ViewModel.Game;assembly=RiskViewModel"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="800">
+  <UserControl.Resources>
+    <DataTemplate DataType="{x:Type gameViewModels:AttackViewModel}">
+      <local:AttackView/>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type gameViewModels:DraftViewModel}">
+    <local:DraftView/>
+  </DataTemplate>
+  </UserControl.Resources>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="auto"/>
+      <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
+    <Border Grid.Row="0" Background="Black"/>
+    <Border Grid.Row="0" Background="{StaticResource GlassFX}"/>
+    <Border Grid.Row="0" Background="{StaticResource GlowFX}"/>
+    <Border Grid.Row="0" BorderBrush="Black" BorderThickness="1"/>
+    <Grid Grid.Row="0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="auto"/>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+      <Border Grid.Column="0" Background="Black" Opacity="0.7" CornerRadius="0,20,20,0" Margin="0,10,50,10">
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="*"/>
+          </Grid.ColumnDefinitions>
+          <Label Grid.Column="1" Style="{StaticResource LabelUnivers}" Content="{Binding Turn}" FontWeight="Bold" FontSize="20" Margin="0,10"/>
+        </Grid>
+      </Border>
+      <StackPanel Grid.Column="1" Orientation="Horizontal">
+        <Border Background="Black" Opacity=".7" Margin="10,0" CornerRadius="0,0,20,20">
+          <StackPanel>
+            <Label Content="Phase:" Style="{StaticResource LabelUnivers}" Margin="10,5,10,0" FontWeight="Medium"/>
+            <Label Content="{Binding CurrentPhase}" Style="{StaticResource LabelUnivers}" Margin="10,0,10,10" FontSize="20" FontWeight="Bold"/>
+          </StackPanel>
+        </Border>
+        <Button Style="{StaticResource MenuButton}" Content="Next" Margin="10"/>
+      </StackPanel>
+      <Grid Grid.Column="2">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="auto"/>
+          <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Button Grid.Column="0" Style="{StaticResource MenuButton}" Content="Cards" Margin="50,10,10,10"/>
+        <Border Grid.Column="1" Background="Black" Opacity="0.7" CornerRadius="20,0,0,20" Margin="10,10,0,10">
+          <StackPanel Orientation="Horizontal">
+            <Label Style="{StaticResource LabelUnivers}" FontSize="15" FontWeight="Medium" Content="Number of cards:" Margin="20,14,2,13"/>
+            <Label Style="{StaticResource LabelUnivers}" FontSize="20" FontWeight="ExtraBold"  Content="{Binding NumberCards}" Margin="5,10,0,10"/>
+            <Label Style="{StaticResource LabelUnivers}" FontSize="15" FontWeight="Medium" Content="Free army:" Margin="50,14,2,13"/>
+            <Label Style="{StaticResource LabelUnivers}" FontSize="20" FontWeight="ExtraBold"  Content="{Binding FreeArmy}" Margin="5,10,0,10"/>
+          </StackPanel>
+        </Border>
+      </Grid>
+    </Grid>
+    <ItemsControl Grid.Row="1" ItemsSource="{Binding MapItems}">
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+          <Canvas x:Name="Map">
+            <Canvas.Background>
+              <ImageBrush ImageSource="{Binding BG}"/>
+            </Canvas.Background>
+          </Canvas>
+        </ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
+      <ItemsControl.Resources>
+        <DataTemplate DataType="{x:Type gameViewModels:Planet}">
+          <Button Style="{StaticResource Planet}" Content="{Binding Y}" IsEnabled="{Binding IsEnabled}" Command="{Binding Planet_Click}">
+          </Button>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type gameViewModels:Connection}">
+          <Line X1="{Binding X}" Y1="{Binding Y}" X2="{Binding X2}" Y2="{Binding Y2}" Style="{StaticResource UniversPath}" >
+          </Line>
+        </DataTemplate>
+      </ItemsControl.Resources>
+    </ItemsControl>
+    <ContentControl Grid.Row="1" Content="{Binding GameDialogViewModel}"/>
+  </Grid>
+</UserControl>

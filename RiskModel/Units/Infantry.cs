@@ -2,7 +2,7 @@
 
 namespace Risk.Model.Units
 {
-  sealed class Infantry : Unit
+  public sealed class Infantry : Unit
   {
     internal Infantry(ArmyColor armyColor)
     {

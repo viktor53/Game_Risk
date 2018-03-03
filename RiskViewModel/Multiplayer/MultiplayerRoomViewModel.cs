@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Risk.ViewModel.Game;
 
 namespace Risk.ViewModel.Multiplayer
 {
@@ -65,6 +66,8 @@ namespace Risk.ViewModel.Multiplayer
       Text = "Wainting on players...";
 
       IsEnabled = false;
+
+      _windowManager.WindowViewModel = new GameBoardViewModel(_windowManager);
     }
 
     private  void CancelClick()

@@ -20,15 +20,15 @@
     <Border Background="{StaticResource MenuBg2}" CornerRadius="5" BorderThickness="3" BorderBrush="Black" Grid.Column="1" Grid.Row="1">
       <StackPanel>
         <StackPanel Orientation="Horizontal" Margin="30,30,30,10">
-          <Label Style="{StaticResource LabelUnivers}" Content="Name of Game:" Margin="0,5,17,5"/>
+          <Label Style="{StaticResource LabelUnivers}" Content="Name of Game:" Margin="0,5,17,5" FontSize="15" FontWeight="Bold"/>
           <TextBox Style="{StaticResource TextBoxUnivers}" Margin="16, 5, 0, 5" Width="200" Height="30" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Margin="30,10,30,10">
-          <Label Style="{StaticResource LabelUnivers}" Content="Number of Players:" Margin="0,5,5,5"/>
+          <Label Style="{StaticResource LabelUnivers}" Content="Number of Players:" Margin="0,5,5,5" FontSize="15" FontWeight="Bold"/>
           <ComboBox Margin="5, 5, 0, 5" Width="200" Height="30" FontSize="15" FontWeight="Bold" MaxDropDownHeight="150" ItemsSource="{Binding Path=NumberOfPlayers}"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Margin="30,10,30,10">
-          <Label Style="{StaticResource LabelUnivers}" Content="Map:" Margin="0,5,51,5"/>
+          <Label Style="{StaticResource LabelUnivers}" Content="Map:" Margin="0,5,51,5" FontSize="15" FontWeight="Bold"/>
           <ComboBox Margin="55, 5, 0, 5" Width="200" Height="30" FontSize="15" FontWeight="Bold" ItemsSource="{Binding Path=Maps}"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Margin="30,10,30,10" HorizontalAlignment="Center">
