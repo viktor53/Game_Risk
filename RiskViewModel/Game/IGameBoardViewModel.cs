@@ -13,5 +13,10 @@ namespace Risk.ViewModel.Game
     bool IsEnabled { get; set; }
 
     int FreeArmy { get; set; }
+
+    Planet Selected1 { get; }
+
+    Planet Selected2 { get; }
+
   }
 }

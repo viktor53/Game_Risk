@@ -69,6 +69,9 @@
     <Compile Include="Views\DraftView.xaml.cs">
       <DependentUpon>DraftView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\FortifyView.xaml.cs">
+      <DependentUpon>FortifyView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\GameBoardView.xaml.cs">
       <DependentUpon>GameBoardView.xaml</DependentUpon>
     </Compile>
@@ -113,6 +116,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\DraftView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FortifyView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -165,6 +172,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\RiskModel\RiskModel.csproj">
+      <Project>{d6d0c096-efe2-43a5-a8be-9098dbf7e792}</Project>
+      <Name>RiskModel</Name>
+    </ProjectReference>
     <ProjectReference Include="..\RiskViewModel\RiskViewModel.csproj">
       <Project>{706e3896-db57-494a-af7f-a2d6c3e3898e}</Project>
       <Name>RiskViewModel</Name>

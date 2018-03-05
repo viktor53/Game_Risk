@@ -145,7 +145,7 @@
               </Ellipse.Fill>
             </Ellipse>
             <Ellipse x:Name="GlowEllipse"  Width="71" Height="71" Stroke="Green" StrokeThickness="5" Opacity="0"/>
-            <Ellipse Width="50" Height="40" Fill="Red" Stroke="Black" StrokeThickness="5"/>
+            <Ellipse Width="50" Height="40" Fill="{Binding Background, RelativeSource={RelativeSource TemplatedParent}}" Stroke="Black" StrokeThickness="5"/>
             <ContentPresenter x:Name="ButtonContent"
                               Content="{Binding Path=Content, 
                               RelativeSource={RelativeSource TemplatedParent}}"

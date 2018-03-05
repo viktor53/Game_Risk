@@ -2,12 +2,12 @@
 {
   public enum ArmyColor
   {
-    Red,
-    Blue,
-    Green,
-    Yellow,
-    Black,
-    White,
-    Neutral
+    Red = 3,
+    Blue = 2,
+    Green = 1,
+    Yellow = 4,
+    Black = 6,
+    White = 5,
+    Neutral = 0
   }
 }

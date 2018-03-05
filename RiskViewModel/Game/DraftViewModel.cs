@@ -7,49 +7,11 @@ using System.Windows.Input;
 
 namespace Risk.ViewModel.Game
 {
-  public class DraftViewModel: ViewModelBase
+  public class DraftViewModel: ActionViewModelBase
   {
-    private IGameBoardViewModel _gameBoardVW;
-
-    private int _army;
-
-    public ICommand Cancel_Click { get; private set; }
-
-    public ICommand AddArmy_Click { get; private set; }
-
-    public int Army
+    public DraftViewModel(IGameBoardViewModel gameBoardVM): base(gameBoardVM)
     {
-      get
-      {
-        return _army;
-      }
-      set
-      {
-        _army = value;
-        OnPropertyChanged("Army");
-      }
-    }
-
-    public DraftViewModel(IGameBoardViewModel gameBoardVW)
-    {
-      _gameBoardVW = gameBoardVW;
-
-      Cancel_Click = new Command(CancelClick);
-      AddArmy_Click = new Command(AddArmyClick);
-    }
-
-    public IGameBoardViewModel GameBoardVM
-    {
-      get
-      {
-        return _gameBoardVW;
-      }
-    }
-
-    private void CancelClick()
-    {
-      _gameBoardVW.GameDialogViewModel = null;
-      _gameBoardVW.IsEnabled = true;
+      Action_Click = new Command(AddArmyClick);
     }
 
     private void AddArmyClick()

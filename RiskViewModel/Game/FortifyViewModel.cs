@@ -7,14 +7,14 @@ using System.Windows.Input;
 
 namespace Risk.ViewModel.Game
 {
-  public class AttackViewModel: ActionViewModelBase
+  public class FortifyViewModel: ActionViewModelBase
   {
-    public AttackViewModel(IGameBoardViewModel gameBoardVM): base(gameBoardVM)
+    public FortifyViewModel(IGameBoardViewModel gameBoardVM): base(gameBoardVM)
     {
-      Action_Click = new Command(AttackClick);
+      Action_Click = new Command(MoveArmyClick);
     }
 
-    private void AttackClick()
+    private void MoveArmyClick()
     {
 
     }

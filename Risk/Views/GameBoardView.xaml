@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Risk.Views"
              xmlns:gameViewModels="clr-namespace:Risk.ViewModel.Game;assembly=RiskViewModel"
+             xmlns:converters="clr-namespace:Risk.ViewModel.Converters;assembly=RiskViewModel"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="800">
   <UserControl.Resources>
@@ -12,8 +13,13 @@
       <local:AttackView/>
     </DataTemplate>
     <DataTemplate DataType="{x:Type gameViewModels:DraftViewModel}">
-    <local:DraftView/>
-  </DataTemplate>
+      <local:DraftView/>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type gameViewModels:FortifyViewModel}">
+      <local:FortifyView/>
+    </DataTemplate>
+    <converters:EnumToStringConverter x:Key="EnumToString"/>
+    <converters:EnumToColorConverter x:Key="EnumToColor"/>
   </UserControl.Resources>
   <Grid>
     <Grid.RowDefinitions>
@@ -37,24 +43,24 @@
             <ColumnDefinition Width="auto"/>
             <ColumnDefinition Width="*"/>
           </Grid.ColumnDefinitions>
-          <Label Grid.Column="1" Style="{StaticResource LabelUnivers}" Content="{Binding Turn}" FontWeight="Bold" FontSize="20" Margin="0,10"/>
+          <Label Grid.Column="1" Style="{StaticResource LabelUnivers}"  Content="{Binding Turn, Converter={StaticResource EnumToString}}" FontWeight="Bold" FontSize="20" Margin="0,10"/>
         </Grid>
       </Border>
       <StackPanel Grid.Column="1" Orientation="Horizontal">
         <Border Background="Black" Opacity=".7" Margin="10,0" CornerRadius="0,0,20,20">
           <StackPanel>
             <Label Content="Phase:" Style="{StaticResource LabelUnivers}" Margin="10,5,10,0" FontWeight="Medium"/>
-            <Label Content="{Binding CurrentPhase}" Style="{StaticResource LabelUnivers}" Margin="10,0,10,10" FontSize="20" FontWeight="Bold"/>
+            <Label Content="{Binding CurrentPhase, Converter={StaticResource EnumToString}}" Style="{StaticResource LabelUnivers}" Margin="10,0,10,10" FontSize="20" FontWeight="Bold"/>
           </StackPanel>
         </Border>
-        <Button Style="{StaticResource MenuButton}" Content="Next" Margin="10"/>
+        <Button Style="{StaticResource MenuButton}" Content="Next" Margin="10" Command="{Binding Next_Click}"/>
       </StackPanel>
       <Grid Grid.Column="2">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="auto"/>
           <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <Button Grid.Column="0" Style="{StaticResource MenuButton}" Content="Cards" Margin="50,10,10,10"/>
+        <Button Grid.Column="0" Style="{StaticResource MenuButton}" Content="Cards" Margin="50,10,10,10" Command="{Binding Cards_Click}"/>
         <Border Grid.Column="1" Background="Black" Opacity="0.7" CornerRadius="20,0,0,20" Margin="10,10,0,10">
           <StackPanel Orientation="Horizontal">
             <Label Style="{StaticResource LabelUnivers}" FontSize="15" FontWeight="Medium" Content="Number of cards:" Margin="20,14,2,13"/>
@@ -69,6 +75,9 @@
       <ItemsControl.ItemsPanel>
         <ItemsPanelTemplate>
           <Canvas x:Name="Map">
+            <Canvas.InputBindings>
+              <MouseBinding MouseAction="LeftClick" Command="{Binding Planet_Click}"/>
+            </Canvas.InputBindings>
             <Canvas.Background>
               <ImageBrush ImageSource="{Binding BG}"/>
             </Canvas.Background>
@@ -77,8 +86,7 @@
       </ItemsControl.ItemsPanel>
       <ItemsControl.Resources>
         <DataTemplate DataType="{x:Type gameViewModels:Planet}">
-          <Button Style="{StaticResource Planet}" Content="{Binding Y}" IsEnabled="{Binding IsEnabled}" Command="{Binding Planet_Click}">
-          </Button>
+          <Button Style="{StaticResource Planet}" Content="{Binding SizeOfArmy}" IsEnabled="{Binding IsEnabled}" Background="{Binding ArmyColor, Converter={StaticResource EnumToColor}}" Command="{Binding Planet_Click}"/>
         </DataTemplate>
         <DataTemplate DataType="{x:Type gameViewModels:Connection}">
           <Line X1="{Binding X}" Y1="{Binding Y}" X2="{Binding X2}" Y2="{Binding Y2}" Style="{StaticResource UniversPath}" >

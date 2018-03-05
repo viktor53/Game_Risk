@@ -14,6 +14,8 @@ using System.ComponentModel;
 using Risk.Networking.Server;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Globalization;
+using Risk.Model.Enums;
 
 namespace Risk.ViewModel.Game
 {
@@ -25,17 +27,15 @@ namespace Risk.ViewModel.Game
 
     private bool _isEnabled;
 
-    private readonly string[] _phases = { "DRAFT", "ATTACK", "FORTIFY"};
+    private Phase _currentPhase;
 
-    private readonly string[] _turns = { "YOUR TURN", "ENEMIES TURN" };
-
-    private string _currentPhase;
-
-    private string _turn;
+    private Turn _turn;
 
     private int _numberCards;
 
     private int _freeArmy;
+
+    private readonly ArmyColor _playerColor;
 
     private string _bg;
 
@@ -43,7 +43,15 @@ namespace Risk.ViewModel.Game
 
     private IList<IList<bool>> _connections;
 
+    private Planet _selected1;
+
+    private Planet _selected2;
+
     public ICommand Planet_Click { get; private set; }
+
+    public ICommand Next_Click { get; private set; }
+
+    public ICommand Cards_Click { get; private set; }
 
     public ViewModelBase GameDialogViewModel
     {
@@ -71,7 +79,7 @@ namespace Risk.ViewModel.Game
       }
     }
 
-    public string CurrentPhase
+    public Phase CurrentPhase
     {
       get
       {
@@ -84,7 +92,7 @@ namespace Risk.ViewModel.Game
       }
     }
 
-    public string Turn
+    public Turn Turn
     {
       get
       {
@@ -135,6 +143,29 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    public Planet Selected1 {
+      get
+      {
+        return _selected1;
+      }
+      private set
+      {
+        _selected1 = value;
+      }
+    }
+
+    public Planet Selected2
+    {
+      get
+      {
+        return _selected2;
+      }
+      private set
+      {
+        _selected2 = value;
+      }
+    }
+
     public BindingList<MapItem> MapItems { get; private set; }
 
     public GameBoardViewModel(IWindowManager windowManager)
@@ -143,9 +174,9 @@ namespace Risk.ViewModel.Game
 
       BG = Properties.Resources.bg1;
 
-      CurrentPhase = _phases[0];
+      CurrentPhase = Phase.DRAFT;
 
-      Turn = _turns[0];
+      Turn = Turn.YOU;
 
       NumberCards = 3;
 
@@ -153,9 +184,13 @@ namespace Risk.ViewModel.Game
 
       FreeArmy = 30;
 
-      GameDialogViewModel = new DraftViewModel(this);
+      GameDialogViewModel = new FortifyViewModel(this);
+
+      _playerColor = ArmyColor.Blue;
 
       Planet_Click = new Command(PlanetClick);
+      Next_Click = new Command(NextClick);
+      Cards_Click = new Command(CardsClick);
 
       var temp = new Risk.Model.Factories.ClassicGameBoardFactory();
       var game = temp.CreateGameBoard();
@@ -178,11 +213,13 @@ namespace Risk.ViewModel.Game
       List<Coordinates> coords = new List<Coordinates>();
 
       Model.Enums.Region prev = game.Areas[0].Reg;
+      ArmyColor c = game.Areas[0].ArmyColor;
       for (int i = 0; i < game.Areas.Length; ++i)
       {
         if(prev != game.Areas[i].Reg)
         {
           prev = game.Areas[i].Reg;
+          c++;
           if (mark)
           {
             xa = 0;
@@ -195,6 +232,8 @@ namespace Risk.ViewModel.Game
             mark = xa >= 2 * X;
           }
         }
+        game.Areas[i].ArmyColor = c;
+        game.Areas[i].SizeOfArmy = 3;
         bool correct = false;
         int a = 0;
         int b = 0;
@@ -237,7 +276,7 @@ namespace Risk.ViewModel.Game
       MapItems = new BindingList<MapItem>();
 
       foreach (var ai in gbi.AreaInfos)
-      {
+      { 
         Planet p = new Planet(ai.X, ai.Y, Properties.Resources.planet1, ai.Area, Planet_Click);
         _planets.Insert(p.Area.ID, p);
       }
@@ -260,38 +299,233 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    private bool firstClick = true;
+
     private void PlanetClick()
     {
       System.Windows.Point p = Mouse.GetPosition(Application.Current.MainWindow);
 
-      MessageBox.Show($"Points {p.X}, {p.Y}");
+      Planet clicked = GetClickedPlanet((int)p.X, (int)p.Y);
 
-      Planet clicked = null;
-
-      foreach (var pl in _planets)
+      if(clicked != null)
       {
-        if (GetDistance((int)p.X, (int)p.Y - 50, pl.X + 70 / 2, pl.Y + 70 / 2) <= 70)
+        switch (CurrentPhase)
         {
-          clicked = pl;
-          break;
+          case Phase.DRAFT:
+            DraftClick(clicked);
+            break;
+          case Phase.ATTACK:
+            AttackClick(clicked);
+            break;
+          case Phase.FORTIFY:
+            FortifyClick(clicked);
+            break;
+        }
+      } else
+      {
+        firstClick = true;
+        switch (CurrentPhase)
+        {
+          case Phase.DRAFT:
+            EnableAllPlanet(true);
+            break;
+          case Phase.ATTACK:
+            WhoCanAttack();
+            break;
+          case Phase.FORTIFY:
+            EnableAllPlanet(true);
+            break;
         }
       }
+    }
+
+    private void NextClick()
+    {
+      CurrentPhase += 1 % 3;
+
+      switch(CurrentPhase)
+      {
+        case Phase.DRAFT:
+          Turn = Turn.ENEMY;
+          break;
+        case Phase.ATTACK:
+          firstClick = true;
+          WhoCanAttack();
+          break;
+        case Phase.FORTIFY:
+          EnableAllPlanet(true);
+          firstClick = true;
+          break;
+      }
+      
+    }
+
+    private void CardsClick()
+    {
+      if(CurrentPhase == Phase.DRAFT)
+      {
+
+      }
+    }
+
+    private void DraftClick(Planet planet)
+    {
+      if (!IsEnemy(planet))
+      {
+        Selected1 = planet;
+        GameDialogViewModel = new DraftViewModel(this);
+      }
+    }
+
+    private void AttackClick(Planet planet)
+    {
+      if (firstClick && planet.SizeOfArmy > 1)
+      {
+        WhoCanBeAttacked(planet);
+
+        planet.IsEnabled = true;
+
+        Selected1 = planet;
+
+        firstClick = false;
+      }
+      else
+      {
+        if (planet != Selected1)
+        {
+          EnableAllPlanet(false);
+
+          planet.IsEnabled = true;
+
+          Selected1.IsEnabled = true;
+
+          Selected2 = planet;
+
+          firstClick = false;
+
+          GameDialogViewModel = new AttackViewModel(this);
+        }
+      }
+    }
+
+    private void WhoCanAttack()
+    {
+      EnableAllPlanet(false);
 
       foreach(var pl in _planets)
       {
-        pl.IsEnabled = false;
+        if(!IsEnemy(pl) && pl.SizeOfArmy > 1 && HasEnemy(pl))
+        {
+          pl.IsEnabled = true;
+        }
       }
+    }
 
-      clicked.IsEnabled = true;
+    private void WhoCanBeAttacked(Planet planet)
+    {
+      EnableAllPlanet(false);
 
-      for(int i = 0; i < _connections[clicked.Area.ID].Count; ++i)
+      for(int i = 0; i < _connections[planet.Area.ID].Count; ++i)
       {
-        if(_connections[clicked.Area.ID][i])
+        if(_connections[planet.Area.ID][i] && IsEnemy(_planets[i]))
         {
           _planets[i].IsEnabled = true;
         }
       }
+    }
 
+    private bool IsEnemy(Planet planet)
+    {
+      return planet.Area.ArmyColor != _playerColor;
+    }
+
+    private bool HasEnemy(Planet planet)
+    {
+      for(int i = 0; i < _connections[planet.Area.ID].Count; ++i)
+      {
+        if(_connections[planet.Area.ID][i] && IsEnemy(_planets[i]))
+        {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    private void FortifyClick(Planet planet)
+    {
+      if(firstClick)
+      {
+        if (!IsEnemy(planet) && planet.SizeOfArmy > 1)
+        {
+          Selected1 = planet;
+
+          EnableConnectedPlanet(planet);
+
+          planet.IsEnabled = true;
+
+          firstClick = false;
+        }
+      }
+      else
+      {
+        Selected2 = planet;
+
+        GameDialogViewModel = new FortifyViewModel(this);
+
+        firstClick = true;
+      }
+      
+    }
+
+    private Planet GetClickedPlanet(int x, int y)
+    {
+      const int diameter = 70;
+      const int radius = 70 / 2;
+      const int heightOfPanel = 80;
+
+      foreach (var pl in _planets)
+      {
+        if (GetDistance(x, y - heightOfPanel, pl.X + radius, pl.Y + radius) <= diameter)
+        {
+          return pl;
+        }
+      }
+      return null;
+    }
+
+    private void EnableAllPlanet(bool enable)
+    {
+      foreach (var pl in _planets)
+      {
+        pl.IsEnabled = enable;
+      }
+    }
+
+    private void EnableConnectedPlanet(Planet planet)
+    {
+      Stack<Planet> toVisit = new Stack<Planet>();
+      HashSet<Planet> visited = new HashSet<Planet>();
+
+      toVisit.Push(planet);
+      visited.Add(planet);
+
+      EnableAllPlanet(false);
+
+      while(toVisit.Count != 0)
+      {
+        Planet p = toVisit.Pop();
+
+        p.IsEnabled = true;
+
+        for (int i = 0; i < _connections[p.Area.ID].Count; ++i)
+        {
+          if (_connections[p.Area.ID][i] && !IsEnemy(_planets[i]) && !visited.Contains(_planets[i]))
+          {
+            toVisit.Push(_planets[i]);
+            visited.Add(_planets[i]);
+          }
+        }
+      }
     }
   }
 
@@ -311,7 +545,7 @@ namespace Risk.ViewModel.Game
     public Area Area { get; private set; }
 
     public ICommand Planet_Click { get; private set; }
-
+    
     public bool IsEnabled
     {
       get
@@ -322,6 +556,32 @@ namespace Risk.ViewModel.Game
       {
         _isEnabled = value;
         OnPropertyChanged("IsEnabled");
+      }
+    }
+
+    public int SizeOfArmy
+    {
+      get
+      {
+        return Area.SizeOfArmy;
+      }
+      set
+      {
+        Area.SizeOfArmy = value;
+        OnPropertyChanged("SizeOfArmy");
+      }
+    }
+
+    public ArmyColor ArmyColor
+    {
+      get
+      {
+        return Area.ArmyColor;
+      }
+      set
+      {
+        Area.ArmyColor = value;
+        OnPropertyChanged("ArmyColor");
       }
     }
 

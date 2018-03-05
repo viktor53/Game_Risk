@@ -49,7 +49,9 @@
     <Compile Include="Cards\WildCard.cs" />
     <Compile Include="Enums\ArmyColor.cs" />
     <Compile Include="Enums\MissionTarget.cs" />
+    <Compile Include="Enums\Phase.cs" />
     <Compile Include="Enums\Region.cs" />
+    <Compile Include="Enums\Turn.cs" />
     <Compile Include="Enums\UnitType.cs" />
     <Compile Include="Factories\BlackUnitFactory.cs" />
     <Compile Include="Factories\BlueUnitFactory.cs" />
