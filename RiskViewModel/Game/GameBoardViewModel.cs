@@ -19,7 +19,7 @@ using Risk.Model.Enums;
 
 namespace Risk.ViewModel.Game
 {
-  public class GameBoardViewModel: ViewModelBase, IGameBoardViewModel
+  public class GameBoardViewModel : ViewModelBase, IGameBoardViewModel
   {
     private IWindowManager _windowManager;
 
@@ -131,7 +131,8 @@ namespace Risk.ViewModel.Game
       }
     }
 
-    public string BG {
+    public string BG
+    {
       get
       {
         return _bg;
@@ -143,7 +144,8 @@ namespace Risk.ViewModel.Game
       }
     }
 
-    public Planet Selected1 {
+    public Planet Selected1
+    {
       get
       {
         return _selected1;
@@ -212,13 +214,13 @@ namespace Risk.ViewModel.Game
 
       List<Coordinates> coords = new List<Coordinates>();
 
-      Model.Enums.Region prev = game.Areas[0].Reg;
+      int prevReg = game.Areas[0].RegionID;
       ArmyColor c = game.Areas[0].ArmyColor;
       for (int i = 0; i < game.Areas.Length; ++i)
       {
-        if(prev != game.Areas[i].Reg)
+        if (prevReg != game.Areas[i].RegionID)
         {
-          prev = game.Areas[i].Reg;
+          prevReg = game.Areas[i].RegionID;
           c++;
           if (mark)
           {
@@ -237,7 +239,7 @@ namespace Risk.ViewModel.Game
         bool correct = false;
         int a = 0;
         int b = 0;
-        while(!correct)
+        while (!correct)
         {
           a = X * ran.Next(Xm) / Xm + xa;
           b = Y * ran.Next(Ym) / Ym + ya;
@@ -260,9 +262,9 @@ namespace Risk.ViewModel.Game
 
     private bool IsCorrect(int x, int y, List<Coordinates> coords)
     {
-      foreach(var co in coords)
+      foreach (var co in coords)
       {
-        if(GetDistance(x, y, co.X, co.Y) < 110)
+        if (GetDistance(x, y, co.X, co.Y) < 110)
         {
           return false;
         }
@@ -276,24 +278,23 @@ namespace Risk.ViewModel.Game
       MapItems = new BindingList<MapItem>();
 
       foreach (var ai in gbi.AreaInfos)
-      { 
+      {
         Planet p = new Planet(ai.X, ai.Y, Properties.Resources.planet1, ai.Area, Planet_Click);
         _planets.Insert(p.Area.ID, p);
       }
 
-      for(int i = 0; i < gbi.Connections.Count; ++i)
+      for (int i = 0; i < gbi.Connections.Count; ++i)
       {
-        for(int j = i; j < gbi.Connections[i].Count; ++j)
+        for (int j = i; j < gbi.Connections[i].Count; ++j)
         {
-          if(gbi.Connections[i][j])
+          if (gbi.Connections[i][j])
           {
             MapItems.Add(new Connection(_planets[i].X + 70 / 2, _planets[i].Y + 70 / 2, _planets[j].X + 70 / 2, _planets[j].Y + 70 / 2));
           }
-          
         }
       }
 
-      foreach(var p in _planets)
+      foreach (var p in _planets)
       {
         MapItems.Add(p);
       }
@@ -307,21 +308,24 @@ namespace Risk.ViewModel.Game
 
       Planet clicked = GetClickedPlanet((int)p.X, (int)p.Y);
 
-      if(clicked != null)
+      if (clicked != null)
       {
         switch (CurrentPhase)
         {
           case Phase.DRAFT:
             DraftClick(clicked);
             break;
+
           case Phase.ATTACK:
             AttackClick(clicked);
             break;
+
           case Phase.FORTIFY:
             FortifyClick(clicked);
             break;
         }
-      } else
+      }
+      else
       {
         firstClick = true;
         switch (CurrentPhase)
@@ -329,9 +333,11 @@ namespace Risk.ViewModel.Game
           case Phase.DRAFT:
             EnableAllPlanet(true);
             break;
+
           case Phase.ATTACK:
             WhoCanAttack();
             break;
+
           case Phase.FORTIFY:
             EnableAllPlanet(true);
             break;
@@ -343,28 +349,28 @@ namespace Risk.ViewModel.Game
     {
       CurrentPhase += 1 % 3;
 
-      switch(CurrentPhase)
+      switch (CurrentPhase)
       {
         case Phase.DRAFT:
           Turn = Turn.ENEMY;
           break;
+
         case Phase.ATTACK:
           firstClick = true;
           WhoCanAttack();
           break;
+
         case Phase.FORTIFY:
           EnableAllPlanet(true);
           firstClick = true;
           break;
       }
-      
     }
 
     private void CardsClick()
     {
-      if(CurrentPhase == Phase.DRAFT)
+      if (CurrentPhase == Phase.DRAFT)
       {
-
       }
     }
 
@@ -412,9 +418,9 @@ namespace Risk.ViewModel.Game
     {
       EnableAllPlanet(false);
 
-      foreach(var pl in _planets)
+      foreach (var pl in _planets)
       {
-        if(!IsEnemy(pl) && pl.SizeOfArmy > 1 && HasEnemy(pl))
+        if (!IsEnemy(pl) && pl.SizeOfArmy > 1 && HasEnemy(pl))
         {
           pl.IsEnabled = true;
         }
@@ -425,9 +431,9 @@ namespace Risk.ViewModel.Game
     {
       EnableAllPlanet(false);
 
-      for(int i = 0; i < _connections[planet.Area.ID].Count; ++i)
+      for (int i = 0; i < _connections[planet.Area.ID].Count; ++i)
       {
-        if(_connections[planet.Area.ID][i] && IsEnemy(_planets[i]))
+        if (_connections[planet.Area.ID][i] && IsEnemy(_planets[i]))
         {
           _planets[i].IsEnabled = true;
         }
@@ -441,9 +447,9 @@ namespace Risk.ViewModel.Game
 
     private bool HasEnemy(Planet planet)
     {
-      for(int i = 0; i < _connections[planet.Area.ID].Count; ++i)
+      for (int i = 0; i < _connections[planet.Area.ID].Count; ++i)
       {
-        if(_connections[planet.Area.ID][i] && IsEnemy(_planets[i]))
+        if (_connections[planet.Area.ID][i] && IsEnemy(_planets[i]))
         {
           return true;
         }
@@ -453,7 +459,7 @@ namespace Risk.ViewModel.Game
 
     private void FortifyClick(Planet planet)
     {
-      if(firstClick)
+      if (firstClick)
       {
         if (!IsEnemy(planet) && planet.SizeOfArmy > 1)
         {
@@ -474,7 +480,6 @@ namespace Risk.ViewModel.Game
 
         firstClick = true;
       }
-      
     }
 
     private Planet GetClickedPlanet(int x, int y)
@@ -511,7 +516,7 @@ namespace Risk.ViewModel.Game
 
       EnableAllPlanet(false);
 
-      while(toVisit.Count != 0)
+      while (toVisit.Count != 0)
       {
         Planet p = toVisit.Pop();
 
@@ -529,14 +534,14 @@ namespace Risk.ViewModel.Game
     }
   }
 
-  public abstract class MapItem: ViewModelBase
+  public abstract class MapItem : ViewModelBase
   {
     public int X { get; set; }
 
     public int Y { get; set; }
   }
 
-  public sealed class Planet: MapItem
+  public sealed class Planet : MapItem
   {
     private bool _isEnabled;
 
@@ -545,7 +550,7 @@ namespace Risk.ViewModel.Game
     public Area Area { get; private set; }
 
     public ICommand Planet_Click { get; private set; }
-    
+
     public bool IsEnabled
     {
       get
@@ -596,7 +601,7 @@ namespace Risk.ViewModel.Game
     }
   }
 
-  public sealed class Connection: MapItem
+  public sealed class Connection : MapItem
   {
     public int X2 { get; set; }
 
@@ -609,10 +614,9 @@ namespace Risk.ViewModel.Game
       X2 = x2;
       Y2 = y2;
     }
-
   }
 
-  class Coordinates
+  internal class Coordinates
   {
     public int X { get; set; }
 

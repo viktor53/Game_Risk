@@ -2,7 +2,7 @@
 
 namespace Risk.Model.Interfacies
 {
-  interface IGameBoardFactory
+  internal interface IGameBoardFactory
   {
     GameBoard CreateGameBoard();
   }

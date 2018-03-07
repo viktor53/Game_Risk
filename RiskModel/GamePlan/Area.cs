@@ -8,7 +8,7 @@ namespace Risk.Model.GamePlan
   {
     public int ID { get; private set; }
 
-    public Region Reg { get; private set; }
+    public int RegionID { get; private set; }
 
     public ArmyColor ArmyColor { get; set; }
 
@@ -16,10 +16,10 @@ namespace Risk.Model.GamePlan
 
     public List<Unit> Units { get; private set; }
 
-    public Area(int id, Region reg)
+    public Area(int id, int regionID)
     {
       ID = id;
-      Reg = reg;
+      RegionID = regionID;
       ArmyColor = ArmyColor.Neutral;
       SizeOfArmy = 0;
       Units = new List<Unit>();

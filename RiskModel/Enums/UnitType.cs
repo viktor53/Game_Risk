@@ -2,9 +2,9 @@
 {
   public enum UnitType
   {
-    Infantry,
-    Cavalary,
-    Cannon,
-    Mix
+    Infantry = 0,
+    Cavalary = 1,
+    Cannon = 2,
+    Mix = 3
   }
 }

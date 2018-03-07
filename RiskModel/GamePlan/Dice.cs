@@ -17,10 +17,13 @@ namespace Risk.Model.GamePlan
       {
         case 1:
           return RollOneDie();
+
         case 2:
           return RollTwoDice();
+
         case 3:
           return RollThreeDice();
+
         default:
           return null;
       }
@@ -32,8 +35,10 @@ namespace Risk.Model.GamePlan
 
       for (int i = 0; i < rolls.Length; i++)
       {
-        rolls[i] = _ran.Next(0, 6);
+        rolls[i] = _ran.Next(1, 7);
       }
+
+      Sort(rolls);
 
       return rolls;
     }
@@ -44,15 +49,33 @@ namespace Risk.Model.GamePlan
 
       for (int i = 0; i < rolls.Length; i++)
       {
-        rolls[i] = _ran.Next(0, 6);
+        rolls[i] = _ran.Next(1, 7);
       }
+
+      Sort(rolls);
 
       return rolls;
     }
 
     private int[] RollOneDie()
     {
-      return new int[] { _ran.Next(0, 6) };
+      return new int[] { _ran.Next(1, 7) };
+    }
+
+    private void Sort(int[] rolls)
+    {
+      for (int i = 1; i < rolls.Length; ++i)
+      {
+        for (int j = 0; j < rolls.Length - i; ++j)
+        {
+          if (rolls[j] < rolls[j + 1])
+          {
+            int temp = rolls[j];
+            rolls[j] = rolls[j + 1];
+            rolls[j + 1] = temp;
+          }
+        }
+      }
     }
   }
 }

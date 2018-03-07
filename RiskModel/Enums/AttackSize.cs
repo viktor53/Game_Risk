@@ -6,11 +6,10 @@ using System.Threading.Tasks;
 
 namespace Risk.Model.Enums
 {
-  public enum Phase
+  public enum AttackSize
   {
-    SETUP = 0,
-    DRAFT = 1,
-    ATTACK = 2,
-    FORTIFY = 3
+    One = 1,
+    Two = 2,
+    Three = 3
   }
 }
