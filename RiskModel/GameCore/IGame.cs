@@ -12,6 +12,8 @@ namespace Risk.Model.GameCore
   {
     void StartGame();
 
+    bool AddPlayer(IPlayer player);
+
     MoveResult MakeMove(SetUp move);
 
     MoveResult MakeMove(Draft move);

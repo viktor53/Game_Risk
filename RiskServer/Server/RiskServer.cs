@@ -13,7 +13,6 @@ namespace Risk.Networking.Server
 {
   public class RiskServer
   {
-
     private ManualResetEvent _allDone = new ManualResetEvent(false);
 
     private string _hostNameOrAddress;
@@ -24,11 +23,17 @@ namespace Risk.Networking.Server
 
     public ICollection<string> Players { get; set; }
 
-    public RiskServer(): this("localhost", 1100, 100) { }
+    public RiskServer() : this("localhost", 1100, 100)
+    {
+    }
 
-    public RiskServer(int port): this("localhost", port, 100) { }
+    public RiskServer(int port) : this("localhost", port, 100)
+    {
+    }
 
-    public RiskServer(string hostNameOrAddress, int port): this(hostNameOrAddress, port, 100) { }
+    public RiskServer(string hostNameOrAddress, int port) : this(hostNameOrAddress, port, 100)
+    {
+    }
 
     public RiskServer(string hostNameOrAddress, int port, int maxLengthConQueue)
     {
@@ -36,7 +41,7 @@ namespace Risk.Networking.Server
       _port = port;
       _maxLengthConQueue = maxLengthConQueue;
       Players = new HashSet<string>();
-      
+
       Debug.WriteLine("**Server inicialization: host={0} port={1} maxLengthConQueue={2} OK", _hostNameOrAddress, _port, _maxLengthConQueue);
     }
 
@@ -54,7 +59,7 @@ namespace Risk.Networking.Server
         listener.Bind(localEnd);
         listener.Listen(_maxLengthConQueue);
 
-        while(true)
+        while (true)
         {
           _allDone.Reset();
 
@@ -63,7 +68,7 @@ namespace Risk.Networking.Server
           _allDone.WaitOne();
         }
       }
-      catch(Exception e)
+      catch (Exception e)
       {
         Debug.WriteLine("**Server ERROR: " + e.StackTrace);
       }
@@ -82,39 +87,39 @@ namespace Risk.Networking.Server
       client.StartAsync();
     }
 
-    public void ReadCallback(IAsyncResult result)
-    {
-      string content = string.Empty;
+    //public void ReadCallback(IAsyncResult result)
+    //{
+    //  string content = string.Empty;
 
-      Player state = (Player)result.AsyncState;
-      Socket handler = state.connection;
+    //  Player state = (Player)result.AsyncState;
+    //  Socket handler = state.connection;
 
-      int bytesRead = handler.EndReceive(result);
+    //  int bytesRead = handler.EndReceive(result);
 
-      if (bytesRead > 0)
-      {
-        state.sb.Append(Encoding.ASCII.GetString(state.buffer, 0, bytesRead));
+    //  if (bytesRead > 0)
+    //  {
+    //    state.sb.Append(Encoding.ASCII.GetString(state.buffer, 0, bytesRead));
 
-        content = state.sb.ToString();
+    //    content = state.sb.ToString();
 
-        Send(handler, content);
+    //    Send(handler, content);
 
-        Debug.WriteLine("**Server received: " + content);
+    //    Debug.WriteLine("**Server received: " + content);
 
-        if (content.IndexOf("<EOF>") <= -1)
-        {
-          handler.BeginReceive(state.buffer, 0, Player.bufferSize, 0, new AsyncCallback(ReadCallback), state);
-        }
-        else
-        {
-          Send(handler, content);
+    //    if (content.IndexOf("<EOF>") <= -1)
+    //    {
+    //      handler.BeginReceive(state.buffer, 0, Player.bufferSize, 0, new AsyncCallback(ReadCallback), state);
+    //    }
+    //    else
+    //    {
+    //      Send(handler, content);
 
-          handler.Shutdown(SocketShutdown.Both);
-          handler.Close();
-        }
+    //      handler.Shutdown(SocketShutdown.Both);
+    //      handler.Close();
+    //    }
 
-      }
-    }
+    //  }
+    //}
 
     public void Send(Socket handler, string data)
     {
@@ -133,7 +138,7 @@ namespace Risk.Networking.Server
 
         Debug.WriteLine(byteSent);
       }
-      catch(Exception e)
+      catch (Exception e)
       {
         Debug.WriteLine("**Server ERROR: " + e.StackTrace);
       }

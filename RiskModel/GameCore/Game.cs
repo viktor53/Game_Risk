@@ -78,20 +78,34 @@ namespace Risk.Model.GameCore
 
     private Dictionary<ArmyColor, PlayerInfo> _playersInfo;
 
-    public Game(IList<IPlayer> players, bool isClassic)
+    public Game(bool isClassic)
     {
-      _players = players;
+      _players = new List<IPlayer>();
       _gameBoard = GameSettings.GetGameBoard(isClassic);
-      SetUpPlayerInfo();
+    }
+
+    public bool AddPlayer(IPlayer player)
+    {
+      if (_players.Count >= 6)
+      {
+        _players.Add(player);
+        return true;
+      }
+      return false;
     }
 
     public void StartGame()
     {
-      SetUpPlayersOrder();
+      if (_players.Count >= 3)
+      {
+        SetUpPlayerInfo();
 
-      PlaySetUpPhase();
+        SetUpPlayersOrder();
 
-      PlayToTheEnd();
+        PlaySetUpPhase();
+
+        PlayToTheEnd();
+      }
     }
 
     private void PlaySetUpPhase()

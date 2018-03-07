@@ -66,6 +66,7 @@
     <Compile Include="Player.cs" />
     <Compile Include="Client\RiskClient.cs" />
     <Compile Include="Server\GameInformation.cs" />
+    <Compile Include="Server\Player.cs" />
     <Compile Include="Server\RiskServer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server\Client.cs" />

@@ -17,6 +17,15 @@ namespace Risk.Networking.Enums
     ReadyTag = 6,
     Move = 7,
     Confirmation = 8,
-    Error = 9
+    Error = 9,
+    SetUpMove,
+    DraftMove,
+    ExchangeCardsMove,
+    AttackMove,
+    CaptureMove,
+    FortifyMove,
+    NextPhase,
+    MoveResult,
+    YourTurn
   }
 }

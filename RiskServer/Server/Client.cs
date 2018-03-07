@@ -9,10 +9,13 @@ using System.Threading.Tasks;
 using Risk.Networking.Messages;
 using Risk.Networking.Enums;
 using Risk.Networking.Messages.Data;
+using System.Diagnostics;
+using Risk.Model.GameCore.Moves;
+using Newtonsoft.Json.Linq;
 
 namespace Risk.Networking.Server
 {
-  class Client
+  internal class Client
   {
     private Socket _handler;
 
@@ -37,7 +40,8 @@ namespace Risk.Networking.Server
 
     public async void StartAsync()
     {
-      Task handling = new Task(() => {
+      Task handling = new Task(() =>
+      {
         string response = null;
 
         Message message = null;
@@ -45,29 +49,31 @@ namespace Risk.Networking.Server
         message = WaitForTypeMessage(MessageType.Registration);
 
         response = JsonConvert.SerializeObject(_responseFactory.CreateConfirmationResponse(false));
-        while (_server.Players.Contains((string)message.Data))
-        {
-          _handler.Send(Encoding.ASCII.GetBytes(response));
 
-          message = WaitForTypeMessage(MessageType.Registration);
-        }
+        JsonSerializer s = new JsonSerializer();
 
-        response = JsonConvert.SerializeObject(_responseFactory.CreateConfirmationResponse(true));
-        _handler.Send(Encoding.ASCII.GetBytes(response));
-        _server.Players.Add((string)message.Data);
+        Debug.Write(((JObject)message.Data)["AttackerAreaID"]);
+
+        //while (_server.Players.Contains((string)message.Data))
+        //{
+        //  _handler.Send(Encoding.ASCII.GetBytes(response));
+
+        //  message = WaitForTypeMessage(MessageType.Registration);
+        //}
+
+        //response = JsonConvert.SerializeObject(_responseFactory.CreateConfirmationResponse(true));
+        //_handler.Send(Encoding.ASCII.GetBytes(response));
+        //_server.Players.Add((string)message.Data);
 
         while (true)
         {
-          
         }
-
       });
 
       handling.Start();
 
       await handling;
     }
-
 
     private Message WaitForTypeMessage(MessageType messageType)
     {

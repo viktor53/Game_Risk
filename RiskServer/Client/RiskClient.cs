@@ -12,6 +12,7 @@ using Risk.Networking.Messages.Data;
 using Risk.Networking.Enums;
 using Risk.Networking.Messages;
 using Risk.Networking.Exceptions;
+using Risk.Model.GameCore.Moves;
 
 namespace Risk.Networking.Client
 {
@@ -39,9 +40,13 @@ namespace Risk.Networking.Client
 
     private IRequestFactory _requestFactory;
 
-    public RiskClient(): this("localhost", 11000, new RequestFactory()) { }
+    public RiskClient() : this("localhost", 11000, new RequestFactory())
+    {
+    }
 
-    public RiskClient(string hostNameOrAddressServer): this(hostNameOrAddressServer, 11000, new RequestFactory()) { }
+    public RiskClient(string hostNameOrAddressServer) : this(hostNameOrAddressServer, 11000, new RequestFactory())
+    {
+    }
 
     public RiskClient(string hostNameOrAddressServer, int port, IRequestFactory requestFactory)
     {
@@ -62,10 +67,9 @@ namespace Risk.Networking.Client
       Debug.WriteLine("**Client inicialization: OK");
     }
 
-
     public async void ConnectAsync()
     {
-      Task connecting =  new Task(() => _client.Connect(_remoteEP));
+      Task connecting = new Task(() => _client.Connect(_remoteEP));
       connecting.Start();
       await connecting;
     }
@@ -97,7 +101,7 @@ namespace Risk.Networking.Client
         _client.Shutdown(SocketShutdown.Both);
         _client.Close();
       }
-      catch(Exception e)
+      catch (Exception e)
       {
         Debug.WriteLine("**Client ERROR: " + e.StackTrace);
       }
@@ -124,7 +128,7 @@ namespace Risk.Networking.Client
 
         Debug.WriteLine("**Client sending data: END");
       }
-      catch(Exception e)
+      catch (Exception e)
       {
         Debug.WriteLine("**Client ERROR: " + e.StackTrace);
       }
@@ -141,7 +145,7 @@ namespace Risk.Networking.Client
 
         Debug.WriteLine("**Client receiving data: BEGIN");
       }
-      catch(Exception e)
+      catch (Exception e)
       {
         Debug.WriteLine("**Client ERROR: " + e.StackTrace);
       }
@@ -189,8 +193,10 @@ namespace Risk.Networking.Client
 
     public async Task<bool> SendRegistrationRequestAsync(string name)
     {
-      Task<bool> sending = new Task<bool>(() => {
-        string message = JsonConvert.SerializeObject(_requestFactory.CreateRegistrationRequest(name));
+      Message m = new Message(MessageType.Registration, new Attack(Model.Enums.ArmyColor.Blue, 20, 30, Model.Enums.AttackSize.Three));
+      Task<bool> sending = new Task<bool>(() =>
+      {
+        string message = JsonConvert.SerializeObject(m);
         _client.Send(Encoding.ASCII.GetBytes(message));
 
         _size = _client.Receive(_buffer);
@@ -199,7 +205,7 @@ namespace Risk.Networking.Client
 
         if (regResponse.MessageType == MessageType.Confirmation)
         {
-          if((bool)regResponse.Data)
+          if ((bool)regResponse.Data)
           {
             _username = name;
             return true;
@@ -232,14 +238,14 @@ namespace Risk.Networking.Client
         message = Encoding.ASCII.GetString(_buffer, 0, _size);
         Message upResponese = JsonConvert.DeserializeObject<Message>(message);
 
-        if(upResponese.MessageType == MessageType.Update)
+        if (upResponese.MessageType == MessageType.Update)
         {
           UpdateInfo updateInfo = JsonConvert.DeserializeObject<UpdateInfo>((string)upResponese.Data);
-          foreach(PlayerInfo playerInfo in updateInfo.Players)
+          foreach (PlayerInfo playerInfo in updateInfo.Players)
           {
             _players.Add(playerInfo.Username, playerInfo);
           }
-          foreach(GameInfo gameInfo in updateInfo.Games)
+          foreach (GameInfo gameInfo in updateInfo.Games)
           {
             _games.Add(gameInfo.GameName, gameInfo);
           }
@@ -266,7 +272,7 @@ namespace Risk.Networking.Client
         message = Encoding.ASCII.GetString(_buffer, 0, _size);
         Message createGameResponese = JsonConvert.DeserializeObject<Message>(message);
 
-        if(createGameResponese.MessageType == MessageType.Confirmation)
+        if (createGameResponese.MessageType == MessageType.Confirmation)
         {
           return (bool)createGameResponese.Data;
         }
