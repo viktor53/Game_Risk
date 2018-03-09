@@ -61,11 +61,11 @@ namespace Risk.Networking.Server
         switch (m.MessageType)
         {
           case MessageType.AttackMove:
-            SendMoveResult(_game.MakeMove(GetMove<Attack>((JObject)m.Data)));
+            SendMoveResult(_game.MakeMove(GetData<Attack>((JObject)m.Data)));
             break;
 
           case MessageType.CaptureMove:
-            SendMoveResult(_game.MakeMove(GetMove<Capture>((JObject)m.Data)));
+            SendMoveResult(_game.MakeMove(GetData<Capture>((JObject)m.Data)));
             break;
 
           case MessageType.NextPhase:
@@ -91,11 +91,11 @@ namespace Risk.Networking.Server
         switch (m.MessageType)
         {
           case MessageType.DraftMove:
-            SendMoveResult(_game.MakeMove(GetMove<Draft>((JObject)m.Data)));
+            SendMoveResult(_game.MakeMove(GetData<Draft>((JObject)m.Data)));
             break;
 
           case MessageType.ExchangeCardsMove:
-            SendMoveResult(_game.MakeMove(GetMove<ExchangeCard>((JObject)m.Data)));
+            SendMoveResult(_game.MakeMove(GetData<ExchangeCard>((JObject)m.Data)));
             break;
 
           case MessageType.NextPhase:
@@ -119,7 +119,7 @@ namespace Risk.Networking.Server
         switch (m.MessageType)
         {
           case MessageType.FortifyMove:
-            SendMoveResult(_game.MakeMove(GetMove<Fortify>((JObject)m.Data)));
+            SendMoveResult(_game.MakeMove(GetData<Fortify>((JObject)m.Data)));
             break;
 
           case MessageType.NextPhase:
@@ -145,7 +145,7 @@ namespace Risk.Networking.Server
         switch (m.MessageType)
         {
           case MessageType.SetUpMove:
-            MoveResult result = _game.MakeMove(GetMove<SetUp>((JObject)m.Data));
+            MoveResult result = _game.MakeMove(GetData<SetUp>((JObject)m.Data));
             SendMoveResult(result);
             isCorrect = result == MoveResult.OK ? true : false;
             break;
@@ -166,7 +166,7 @@ namespace Risk.Networking.Server
       });
     }
 
-    private T GetMove<T>(JObject data)
+    private T GetData<T>(JObject data)
     {
       using (JTokenReader reader = new JTokenReader(data))
       {
@@ -320,7 +320,7 @@ namespace Risk.Networking.Server
           switch (m.MessageType)
           {
             case MessageType.CreateGame:
-              if (_server.CreateGame(GetMove<CreateGameRoomInfo>((JObject)m.Data), PlayerName))
+              if (_server.CreateGame(GetData<CreateGameRoomInfo>((JObject)m.Data), PlayerName))
               {
                 SendMessage(new Message(MessageType.Confirmation, true));
                 isInGameOrLeave = true;

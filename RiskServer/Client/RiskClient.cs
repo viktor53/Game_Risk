@@ -13,6 +13,7 @@ using Risk.Networking.Enums;
 using Risk.Networking.Messages;
 using Risk.Networking.Exceptions;
 using Risk.Model.GameCore.Moves;
+using Newtonsoft.Json.Linq;
 
 namespace Risk.Networking.Client
 {
@@ -32,6 +33,25 @@ namespace Risk.Networking.Client
 
     private bool _listen;
 
+    private JsonSerializer _serializer;
+
+    public event EventHandler OnUpdate;
+
+    private IList<GameRoomInfo> _rooms;
+
+    public IList<GameRoomInfo> Rooms
+    {
+      get
+      {
+        return _rooms;
+      }
+      private set
+      {
+        _rooms = value;
+        OnUpdate?.Invoke(this, new EventArgs());
+      }
+    }
+
     public RiskClient() : this("localhost", 11000)
     {
     }
@@ -49,6 +69,8 @@ namespace Risk.Networking.Client
       _buffer = new byte[_bufferSize];
 
       _receiveLock = new object();
+
+      _serializer = new JsonSerializer();
 
       Debug.WriteLine("**Client inicialization: OK");
     }
@@ -91,10 +113,25 @@ namespace Risk.Networking.Client
     {
       while (_listen)
       {
+        Message m;
+
         lock (_receiveLock)
         {
-          ReceiveMessage();
+          m = ReceiveMessage();
         }
+
+        if (m.MessageType == MessageType.UpdateGameList)
+        {
+          IList<GameRoomInfo> roomsInfo = GetData<IList<GameRoomInfo>>((JObject)m.Data);
+        }
+      }
+    }
+
+    private T GetData<T>(JObject data)
+    {
+      using (JTokenReader reader = new JTokenReader(data))
+      {
+        return _serializer.Deserialize<T>(reader);
       }
     }
 
@@ -137,6 +174,15 @@ namespace Risk.Networking.Client
           ProcessError(mess);
           return false;
         }
+      });
+    }
+
+    public async void SendLougOut()
+    {
+      await Task.Run(() =>
+      {
+        Message mess = new Message(MessageType.Logout, null);
+        SendMessage(mess);
       });
     }
 
