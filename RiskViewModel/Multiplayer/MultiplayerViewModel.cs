@@ -6,17 +6,20 @@ using System.Text;
 using System.Threading.Tasks;
 using Risk.ViewModel.Main;
 using System.Windows.Input;
+using Risk.Networking.Client;
 
 namespace Risk.ViewModel.Multiplayer
 {
-  public class MultiplayerViewModel: ViewModelBase, IMultiplayerMenuViewModel
+  public class MultiplayerViewModel : ViewModelBase, IMultiplayerMenuViewModel
   {
     private IWindowManager _widnowManager;
 
     private ViewModelBase _dialogViewModel;
 
+    private RiskClient _client;
+
     private bool _isEnabled = true;
-    
+
     public ICommand BackToMenu_Click { get; private set; }
 
     public ICommand CreateGame_Click { get; private set; }
@@ -36,7 +39,8 @@ namespace Risk.ViewModel.Multiplayer
       }
     }
 
-    public bool IsEnabled {
+    public bool IsEnabled
+    {
       get
       {
         return _isEnabled;
@@ -50,9 +54,10 @@ namespace Risk.ViewModel.Multiplayer
 
     public ObservableCollection<FakeData> TestData { get; private set; }
 
-    public MultiplayerViewModel(IWindowManager windowManager)
+    public MultiplayerViewModel(IWindowManager windowManager, RiskClient client)
     {
       _widnowManager = windowManager;
+      _client = client;
 
       BackToMenu_Click = new Command(BackToMenuClick);
       CreateGame_Click = new Command(CreateGameClick);
@@ -64,7 +69,7 @@ namespace Risk.ViewModel.Multiplayer
       TestData.Add(new FakeData("neco5", "neco6"));
       TestData.Add(new FakeData("neco7", "neco8"));
     }
-    
+
     private void BackToMenuClick()
     {
       _widnowManager.WindowViewModel = new MainMenuViewModel(_widnowManager);
@@ -81,7 +86,6 @@ namespace Risk.ViewModel.Multiplayer
       _widnowManager.WindowViewModel = new MultiplayerRoomViewModel(_widnowManager);
     }
   }
-
 
   public class FakeData
   {

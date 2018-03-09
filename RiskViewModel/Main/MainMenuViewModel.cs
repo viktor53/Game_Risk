@@ -9,7 +9,7 @@ using System.Windows;
 
 namespace Risk.ViewModel.Main
 {
-  public class MainMenuViewModel: ViewModelBase, IMainMenuViewModel
+  public class MainMenuViewModel : ViewModelBase, IMainMenuViewModel
   {
     private ViewModelBase _contentViewModel;
 
@@ -50,7 +50,6 @@ namespace Risk.ViewModel.Main
       }
     }
 
-
     public MainMenuViewModel(IWindowManager windowManager)
     {
       Multiplayer_Click = new Command(MultiplayerClick);
@@ -69,7 +68,7 @@ namespace Risk.ViewModel.Main
 
     private void MultiplayerClick()
     {
-      ContentViewModel = new ConnectionViewModel(_windowManager, this);
+      ContentViewModel = new ConnectionViewModel(_windowManager, this, new Networking.Client.RiskClient());
       IsEnabled = false;
     }
 

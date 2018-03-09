@@ -109,6 +109,8 @@ namespace Risk.Networking.Server
           Debug.Write($"** Add new Player: {name}", "Server");
           _players.Add(name, player);
           _playersInMenu.Add(player);
+
+          player.SendUpdateGameList(GetUpdateInfo());
           return true;
         }
         return false;
@@ -166,21 +168,28 @@ namespace Risk.Networking.Server
     {
       await Task.Run(() =>
       {
-        List<GameRoomInfo> roomsInfo = new List<GameRoomInfo>();
-
-        lock (_gameRoomsLock)
-        {
-          foreach (var room in _gameRooms)
-          {
-            roomsInfo.Add(new GameRoomInfo(room.Value.RoomName, room.Value.Capacity, room.Value.Connected));
-          }
-        }
+        List<GameRoomInfo> roomsInfo = GetUpdateInfo();
 
         foreach (var player in _playersInMenu)
         {
           player.SendUpdateGameList(roomsInfo);
         }
       });
+    }
+
+    private List<GameRoomInfo> GetUpdateInfo()
+    {
+      List<GameRoomInfo> roomsInfo = new List<GameRoomInfo>();
+
+      lock (_gameRoomsLock)
+      {
+        foreach (var room in _gameRooms)
+        {
+          roomsInfo.Add(new GameRoomInfo(room.Value.RoomName, room.Value.Capacity, room.Value.Connected));
+        }
+      }
+
+      return roomsInfo;
     }
   }
 }
