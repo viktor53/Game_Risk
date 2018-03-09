@@ -300,7 +300,7 @@ namespace Risk.Networking.Server
               }
               else
               {
-                SendMessage(new Message(MessageType.Error, new Error(ErrorType.NameExist, "Player with this name already exists!")));
+                SendMessage(new Message(MessageType.Confirmation, false));
               }
               break;
 
@@ -327,7 +327,7 @@ namespace Risk.Networking.Server
               }
               else
               {
-                SendMessage(new Message(MessageType.Error, new Error(ErrorType.GameNameExist, "Game with this name already exists!")));
+                SendMessage(new Message(MessageType.Confirmation, false));
               }
               break;
 
@@ -339,7 +339,7 @@ namespace Risk.Networking.Server
               }
               else
               {
-                SendMessage(new Message(MessageType.Error, new Error(ErrorType.GameIsFull, "This game is already full!")));
+                SendMessage(new Message(MessageType.Confirmation, false));
               }
               break;
 

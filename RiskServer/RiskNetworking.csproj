@@ -68,7 +68,6 @@
     <Compile Include="Server\Player.cs" />
     <Compile Include="Server\RiskServer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Server\Client.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

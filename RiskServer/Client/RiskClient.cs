@@ -22,17 +22,15 @@ namespace Risk.Networking.Client
 
     private IPEndPoint _remoteEP;
 
-    private ManualResetEvent _sendDone;
-
-    private ManualResetEvent _receiveDone;
-
     private byte[] _buffer;
 
-    private const int _bufferSize = 512;
-
-    private int _size;
+    private const int _bufferSize = 1024;
 
     private string _username;
+
+    private object _receiveLock;
+
+    private bool _listen;
 
     public RiskClient() : this("localhost", 11000)
     {
@@ -50,151 +48,28 @@ namespace Risk.Networking.Client
       _client = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
       _buffer = new byte[_bufferSize];
 
-      _sendDone = new ManualResetEvent(false);
-      _receiveDone = new ManualResetEvent(false);
+      _receiveLock = new object();
 
       Debug.WriteLine("**Client inicialization: OK");
     }
 
     public async void ConnectAsync()
     {
-      Task connecting = new Task(() => _client.Connect(_remoteEP));
-      connecting.Start();
-      await connecting;
-    }
-
-    public void Start()
-    {
-      try
-      {
-        _client.Connect(_remoteEP);
-
-        SendRegistrationRequestAsync("Haha");
-        _sendDone.WaitOne();
-        _sendDone.Reset();
-
-        Receive(_client);
-        _receiveDone.WaitOne();
-        _receiveDone.Reset();
-
-        Thread.Sleep(3000);
-
-        Send(_client, "Test2<EOF>");
-        _sendDone.WaitOne();
-        _sendDone.Reset();
-
-        Receive(_client);
-        _receiveDone.WaitOne();
-        _receiveDone.Reset();
-
-        _client.Shutdown(SocketShutdown.Both);
-        _client.Close();
-      }
-      catch (Exception e)
-      {
-        Debug.WriteLine("**Client ERROR: " + e.StackTrace);
-      }
-    }
-
-    private void Send(Socket client, string data)
-    {
-      byte[] byteData = Encoding.ASCII.GetBytes(data);
-
-      client.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), client);
-
-      Debug.WriteLine("**Client sending data: BEGIN");
-    }
-
-    private void SendCallback(IAsyncResult result)
-    {
-      try
-      {
-        Socket client = (Socket)result.AsyncState;
-
-        int byteSent = client.EndSend(result);
-
-        _sendDone.Set();
-
-        Debug.WriteLine("**Client sending data: END");
-      }
-      catch (Exception e)
-      {
-        Debug.WriteLine("**Client ERROR: " + e.StackTrace);
-      }
-    }
-
-    private void Receive(Socket client)
-    {
-      try
-      {
-        Player player = new Player();
-        player.connection = client;
-
-        client.BeginReceive(player.buffer, 0, Player.bufferSize, 0, new AsyncCallback(ReceiveCallback), player);
-
-        Debug.WriteLine("**Client receiving data: BEGIN");
-      }
-      catch (Exception e)
-      {
-        Debug.WriteLine("**Client ERROR: " + e.StackTrace);
-      }
-    }
-
-    private void ReceiveCallback(IAsyncResult result)
-    {
-      try
-      {
-        Player state = (Player)result.AsyncState;
-        Socket client = state.connection;
-
-        int bytesRead = client.EndReceive(result);
-
-        if (bytesRead > 0)
-        {
-          state.sb.Append(Encoding.ASCII.GetString(state.buffer, 0, bytesRead));
-
-          client.BeginReceive(state.buffer, 0, Player.bufferSize, 0, new AsyncCallback(ReceiveCallback), state);
-
-          Debug.WriteLine("**Client receiving data: END");
-        }
-        else
-        {
-          if (state.sb.Length > 1)
-          {
-            Debug.WriteLine(state.sb.ToString());
-          }
-
-          _receiveDone.Set();
-
-          Debug.WriteLine("**Client receiving data: END");
-        }
-      }
-      catch (Exception e)
-      {
-        Debug.WriteLine("**Client ERROR: " + e.StackTrace);
-      }
-    }
-
-    private bool IsRegistred()
-    {
-      return _username != null;
+      await Task.Run(() => _client.Connect(_remoteEP));
     }
 
     public async Task<bool> SendRegistrationRequestAsync(string name)
     {
-      Message m = new Message(MessageType.Registration, new Attack(Model.Enums.ArmyColor.Blue, 20, 30, Model.Enums.AttackSize.Three));
-      Task<bool> sending = new Task<bool>(() =>
+      return await Task.Run(() =>
       {
-        string message = JsonConvert.SerializeObject(m);
-        _client.Send(Encoding.ASCII.GetBytes(message));
+        Message mess = new Message(MessageType.Registration, name);
+        SendMessage(mess);
 
-        _size = _client.Receive(_buffer);
-        message = Encoding.ASCII.GetString(_buffer, 0, _size);
-        Message regResponse = JsonConvert.DeserializeObject<Message>(message);
+        mess = ReceiveMessage();
 
-        if (regResponse.MessageType == MessageType.Confirmation)
+        if (mess.MessageType == MessageType.Confirmation)
         {
-          if ((bool)regResponse.Data)
+          if ((bool)mess.Data)
           {
             _username = name;
             return true;
@@ -206,104 +81,79 @@ namespace Risk.Networking.Client
         }
         else
         {
-          ProcessError(regResponse);
+          ProcessError(mess);
           return false;
         }
       });
-
-      sending.Start();
-
-      return await sending;
     }
 
-    public async void SendUpdateRequestAsync()
+    private void ListenToUpdates()
     {
-      //Task sending = new Task(() =>
-      //{
-      //  string message = JsonConvert.SerializeObject(_requestFactory.CreateUpdateRequest(_username));
-      //  _client.Send(Encoding.ASCII.GetBytes(message));
-
-      //  _size = _client.Receive(_buffer);
-      //  message = Encoding.ASCII.GetString(_buffer, 0, _size);
-      //  Message upResponese = JsonConvert.DeserializeObject<Message>(message);
-
-      //  if (upResponese.MessageType == MessageType.UpdateGame)
-      //  {
-      //    UpdateInfo updateInfo = JsonConvert.DeserializeObject<UpdateInfo>((string)upResponese.Data);
-      //    foreach (PlayerInfo playerInfo in updateInfo.Players)
-      //    {
-      //      _players.Add(playerInfo.Username, playerInfo);
-      //    }
-      //    foreach (GameInfo gameInfo in updateInfo.Games)
-      //    {
-      //      _games.Add(gameInfo.GameName, gameInfo);
-      //    }
-      //  }
-      //  else
-      //  {
-      //    ProcessError(upResponese);
-      //  }
-      //});
-
-      //sending.Start();
-
-      //await sending;
-    }
-
-    public async Task<bool> SendCreateGameRequest(string gameName, int numberOfPlayers)
-    {
-      Task<bool> sending = new Task<bool>(() =>
+      while (_listen)
       {
-        //string message = JsonConvert.SerializeObject(_requestFactory.CreateCreateGameRequest(_username, gameName, numberOfPlayers));
-        //_client.Send(Encoding.ASCII.GetBytes(message));
-
-        //_size = _client.Receive(_buffer);
-        //message = Encoding.ASCII.GetString(_buffer, 0, _size);
-        //Message createGameResponese = JsonConvert.DeserializeObject<Message>(message);
-
-        //if (createGameResponese.MessageType == MessageType.Confirmation)
-        //{
-        //  return (bool)createGameResponese.Data;
-        //}
-        //else
-        //{
-        //  ProcessError(createGameResponese);
-        //  return false;
-        //}
-        return true;
-      });
-
-      sending.Start();
-
-      return await sending;
+        lock (_receiveLock)
+        {
+          ReceiveMessage();
+        }
+      }
     }
 
-    public async Task<bool> SendConnectToGameReqeust(string gameName)
+    public async Task<bool> SendConnectToGameRequest(string gameName)
     {
-      Task<bool> sending = new Task<bool>(() =>
+      return await Task.Run(() =>
       {
-        //string message = JsonConvert.SerializeObject(_requestFactory.CreateConnectToGameRequest(_username, gameName));
-        //_client.Send(Encoding.ASCII.GetBytes(message));
+        Message mess = new Message(MessageType.ConnectToGame, gameName);
+        _client.Send(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(mess)));
 
-        //_size = _client.Receive(_buffer);
-        //message = Encoding.ASCII.GetString(_buffer, 0, _size);
-        //Message connectResponse = JsonConvert.DeserializeObject<Message>(message);
+        mess = ReceiveMessage();
 
-        //if (connectResponse.MessageType == MessageType.Confirmation)
-        //{
-        //  return (bool)connectResponse.Data;
-        //}
-        //else
-        //{
-        //  ProcessError(connectResponse);
-        //  return false;
-        //}
-        return true;
+        if (mess.MessageType == MessageType.Confirmation)
+        {
+          return (bool)mess.Data;
+        }
+        else
+        {
+          ProcessError(mess);
+          return false;
+        }
       });
+    }
 
-      sending.Start();
+    public async Task<bool> SendCreateGameRequest(CreateGameRoomInfo roomInfo)
+    {
+      return await Task.Run(() =>
+      {
+        Message mess = new Message(MessageType.CreateGame, roomInfo);
+        SendMessage(mess);
 
-      return await sending;
+        mess = ReceiveMessage();
+
+        if (mess.MessageType == MessageType.Confirmation)
+        {
+          return (bool)mess.Data;
+        }
+        else
+        {
+          ProcessError(mess);
+          return false;
+        }
+      });
+    }
+
+    private void SendMessage(Message mess)
+    {
+      _client.Send(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(mess)));
+    }
+
+    private Message ReceiveMessage()
+    {
+      int lengtOfData = _client.Receive(_buffer);
+      return JsonConvert.DeserializeObject<Message>(Encoding.ASCII.GetString(_buffer, 0, lengtOfData));
+    }
+
+    private bool IsRegistred()
+    {
+      return _username != null;
     }
 
     private void ProcessError(Message message)
