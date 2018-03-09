@@ -7,6 +7,10 @@ using System.Threading.Tasks;
 using Risk.ViewModel.Main;
 using System.Windows.Input;
 using Risk.Networking.Client;
+using Risk.Networking.Messages.Data;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Threading;
 
 namespace Risk.ViewModel.Multiplayer
 {
@@ -19,6 +23,8 @@ namespace Risk.ViewModel.Multiplayer
     private RiskClient _client;
 
     private bool _isEnabled = true;
+
+    private SynchronizationContext ui;
 
     public ICommand BackToMenu_Click { get; private set; }
 
@@ -52,51 +58,77 @@ namespace Risk.ViewModel.Multiplayer
       }
     }
 
-    public ObservableCollection<FakeData> TestData { get; private set; }
+    private GameRoomInfo _room;
+
+    public GameRoomInfo Room
+    {
+      get
+      {
+        return _room;
+      }
+      set
+      {
+        _room = value;
+        OnPropertyChanged("Room");
+      }
+    }
+
+    public ObservableCollection<GameRoomInfo> Rooms { get; private set; }
 
     public MultiplayerViewModel(IWindowManager windowManager, RiskClient client)
     {
       _widnowManager = windowManager;
       _client = client;
+      _client.OnUpdate += OnUpdate;
+      _client.ListenToUpdates();
 
       BackToMenu_Click = new Command(BackToMenuClick);
       CreateGame_Click = new Command(CreateGameClick);
       ConnectToGame_Click = new Command(ConnectToGameClick);
 
-      TestData = new ObservableCollection<FakeData>();
-      TestData.Add(new FakeData("neco1", "neco2"));
-      TestData.Add(new FakeData("neco3", "neco4"));
-      TestData.Add(new FakeData("neco5", "neco6"));
-      TestData.Add(new FakeData("neco7", "neco8"));
+      Rooms = new ObservableCollection<GameRoomInfo>();
+      ui = SynchronizationContext.Current;
     }
 
     private void BackToMenuClick()
     {
+      _client.SendLougOut();
       _widnowManager.WindowViewModel = new MainMenuViewModel(_widnowManager);
     }
 
     private void CreateGameClick()
     {
-      DialogViewModel = new CreateGameDialogViewModel(_widnowManager, this);
+      DialogViewModel = new CreateGameDialogViewModel(_widnowManager, this, _client);
       IsEnabled = false;
     }
 
-    private void ConnectToGameClick()
+    private async void ConnectToGameClick()
     {
-      _widnowManager.WindowViewModel = new MultiplayerRoomViewModel(_widnowManager);
+      if (Room != null)
+      {
+        await _client.SendConnectToGameRequest(Room.RoomName).ContinueWith((result) =>
+        {
+          if (result.Result)
+          {
+            _widnowManager.WindowViewModel = new MultiplayerRoomViewModel(_widnowManager, _client);
+          }
+          else
+          {
+            DialogViewModel = new ConnectToGameErrorDialogViewModel(this);
+            IsEnabled = false;
+          }
+        });
+      }
     }
-  }
 
-  public class FakeData
-  {
-    public string Name { get; private set; }
-
-    public string Players { get; private set; }
-
-    public FakeData(string name, string players)
+    private void OnUpdate(object sender, EventArgs ev)
     {
-      Name = name;
-      Players = players;
+      ui.Send(x => Rooms.Clear(), null);
+      foreach (var room in _client.Rooms)
+      {
+        Debug.WriteLine($"{room.RoomName}, {room.Connected}, {room.Capacity}", "Client");
+        ui.Send(x => Rooms.Add(room), null);
+      }
     }
   }
 }

@@ -59,6 +59,7 @@
     <Compile Include="Main\MainMenuViewModel.cs" />
     <Compile Include="MoveController.cs" />
     <Compile Include="Main\ConnectionViewModel.cs" />
+    <Compile Include="Multiplayer\ConnectToGameErrorDialogViewModel.cs" />
     <Compile Include="Multiplayer\CreateGameDialogViewModel.cs" />
     <Compile Include="Multiplayer\IMultiplayerMenuViewModel.cs" />
     <Compile Include="Multiplayer\MultiplayerRoomViewModel.cs" />

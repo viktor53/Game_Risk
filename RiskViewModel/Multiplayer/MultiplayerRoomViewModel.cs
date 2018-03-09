@@ -6,12 +6,15 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Risk.ViewModel.Game;
+using Risk.Networking.Client;
 
 namespace Risk.ViewModel.Multiplayer
 {
-  public class MultiplayerRoomViewModel: ViewModelBase
+  public class MultiplayerRoomViewModel : ViewModelBase
   {
     private IWindowManager _windowManager;
+
+    private RiskClient _client;
 
     private bool _isEnableb = true;
 
@@ -23,7 +26,8 @@ namespace Risk.ViewModel.Multiplayer
 
     public ObservableCollection<string> Players { get; private set; }
 
-    public bool IsEnabled {
+    public bool IsEnabled
+    {
       get
       {
         return _isEnableb;
@@ -48,9 +52,10 @@ namespace Risk.ViewModel.Multiplayer
       }
     }
 
-    public MultiplayerRoomViewModel(IWindowManager windowManager)
+    public MultiplayerRoomViewModel(IWindowManager windowManager, RiskClient client)
     {
       _windowManager = windowManager;
+      _client = client;
 
       Ready_Click = new Command(ReadyClick);
       Cancel_Click = new Command(CancelClick);
@@ -70,10 +75,9 @@ namespace Risk.ViewModel.Multiplayer
       _windowManager.WindowViewModel = new GameBoardViewModel(_windowManager);
     }
 
-    private  void CancelClick()
+    private void CancelClick()
     {
-      _windowManager.WindowViewModel = new MultiplayerViewModel(_windowManager);
+      _windowManager.WindowViewModel = new MultiplayerViewModel(_windowManager, _client);
     }
-
   }
 }

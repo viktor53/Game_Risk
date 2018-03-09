@@ -72,6 +72,8 @@ namespace Risk.Networking.Client
 
       _serializer = new JsonSerializer();
 
+      _listen = true;
+
       Debug.WriteLine("**Client inicialization: OK");
     }
 
@@ -109,25 +111,28 @@ namespace Risk.Networking.Client
       });
     }
 
-    private void ListenToUpdates()
+    public async void ListenToUpdates()
     {
-      while (_listen)
+      await Task.Run(() =>
       {
-        Message m;
-
-        lock (_receiveLock)
+        while (_listen)
         {
-          m = ReceiveMessage();
-        }
+          Message m;
 
-        if (m.MessageType == MessageType.UpdateGameList)
-        {
-          IList<GameRoomInfo> roomsInfo = GetData<IList<GameRoomInfo>>((JObject)m.Data);
+          lock (_receiveLock)
+          {
+            m = ReceiveMessage();
+          }
+
+          if (m.MessageType == MessageType.UpdateGameList)
+          {
+            Rooms = GetData<IList<GameRoomInfo>>((JArray)m.Data);
+          }
         }
-      }
+      });
     }
 
-    private T GetData<T>(JObject data)
+    private T GetData<T>(JArray data)
     {
       using (JTokenReader reader = new JTokenReader(data))
       {

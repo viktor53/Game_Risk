@@ -295,6 +295,7 @@ namespace Risk.Networking.Server
             case MessageType.Registration:
               if (_server.AddPlayer((string)m.Data, this))
               {
+                PlayerName = (string)m.Data;
                 SendMessage(new Message(MessageType.Confirmation, true));
                 isCorrect = true;
               }
@@ -312,6 +313,8 @@ namespace Risk.Networking.Server
               break;
           }
         }
+
+        SendUpdateGameList(_server.GetUpdateInfo());
 
         bool isInGameOrLeave = false;
         while (!isInGameOrLeave)

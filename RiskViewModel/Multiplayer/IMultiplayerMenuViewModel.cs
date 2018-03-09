@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Risk.Networking.Messages.Data;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -13,6 +14,6 @@ namespace Risk.ViewModel.Multiplayer
 
     ViewModelBase DialogViewModel { get; set; }
 
-    ObservableCollection<FakeData> TestData { get; }
+    ObservableCollection<GameRoomInfo> Rooms { get; }
   }
 }

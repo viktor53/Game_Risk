@@ -106,11 +106,9 @@ namespace Risk.Networking.Server
       {
         if (!_players.ContainsKey(name))
         {
-          Debug.Write($"** Add new Player: {name}", "Server");
+          Debug.WriteLine($"** Add new Player: {name}", "Server");
           _players.Add(name, player);
           _playersInMenu.Add(player);
-
-          player.SendUpdateGameList(GetUpdateInfo());
           return true;
         }
         return false;
@@ -121,7 +119,7 @@ namespace Risk.Networking.Server
     {
       lock (_playersLock)
       {
-        Debug.Write($"** LogOut player: {name}", "Server");
+        Debug.WriteLine($"** LogOut player: {name}", "Server");
         _playersInMenu.Remove(_players[name]);
         _players.Remove(name);
       }
@@ -134,7 +132,7 @@ namespace Risk.Networking.Server
       {
         if (!_gameRooms.ContainsKey(gameRoom.RoomName))
         {
-          Debug.Write($"** Create new Room: {gameRoom.RoomName}", "Server");
+          Debug.WriteLine($"** Create new Room: {gameRoom.RoomName}", "Server");
           _gameRooms.Add(gameRoom.RoomName, new GameRoom(gameRoom.RoomName, gameRoom.Capacity, gameRoom.IsClassic));
           _gameRooms[gameRoom.RoomName].AddPlayer(_players[playerName]);
           _playersInMenu.Remove(_players[playerName]);
@@ -148,7 +146,7 @@ namespace Risk.Networking.Server
 
     public bool ConnectToGame(string playerName, string gameName)
     {
-      if (_gameRooms[gameName].AddPlayer(_players[playerName]))
+      if (_gameRooms.ContainsKey(gameName) && _gameRooms[gameName].AddPlayer(_players[playerName]))
       {
         _playersInMenu.Remove(_players[playerName]);
         if (_gameRooms[gameName].IsFull())
@@ -160,6 +158,7 @@ namespace Risk.Networking.Server
           }
         }
         SendUpdateToAll();
+        return true;
       }
       return false;
     }
@@ -177,7 +176,7 @@ namespace Risk.Networking.Server
       });
     }
 
-    private List<GameRoomInfo> GetUpdateInfo()
+    public List<GameRoomInfo> GetUpdateInfo()
     {
       List<GameRoomInfo> roomsInfo = new List<GameRoomInfo>();
 
@@ -187,6 +186,8 @@ namespace Risk.Networking.Server
         {
           roomsInfo.Add(new GameRoomInfo(room.Value.RoomName, room.Value.Capacity, room.Value.Connected));
         }
+        roomsInfo.Add(new GameRoomInfo("test1", 6, 3));
+        roomsInfo.Add(new GameRoomInfo("test2", 5, 2));
       }
 
       return roomsInfo;
