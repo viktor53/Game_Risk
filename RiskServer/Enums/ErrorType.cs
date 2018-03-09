@@ -9,5 +9,8 @@ namespace Risk.Networking.Enums
   public enum ErrorType
   {
     UknownRequest = 0,
+    NameExist = 1,
+    GameNameExist = 2,
+    GameIsFull = 3
   }
 }

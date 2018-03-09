@@ -34,21 +34,15 @@ namespace Risk.Networking.Client
 
     private string _username;
 
-    private Dictionary<string, PlayerInfo> _players;
-
-    private Dictionary<string, GameInfo> _games;
-
-    private IRequestFactory _requestFactory;
-
-    public RiskClient() : this("localhost", 11000, new RequestFactory())
+    public RiskClient() : this("localhost", 11000)
     {
     }
 
-    public RiskClient(string hostNameOrAddressServer) : this(hostNameOrAddressServer, 11000, new RequestFactory())
+    public RiskClient(string hostNameOrAddressServer) : this(hostNameOrAddressServer, 11000)
     {
     }
 
-    public RiskClient(string hostNameOrAddressServer, int port, IRequestFactory requestFactory)
+    public RiskClient(string hostNameOrAddressServer, int port)
     {
       IPAddress ipAddress = Dns.GetHostEntry(hostNameOrAddressServer).AddressList[0];
       _remoteEP = new IPEndPoint(ipAddress, port);
@@ -56,13 +50,8 @@ namespace Risk.Networking.Client
       _client = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
       _buffer = new byte[_bufferSize];
 
-      _requestFactory = requestFactory;
-
       _sendDone = new ManualResetEvent(false);
       _receiveDone = new ManualResetEvent(false);
-
-      _players = new Dictionary<string, PlayerInfo>();
-      _games = new Dictionary<string, GameInfo>();
 
       Debug.WriteLine("**Client inicialization: OK");
     }
@@ -229,58 +218,59 @@ namespace Risk.Networking.Client
 
     public async void SendUpdateRequestAsync()
     {
-      Task sending = new Task(() =>
-      {
-        string message = JsonConvert.SerializeObject(_requestFactory.CreateUpdateRequest(_username));
-        _client.Send(Encoding.ASCII.GetBytes(message));
+      //Task sending = new Task(() =>
+      //{
+      //  string message = JsonConvert.SerializeObject(_requestFactory.CreateUpdateRequest(_username));
+      //  _client.Send(Encoding.ASCII.GetBytes(message));
 
-        _size = _client.Receive(_buffer);
-        message = Encoding.ASCII.GetString(_buffer, 0, _size);
-        Message upResponese = JsonConvert.DeserializeObject<Message>(message);
+      //  _size = _client.Receive(_buffer);
+      //  message = Encoding.ASCII.GetString(_buffer, 0, _size);
+      //  Message upResponese = JsonConvert.DeserializeObject<Message>(message);
 
-        if (upResponese.MessageType == MessageType.Update)
-        {
-          UpdateInfo updateInfo = JsonConvert.DeserializeObject<UpdateInfo>((string)upResponese.Data);
-          foreach (PlayerInfo playerInfo in updateInfo.Players)
-          {
-            _players.Add(playerInfo.Username, playerInfo);
-          }
-          foreach (GameInfo gameInfo in updateInfo.Games)
-          {
-            _games.Add(gameInfo.GameName, gameInfo);
-          }
-        }
-        else
-        {
-          ProcessError(upResponese);
-        }
-      });
+      //  if (upResponese.MessageType == MessageType.UpdateGame)
+      //  {
+      //    UpdateInfo updateInfo = JsonConvert.DeserializeObject<UpdateInfo>((string)upResponese.Data);
+      //    foreach (PlayerInfo playerInfo in updateInfo.Players)
+      //    {
+      //      _players.Add(playerInfo.Username, playerInfo);
+      //    }
+      //    foreach (GameInfo gameInfo in updateInfo.Games)
+      //    {
+      //      _games.Add(gameInfo.GameName, gameInfo);
+      //    }
+      //  }
+      //  else
+      //  {
+      //    ProcessError(upResponese);
+      //  }
+      //});
 
-      sending.Start();
+      //sending.Start();
 
-      await sending;
+      //await sending;
     }
 
     public async Task<bool> SendCreateGameRequest(string gameName, int numberOfPlayers)
     {
       Task<bool> sending = new Task<bool>(() =>
       {
-        string message = JsonConvert.SerializeObject(_requestFactory.CreateCreateGameRequest(_username, gameName, numberOfPlayers));
-        _client.Send(Encoding.ASCII.GetBytes(message));
+        //string message = JsonConvert.SerializeObject(_requestFactory.CreateCreateGameRequest(_username, gameName, numberOfPlayers));
+        //_client.Send(Encoding.ASCII.GetBytes(message));
 
-        _size = _client.Receive(_buffer);
-        message = Encoding.ASCII.GetString(_buffer, 0, _size);
-        Message createGameResponese = JsonConvert.DeserializeObject<Message>(message);
+        //_size = _client.Receive(_buffer);
+        //message = Encoding.ASCII.GetString(_buffer, 0, _size);
+        //Message createGameResponese = JsonConvert.DeserializeObject<Message>(message);
 
-        if (createGameResponese.MessageType == MessageType.Confirmation)
-        {
-          return (bool)createGameResponese.Data;
-        }
-        else
-        {
-          ProcessError(createGameResponese);
-          return false;
-        }
+        //if (createGameResponese.MessageType == MessageType.Confirmation)
+        //{
+        //  return (bool)createGameResponese.Data;
+        //}
+        //else
+        //{
+        //  ProcessError(createGameResponese);
+        //  return false;
+        //}
+        return true;
       });
 
       sending.Start();
@@ -292,22 +282,23 @@ namespace Risk.Networking.Client
     {
       Task<bool> sending = new Task<bool>(() =>
       {
-        string message = JsonConvert.SerializeObject(_requestFactory.CreateConnectToGameRequest(_username, gameName));
-        _client.Send(Encoding.ASCII.GetBytes(message));
+        //string message = JsonConvert.SerializeObject(_requestFactory.CreateConnectToGameRequest(_username, gameName));
+        //_client.Send(Encoding.ASCII.GetBytes(message));
 
-        _size = _client.Receive(_buffer);
-        message = Encoding.ASCII.GetString(_buffer, 0, _size);
-        Message connectResponse = JsonConvert.DeserializeObject<Message>(message);
+        //_size = _client.Receive(_buffer);
+        //message = Encoding.ASCII.GetString(_buffer, 0, _size);
+        //Message connectResponse = JsonConvert.DeserializeObject<Message>(message);
 
-        if (connectResponse.MessageType == MessageType.Confirmation)
-        {
-          return (bool)connectResponse.Data;
-        }
-        else
-        {
-          ProcessError(connectResponse);
-          return false;
-        }
+        //if (connectResponse.MessageType == MessageType.Confirmation)
+        //{
+        //  return (bool)connectResponse.Data;
+        //}
+        //else
+        //{
+        //  ProcessError(connectResponse);
+        //  return false;
+        //}
+        return true;
       });
 
       sending.Start();

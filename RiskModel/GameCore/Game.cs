@@ -74,24 +74,43 @@ namespace Risk.Model.GameCore
 
     private Attack _capturing;
 
+    private int _capacity;
+
     private IList<IPlayer> _players;
 
     private Dictionary<ArmyColor, PlayerInfo> _playersInfo;
 
-    public Game(bool isClassic)
+    public Game(bool isClassic, int capacity)
     {
+      _capacity = capacity < 3 ? 3 : capacity;
+
       _players = new List<IPlayer>();
       _gameBoard = GameSettings.GetGameBoard(isClassic);
     }
 
     public bool AddPlayer(IPlayer player)
     {
-      if (_players.Count >= 6)
+      if (_players.Count < _capacity)
       {
         _players.Add(player);
         return true;
       }
       return false;
+    }
+
+    public GamePlanInfo GetGamePlan()
+    {
+      Area[] areas = new Area[_gameBoard.Areas.Length];
+      Array.Copy(_gameBoard.Areas, areas, _gameBoard.Areas.Length);
+
+      bool[][] connections = new bool[_gameBoard.Connections.Length][];
+      for (int i = 0; i < _gameBoard.Connections.Length; ++i)
+      {
+        connections[i] = new bool[_gameBoard.Connections[i].Length];
+        Array.Copy(_gameBoard.Connections[i], connections[i], _gameBoard.Connections[i].Length);
+      }
+
+      return new GamePlanInfo(connections, areas);
     }
 
     public void StartGame()
@@ -102,9 +121,29 @@ namespace Risk.Model.GameCore
 
         SetUpPlayersOrder();
 
+        StartAllPlayer();
+
         PlaySetUpPhase();
 
         PlayToTheEnd();
+
+        EndAllPlayer();
+      }
+    }
+
+    private void StartAllPlayer()
+    {
+      foreach (var player in _players)
+      {
+        player.StartPlayer(this);
+      }
+    }
+
+    private void EndAllPlayer()
+    {
+      foreach (var player in _players)
+      {
+        player.EndPlayer(_playersInfo[player.PlayerColor].IsAlive);
       }
     }
 
@@ -282,6 +321,8 @@ namespace Risk.Model.GameCore
             _playersInfo[move.PlayerColor].FreeUnits -= move.NumberOfUnit;
             _currentPlayer.FreeUnit -= move.NumberOfUnit;
 
+            UpdateAllPlayers(_gameBoard.Areas[move.AreaID]);
+
             return MoveResult.OK;
           }
           else
@@ -335,6 +376,9 @@ namespace Risk.Model.GameCore
           {
             _gameBoard.Areas[move.FromAreaID].SizeOfArmy -= move.SizeOfArmy;
             _gameBoard.Areas[move.ToAreaID].SizeOfArmy += move.SizeOfArmy;
+
+            UpdateAllPlayers(_gameBoard.Areas[move.FromAreaID]);
+            UpdateAllPlayers(_gameBoard.Areas[move.ToAreaID]);
 
             return MoveResult.OK;
           }
@@ -398,6 +442,9 @@ namespace Risk.Model.GameCore
             _gameBoard.Areas[_capturing.AttackerAreaID].SizeOfArmy -= move.ArmyToMove;
             _gameBoard.Areas[_capturing.DefenderAreaID].SizeOfArmy += move.ArmyToMove;
 
+            UpdateAllPlayers(_gameBoard.Areas[_capturing.AttackerAreaID]);
+            UpdateAllPlayers(_gameBoard.Areas[_capturing.DefenderAreaID]);
+
             return MoveResult.OK;
           }
           else
@@ -430,6 +477,8 @@ namespace Risk.Model.GameCore
 
               _gameBoard.Areas[move.AreaID].SizeOfArmy++;
               _playersInfo[move.PlayerColor].FreeUnits--;
+
+              UpdateAllPlayers(_gameBoard.Areas[move.AreaID]);
 
               return MoveResult.OK;
             }
@@ -487,7 +536,7 @@ namespace Risk.Model.GameCore
 
     private bool CanAttack(Attack move)
     {
-      return _gameBoard.Board[move.AttackerAreaID][move.DefenderAreaID] && (int)move.AttackSize < _gameBoard.Areas[move.AttackerAreaID].SizeOfArmy;
+      return _gameBoard.Connections[move.AttackerAreaID][move.DefenderAreaID] && (int)move.AttackSize < _gameBoard.Areas[move.AttackerAreaID].SizeOfArmy;
     }
 
     private MoveResult MakeAttack(Attack move)
@@ -532,6 +581,9 @@ namespace Risk.Model.GameCore
           _playersInfo[defColor].Cards.Clear();
         }
 
+        UpdateAllPlayers(_gameBoard.Areas[move.AttackerAreaID]);
+        UpdateAllPlayers(_gameBoard.Areas[move.DefenderAreaID]);
+
         if (IsWinner())
         {
           return MoveResult.Winner;
@@ -555,6 +607,17 @@ namespace Risk.Model.GameCore
         }
       }
       return false;
+    }
+
+    private async void UpdateAllPlayers(Area area)
+    {
+      foreach (var player in _players)
+      {
+        if (player != _currentPlayer)
+        {
+          await player.UpdateGame(area);
+        }
+      }
     }
   }
 }

@@ -7,7 +7,7 @@ namespace Risk.Model.GamePlan
 {
   public sealed class GameBoard
   {
-    public bool[][] Board { get; private set; }
+    public bool[][] Connections { get; private set; }
 
     public Area[] Areas { get; private set; }
 
@@ -27,10 +27,10 @@ namespace Risk.Model.GamePlan
     {
       ArmyForRegion = armyForRegion;
 
-      Board = new bool[countOfAreas][];
+      Connections = new bool[countOfAreas][];
       for (int i = 0; i < countOfAreas; i++)
       {
-        Board[i] = new bool[countOfAreas];
+        Connections[i] = new bool[countOfAreas];
       }
 
       Areas = new Area[countOfAreas];
@@ -172,9 +172,9 @@ namespace Risk.Model.GamePlan
 
           visited.Add(areaID);
 
-          for (int i = 0; i < Board[areaID].Length; ++i)
+          for (int i = 0; i < Connections[areaID].Length; ++i)
           {
-            if (Board[areaID][i] && Areas[i].ArmyColor == fromColor && !visited.Contains(i))
+            if (Connections[areaID][i] && Areas[i].ArmyColor == fromColor && !visited.Contains(i))
             {
               toVisit.Enqueue(i);
             }

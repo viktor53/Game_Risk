@@ -335,8 +335,8 @@ namespace Risk.Model.Factories
 
     private static void CreateEdge(GameBoard board, int id1, int id2)
     {
-      board.Board[id1][id2] = true;
-      board.Board[id2][id1] = true;
+      board.Connections[id1][id2] = true;
+      board.Connections[id2][id1] = true;
     }
   }
 }

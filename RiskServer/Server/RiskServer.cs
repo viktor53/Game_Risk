@@ -1,4 +1,5 @@
 ﻿using Risk.Networking.Messages;
+using Risk.Networking.Messages.Data;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -21,7 +22,15 @@ namespace Risk.Networking.Server
 
     private int _maxLengthConQueue;
 
-    public ICollection<string> Players { get; set; }
+    private object _playersLock;
+
+    private IDictionary<string, IClientManager> _players;
+
+    private HashSet<IClientManager> _playersInMenu;
+
+    private object _gameRoomsLock;
+
+    private IDictionary<string, IGameRoom> _gameRooms;
 
     public RiskServer() : this("localhost", 1100, 100)
     {
@@ -40,7 +49,11 @@ namespace Risk.Networking.Server
       _hostNameOrAddress = hostNameOrAddress;
       _port = port;
       _maxLengthConQueue = maxLengthConQueue;
-      Players = new HashSet<string>();
+      _playersLock = new object();
+      _players = new Dictionary<string, IClientManager>();
+      _gameRoomsLock = new object();
+      _gameRooms = new Dictionary<string, IGameRoom>();
+      _playersInMenu = new HashSet<IClientManager>();
 
       Debug.WriteLine("**Server inicialization: host={0} port={1} maxLengthConQueue={2} OK", _hostNameOrAddress, _port, _maxLengthConQueue);
     }
@@ -83,65 +96,91 @@ namespace Risk.Networking.Server
       Socket listener = (Socket)result.AsyncState;
       Socket handler = listener.EndAccept(result);
 
-      Client client = new Client(handler, this, new ResponseFactory());
-      client.StartAsync();
+      IClientManager client = new Player(handler, this);
+      client.SartListening();
     }
 
-    //public void ReadCallback(IAsyncResult result)
-    //{
-    //  string content = string.Empty;
-
-    //  Player state = (Player)result.AsyncState;
-    //  Socket handler = state.connection;
-
-    //  int bytesRead = handler.EndReceive(result);
-
-    //  if (bytesRead > 0)
-    //  {
-    //    state.sb.Append(Encoding.ASCII.GetString(state.buffer, 0, bytesRead));
-
-    //    content = state.sb.ToString();
-
-    //    Send(handler, content);
-
-    //    Debug.WriteLine("**Server received: " + content);
-
-    //    if (content.IndexOf("<EOF>") <= -1)
-    //    {
-    //      handler.BeginReceive(state.buffer, 0, Player.bufferSize, 0, new AsyncCallback(ReadCallback), state);
-    //    }
-    //    else
-    //    {
-    //      Send(handler, content);
-
-    //      handler.Shutdown(SocketShutdown.Both);
-    //      handler.Close();
-    //    }
-
-    //  }
-    //}
-
-    public void Send(Socket handler, string data)
+    public bool AddPlayer(string name, IClientManager player)
     {
-      byte[] byteData = Encoding.ASCII.GetBytes(data);
-
-      handler.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallBack), handler);
+      lock (_playersLock)
+      {
+        if (!_players.ContainsKey(name))
+        {
+          Debug.Write($"** Add new Player: {name}", "Server");
+          _players.Add(name, player);
+          _playersInMenu.Add(player);
+          return true;
+        }
+        return false;
+      }
     }
 
-    public void SendCallBack(IAsyncResult result)
+    public void LogOutPlayer(string name)
     {
-      try
+      lock (_playersLock)
       {
-        Socket handler = (Socket)result.AsyncState;
-
-        int byteSent = handler.EndSend(result);
-
-        Debug.WriteLine(byteSent);
+        Debug.Write($"** LogOut player: {name}", "Server");
+        _playersInMenu.Remove(_players[name]);
+        _players.Remove(name);
       }
-      catch (Exception e)
+    }
+
+    public bool CreateGame(CreateGameRoomInfo gameRoom, string playerName)
+    {
+      bool result = false;
+      lock (_gameRoomsLock)
       {
-        Debug.WriteLine("**Server ERROR: " + e.StackTrace);
+        if (!_gameRooms.ContainsKey(gameRoom.RoomName))
+        {
+          Debug.Write($"** Create new Room: {gameRoom.RoomName}", "Server");
+          _gameRooms.Add(gameRoom.RoomName, new GameRoom(gameRoom.RoomName, gameRoom.Capacity, gameRoom.IsClassic));
+          _gameRooms[gameRoom.RoomName].AddPlayer(_players[playerName]);
+          _playersInMenu.Remove(_players[playerName]);
+
+          result = true;
+        }
       }
+      SendUpdateToAll();
+      return result;
+    }
+
+    public bool ConnectToGame(string playerName, string gameName)
+    {
+      if (_gameRooms[gameName].AddPlayer(_players[playerName]))
+      {
+        _playersInMenu.Remove(_players[playerName]);
+        if (_gameRooms[gameName].IsFull())
+        {
+          _gameRooms[gameName].StartGame();
+          lock (_gameRoomsLock)
+          {
+            _gameRooms.Remove(gameName);
+          }
+        }
+        SendUpdateToAll();
+      }
+      return false;
+    }
+
+    private async void SendUpdateToAll()
+    {
+      await Task.Run(() =>
+      {
+        List<GameRoomInfo> roomsInfo = new List<GameRoomInfo>();
+
+        lock (_gameRoomsLock)
+        {
+          foreach (var room in _gameRooms)
+          {
+            roomsInfo.Add(new GameRoomInfo(room.Value.RoomName, room.Value.Capacity, room.Value.Connected));
+          }
+        }
+
+        foreach (var player in _playersInMenu)
+        {
+          player.SendUpdateGameList(roomsInfo);
+        }
+      });
     }
   }
 }

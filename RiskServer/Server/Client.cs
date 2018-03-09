@@ -25,17 +25,13 @@ namespace Risk.Networking.Server
 
     private byte[] _buffer;
 
-    private IResponseFactory _responseFactory;
-
     private string _uknownReqResponse;
 
-    public Client(Socket handler, RiskServer server, IResponseFactory responseFactory)
+    public Client(Socket handler, RiskServer server)
     {
       _handler = handler;
       _server = server;
       _buffer = new byte[_bufferSize];
-      _responseFactory = responseFactory;
-      _uknownReqResponse = JsonConvert.SerializeObject(_responseFactory.CreateErrorResponse(new Error(Enums.ErrorType.UknownRequest, "Uknown request. It is bad request or it does not know.")));
     }
 
     public async void StartAsync()
@@ -47,8 +43,6 @@ namespace Risk.Networking.Server
         Message message = null;
 
         message = WaitForTypeMessage(MessageType.Registration);
-
-        response = JsonConvert.SerializeObject(_responseFactory.CreateConfirmationResponse(false));
 
         JsonSerializer s = new JsonSerializer();
 
@@ -83,9 +77,17 @@ namespace Risk.Networking.Server
 
       while (message.MessageType != messageType)
       {
+        Task.Run(() =>
+        {
+          _handler.Send(Encoding.ASCII.GetBytes(request));
+        });
+        Task.Run(() =>
+        {
+          bytes = _handler.Receive(_buffer);
+        }).Wait();
         _handler.Send(Encoding.ASCII.GetBytes(request));
 
-        bytes = _handler.Receive(_buffer);
+        //bytes = _handler.Receive(_buffer);
         request = Encoding.ASCII.GetString(_buffer, 0, bytes);
         message = JsonConvert.DeserializeObject<Message>(request);
       }

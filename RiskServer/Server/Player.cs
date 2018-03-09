@@ -12,11 +12,15 @@ using Newtonsoft.Json;
 using Risk.Networking.Messages;
 using Risk.Networking.Enums;
 using Risk.Model.GameCore.Moves;
+using Risk.Model.GamePlan;
+using Risk.Networking.Messages.Data;
 
 namespace Risk.Networking.Server
 {
-  internal class Player : IPlayer
+  internal class Player : IClientManager
   {
+    private object _sendingLock;
+
     private Socket _connection;
 
     private const int _bufferSize = 1024;
@@ -25,21 +29,27 @@ namespace Risk.Networking.Server
 
     private JsonSerializer _serializer;
 
-    private Game _game;
+    private RiskServer _server;
+
+    public IGame _game;
 
     public IList<RiskCard> Cards { get; private set; }
 
     public int FreeUnit { get; set; }
 
-    public ArmyColor PlayerColor { get; private set; }
+    public ArmyColor PlayerColor { get; set; }
 
-    public Player(Socket connection, ArmyColor playerColor, Game game)
+    public string PlayerName { get; private set; }
+
+    public IGameRoom GameRoom { get; set; }
+
+    public Player(Socket connection, RiskServer server)
     {
       _connection = connection;
-      PlayerColor = playerColor;
       _buffer = new byte[_bufferSize];
       _serializer = new JsonSerializer();
-      _game = game;
+      _sendingLock = new object();
+      _server = server;
     }
 
     public void PlayAttack()
@@ -47,8 +57,7 @@ namespace Risk.Networking.Server
       bool isNextPhase = false;
       while (!isNextPhase)
       {
-        int lengthOfData = _connection.Receive(_buffer);
-        Message m = JsonConvert.DeserializeObject<Message>(Encoding.ASCII.GetString(_buffer, 0, lengthOfData));
+        Message m = ReceiveMessage();
         switch (m.MessageType)
         {
           case MessageType.AttackMove:
@@ -73,11 +82,12 @@ namespace Risk.Networking.Server
 
     public void PlayDraft()
     {
+      SendYourTurnMessage();
+
       bool isNextPhase = false;
       while (!isNextPhase)
       {
-        int lengthOfData = _connection.Receive(_buffer);
-        Message m = JsonConvert.DeserializeObject<Message>(Encoding.ASCII.GetString(_buffer, 0, lengthOfData));
+        Message m = ReceiveMessage();
         switch (m.MessageType)
         {
           case MessageType.DraftMove:
@@ -105,8 +115,7 @@ namespace Risk.Networking.Server
       bool isNextPhase = false;
       while (!isNextPhase)
       {
-        int lengthOfData = _connection.Receive(_buffer);
-        Message m = JsonConvert.DeserializeObject<Message>(Encoding.ASCII.GetString(_buffer, 0, lengthOfData));
+        Message m = ReceiveMessage();
         switch (m.MessageType)
         {
           case MessageType.FortifyMove:
@@ -128,11 +137,11 @@ namespace Risk.Networking.Server
     public void PlaySetUp()
     {
       SendYourTurnMessage();
+
       bool isCorrect = false;
       while (!isCorrect)
       {
-        int lengthOfData = _connection.Receive(_buffer);
-        Message m = JsonConvert.DeserializeObject<Message>(Encoding.ASCII.GetString(_buffer, 0, lengthOfData));
+        Message m = ReceiveMessage();
         switch (m.MessageType)
         {
           case MessageType.SetUpMove:
@@ -148,6 +157,15 @@ namespace Risk.Networking.Server
       }
     }
 
+    public Task UpdateGame(Area area)
+    {
+      return Task.Run(() =>
+      {
+        Message m = new Message(MessageType.UpdateGame, area);
+        SendMessage(m);
+      });
+    }
+
     private T GetMove<T>(JObject data)
     {
       using (JTokenReader reader = new JTokenReader(data))
@@ -159,19 +177,191 @@ namespace Risk.Networking.Server
     private void SendYourTurnMessage()
     {
       Message m = new Message(MessageType.YourTurn, null);
-      _connection.Send(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(m)));
+      SendMessage(m);
     }
 
     private void SendMoveResult(MoveResult result)
     {
       Message m = new Message(MessageType.MoveResult, result);
-      _connection.Send(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(m)));
+      SendMessage(m);
     }
 
     private void SendErrorMessage()
     {
-      Message m = new Message(MessageType.Error, null);
-      _connection.Send(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(m)));
+      Message m = new Message(MessageType.Error, new Error(ErrorType.UknownRequest, "Uknown or bad request!"));
+      SendMessage(m);
+    }
+
+    private void SendMessage(Message m)
+    {
+      lock (_sendingLock)
+      {
+        _connection.Send(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(m)));
+      }
+    }
+
+    private Message ReceiveMessage()
+    {
+      int lengthOfData = _connection.Receive(_buffer);
+      return JsonConvert.DeserializeObject<Message>(Encoding.ASCII.GetString(_buffer, 0, lengthOfData));
+    }
+
+    public void StartPlayer(IGame game)
+    {
+      _game = game;
+      Message m = new Message(MessageType.InitializeGame, GameRoom.GetBoardInfo(_game.GetGamePlan()));
+      Task.Run(() =>
+      {
+        SendMessage(m);
+      });
+    }
+
+    public void EndPlayer(bool isWinner)
+    {
+      Task.Run(() =>
+      {
+        Message m = new Message(MessageType.EndGame, isWinner);
+        SendMessage(m);
+      });
+    }
+
+    public Task SendNewPlayerConnected(string name)
+    {
+      return Task.Run(() =>
+      {
+        List<string> players = new List<string>();
+        players.Add(name);
+        Message m = new Message(MessageType.UpdatePlayerListAdd, players);
+        SendMessage(m);
+      });
+    }
+
+    public Task SendPlayerLeave(string name)
+    {
+      return Task.Run(() =>
+      {
+        List<string> players = new List<string>();
+        players.Add(name);
+        Message m = new Message(MessageType.UpdatePlayerListRemove, players);
+        SendMessage(m);
+      });
+    }
+
+    public Task SendConnectedPlayers(IList<string> names)
+    {
+      return Task.Run(() =>
+      {
+        Message m = new Message(MessageType.UpdatePlayerListAdd, names);
+        SendMessage(m);
+      });
+    }
+
+    public Task<bool> WaitUntilPlayerIsReady()
+    {
+      return Task.Run(() =>
+      {
+        Message m = new Message(MessageType.ReadyTag, null);
+        SendMessage(m);
+
+        while (true)
+        {
+          Message received = ReceiveMessage();
+          switch (received.MessageType)
+          {
+            case MessageType.ReadyTag:
+              return true;
+
+            case MessageType.Leave:
+              return false;
+
+            default:
+              SendErrorMessage();
+              break;
+          }
+        }
+      });
+    }
+
+    public Task SartListening()
+    {
+      return Task.Run(() =>
+      {
+        bool isCorrect = false;
+        while (!isCorrect)
+        {
+          Message m = ReceiveMessage();
+          switch (m.MessageType)
+          {
+            case MessageType.Registration:
+              if (_server.AddPlayer((string)m.Data, this))
+              {
+                SendMessage(new Message(MessageType.Confirmation, true));
+                isCorrect = true;
+              }
+              else
+              {
+                SendMessage(new Message(MessageType.Error, new Error(ErrorType.NameExist, "Player with this name already exists!")));
+              }
+              break;
+
+            case MessageType.Logout:
+              return;
+
+            default:
+              SendErrorMessage();
+              break;
+          }
+        }
+
+        bool isInGameOrLeave = false;
+        while (!isInGameOrLeave)
+        {
+          Message m = ReceiveMessage();
+          switch (m.MessageType)
+          {
+            case MessageType.CreateGame:
+              if (_server.CreateGame(GetMove<CreateGameRoomInfo>((JObject)m.Data), PlayerName))
+              {
+                SendMessage(new Message(MessageType.Confirmation, true));
+                isInGameOrLeave = true;
+              }
+              else
+              {
+                SendMessage(new Message(MessageType.Error, new Error(ErrorType.GameNameExist, "Game with this name already exists!")));
+              }
+              break;
+
+            case MessageType.ConnectToGame:
+              if (_server.ConnectToGame(PlayerName, (string)m.Data))
+              {
+                SendMessage(new Message(MessageType.Confirmation, true));
+                isInGameOrLeave = true;
+              }
+              else
+              {
+                SendMessage(new Message(MessageType.Error, new Error(ErrorType.GameIsFull, "This game is already full!")));
+              }
+              break;
+
+            case MessageType.Logout:
+              _server.LogOutPlayer(PlayerName);
+              return;
+
+            default:
+              SendErrorMessage();
+              break;
+          }
+        }
+      });
+    }
+
+    public Task SendUpdateGameList(IList<GameRoomInfo> roomsInfo)
+    {
+      return Task.Run(() =>
+      {
+        Message m = new Message(MessageType.UpdateGameList, roomsInfo);
+        SendMessage(m);
+      });
     }
   }
 }

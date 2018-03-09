@@ -78,6 +78,7 @@
     <Compile Include="GamePlan\Dice.cs" />
     <Compile Include="GamePlan\GameBoard.cs" />
     <Compile Include="Factories\IGameBoardFactory.cs" />
+    <Compile Include="GamePlan\GamePlanInfo.cs" />
     <Compile Include="Interfacies\IUnitFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Units\Cannon.cs" />

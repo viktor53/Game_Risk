@@ -5,14 +5,17 @@ using System.Text;
 using System.Threading.Tasks;
 using Risk.Model.Enums;
 using Risk.Model.GameCore.Moves;
+using Risk.Model.GamePlan;
 
 namespace Risk.Model.GameCore
 {
-  internal interface IGame
+  public interface IGame
   {
     void StartGame();
 
     bool AddPlayer(IPlayer player);
+
+    GamePlanInfo GetGamePlan();
 
     MoveResult MakeMove(SetUp move);
 

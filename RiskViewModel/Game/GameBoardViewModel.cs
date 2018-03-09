@@ -16,6 +16,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Globalization;
 using Risk.Model.Enums;
+using Risk.Networking.Messages.Data;
 
 namespace Risk.ViewModel.Game
 {
@@ -24,6 +25,12 @@ namespace Risk.ViewModel.Game
     private IWindowManager _windowManager;
 
     private ViewModelBase _gameDialog;
+
+    private const int _diameter = 70;
+
+    private const int _radius = 70 / 2;
+
+    private const int _heightOfPanel = 80;
 
     private bool _isEnabled;
 
@@ -245,11 +252,12 @@ namespace Risk.ViewModel.Game
           b = Y * ran.Next(Ym) / Ym + ya;
           correct = IsCorrect(a, b, coords);
         }
-        coords.Add(new Coordinates(a, b));
-        ais.Add(new AreaInfo(a, b, game.Areas[i]));
+        var co = new Coordinates(a, b);
+        coords.Add(co);
+        ais.Add(new AreaInfo(co, game.Areas[i]));
       }
 
-      GameBoardInfo gbi = new GameBoardInfo(game.Board, ais);
+      GameBoardInfo gbi = new GameBoardInfo(game.Connections, ais);
 
       _connections = gbi.Connections;
       LoadMap(gbi);
@@ -279,7 +287,7 @@ namespace Risk.ViewModel.Game
 
       foreach (var ai in gbi.AreaInfos)
       {
-        Planet p = new Planet(ai.X, ai.Y, Properties.Resources.planet1, ai.Area, Planet_Click);
+        Planet p = new Planet(ai.Position.X, ai.Position.Y, Properties.Resources.planet1, ai.Area, Planet_Click);
         _planets.Insert(p.Area.ID, p);
       }
 
@@ -289,7 +297,7 @@ namespace Risk.ViewModel.Game
         {
           if (gbi.Connections[i][j])
           {
-            MapItems.Add(new Connection(_planets[i].X + 70 / 2, _planets[i].Y + 70 / 2, _planets[j].X + 70 / 2, _planets[j].Y + 70 / 2));
+            MapItems.Add(new Connection(_planets[i].X + _radius, _planets[i].Y + _radius, _planets[j].X + _radius, _planets[j].Y + _radius));
           }
         }
       }
@@ -484,13 +492,9 @@ namespace Risk.ViewModel.Game
 
     private Planet GetClickedPlanet(int x, int y)
     {
-      const int diameter = 70;
-      const int radius = 70 / 2;
-      const int heightOfPanel = 80;
-
       foreach (var pl in _planets)
       {
-        if (GetDistance(x, y - heightOfPanel, pl.X + radius, pl.Y + radius) <= diameter)
+        if (GetDistance(x, y - _heightOfPanel, pl.X + _radius, pl.Y + _radius) <= _diameter)
         {
           return pl;
         }
@@ -613,19 +617,6 @@ namespace Risk.ViewModel.Game
       Y = y;
       X2 = x2;
       Y2 = y2;
-    }
-  }
-
-  internal class Coordinates
-  {
-    public int X { get; set; }
-
-    public int Y { get; set; }
-
-    public Coordinates(int x, int y)
-    {
-      X = x;
-      Y = y;
     }
   }
 }
