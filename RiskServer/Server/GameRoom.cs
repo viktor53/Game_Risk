@@ -15,6 +15,8 @@ namespace Risk.Networking.Server
 
     private GameBoardInfo _gameInfo;
 
+    private RiskServer _server;
+
     private object _playersLock;
 
     private Dictionary<string, IClientManager> _players;
@@ -39,13 +41,14 @@ namespace Risk.Networking.Server
       }
     }
 
-    public GameRoom(string roomName, int capacity, bool isClassic)
+    public GameRoom(string roomName, int capacity, bool isClassic, RiskServer server)
     {
       RoomName = roomName;
       _capacity = capacity < 3 ? 3 : capacity;
       _game = new Game(isClassic, _capacity);
       _playersLock = new object();
       _players = new Dictionary<string, IClientManager>();
+      _server = server;
     }
 
     public bool AddPlayer(IClientManager player)
@@ -60,11 +63,16 @@ namespace Risk.Networking.Server
           }
           _players.Add(player.PlayerName, player);
           player.PlayerColor = Model.Enums.ArmyColor.Green + _players.Count;
-          player.SendConnectedPlayers(_players.Keys.ToList());
+
           return true;
         }
         return false;
       }
+    }
+
+    public IList<string> GetPlayers()
+    {
+      return _players.Keys.ToList();
     }
 
     public GameBoardInfo GetBoardInfo(GamePlanInfo gamePlan)

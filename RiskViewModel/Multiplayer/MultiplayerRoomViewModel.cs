@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Risk.ViewModel.Game;
 using Risk.Networking.Client;
+using System.Threading;
 
 namespace Risk.ViewModel.Multiplayer
 {
@@ -19,6 +20,8 @@ namespace Risk.ViewModel.Multiplayer
     private bool _isEnableb = true;
 
     private string _text = "";
+
+    private SynchronizationContext _ui;
 
     public ICommand Ready_Click { get; private set; }
 
@@ -52,14 +55,16 @@ namespace Risk.ViewModel.Multiplayer
       }
     }
 
-    public MultiplayerRoomViewModel(IWindowManager windowManager, RiskClient client)
+    public MultiplayerRoomViewModel(IWindowManager windowManager, RiskClient client, SynchronizationContext ui)
     {
       _windowManager = windowManager;
       _client = client;
+      _client.OnUpdate += OnUpdate;
 
       Ready_Click = new Command(ReadyClick);
       Cancel_Click = new Command(CancelClick);
 
+      _ui = ui;
       Players = new ObservableCollection<string>();
 
       Players.Add("PlayerOne");
@@ -78,6 +83,15 @@ namespace Risk.ViewModel.Multiplayer
     private void CancelClick()
     {
       _windowManager.WindowViewModel = new MultiplayerViewModel(_windowManager, _client);
+    }
+
+    private void OnUpdate(object sender, EventArgs e)
+    {
+      _ui.Send(x => Players.Clear(), null);
+      foreach (var player in _client.Players)
+      {
+        _ui.Send(x => Players.Add(player), null);
+      }
     }
   }
 }

@@ -24,7 +24,9 @@ namespace Risk.ViewModel.Multiplayer
 
     private bool _isEnabled = true;
 
-    private SynchronizationContext ui;
+    private SynchronizationContext _ui;
+
+    private GameRoomInfo _room;
 
     public ICommand BackToMenu_Click { get; private set; }
 
@@ -42,6 +44,8 @@ namespace Risk.ViewModel.Multiplayer
       {
         _dialogViewModel = value;
         OnPropertyChanged("DialogViewModel");
+        _client.OnConfirmation += OnConfirmation;
+        _client.OnUpdate += OnUpdate;
       }
     }
 
@@ -57,8 +61,6 @@ namespace Risk.ViewModel.Multiplayer
         OnPropertyChanged("IsEnabled");
       }
     }
-
-    private GameRoomInfo _room;
 
     public GameRoomInfo Room
     {
@@ -80,14 +82,15 @@ namespace Risk.ViewModel.Multiplayer
       _widnowManager = windowManager;
       _client = client;
       _client.OnUpdate += OnUpdate;
-      _client.ListenToUpdates();
+      _client.OnConfirmation += OnConfirmation;
+      _client.StartListenToUpdates();
 
       BackToMenu_Click = new Command(BackToMenuClick);
       CreateGame_Click = new Command(CreateGameClick);
       ConnectToGame_Click = new Command(ConnectToGameClick);
 
       Rooms = new ObservableCollection<GameRoomInfo>();
-      ui = SynchronizationContext.Current;
+      _ui = SynchronizationContext.Current;
     }
 
     private void BackToMenuClick()
@@ -98,7 +101,9 @@ namespace Risk.ViewModel.Multiplayer
 
     private void CreateGameClick()
     {
-      DialogViewModel = new CreateGameDialogViewModel(_widnowManager, this, _client);
+      _client.OnConfirmation -= OnConfirmation;
+      _client.OnUpdate -= OnUpdate;
+      DialogViewModel = new CreateGameDialogViewModel(_widnowManager, this, _client, _ui);
       IsEnabled = false;
     }
 
@@ -106,28 +111,32 @@ namespace Risk.ViewModel.Multiplayer
     {
       if (Room != null)
       {
-        await _client.SendConnectToGameRequest(Room.RoomName).ContinueWith((result) =>
-        {
-          if (result.Result)
-          {
-            _widnowManager.WindowViewModel = new MultiplayerRoomViewModel(_widnowManager, _client);
-          }
-          else
-          {
-            DialogViewModel = new ConnectToGameErrorDialogViewModel(this);
-            IsEnabled = false;
-          }
-        });
+        await _client.SendConnectToGameRequest(Room.RoomName);
       }
     }
 
     private void OnUpdate(object sender, EventArgs ev)
     {
-      ui.Send(x => Rooms.Clear(), null);
+      _ui.Send(x => Rooms.Clear(), null);
       foreach (var room in _client.Rooms)
       {
         Debug.WriteLine($"{room.RoomName}, {room.Connected}, {room.Capacity}", "Client");
-        ui.Send(x => Rooms.Add(room), null);
+        _ui.Send(x => Rooms.Add(room), null);
+      }
+    }
+
+    private void OnConfirmation(object sender, EventArgs ev)
+    {
+      if (((ConfirmationEventArgs)ev).Data)
+      {
+        _client.OnConfirmation -= OnConfirmation;
+        _client.OnUpdate -= OnUpdate;
+        _widnowManager.WindowViewModel = new MultiplayerRoomViewModel(_widnowManager, _client, _ui);
+      }
+      else
+      {
+        DialogViewModel = new ConnectToGameErrorDialogViewModel(this);
+        IsEnabled = false;
       }
     }
   }

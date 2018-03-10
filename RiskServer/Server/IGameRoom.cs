@@ -25,5 +25,7 @@ namespace Risk.Networking.Server
     void LeaveGame(string playerName);
 
     GameBoardInfo GetBoardInfo(GamePlanInfo gamePlan);
+
+    IList<string> GetPlayers();
   }
 }

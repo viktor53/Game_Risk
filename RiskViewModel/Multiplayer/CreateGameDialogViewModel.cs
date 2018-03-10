@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Risk.Networking.Messages.Data;
+using System.Threading;
 
 namespace Risk.ViewModel.Multiplayer
 {
@@ -25,6 +26,8 @@ namespace Risk.ViewModel.Multiplayer
     private string _map;
 
     private string _error;
+
+    private SynchronizationContext _ui;
 
     public ICommand Create_Click { get; private set; }
 
@@ -86,11 +89,13 @@ namespace Risk.ViewModel.Multiplayer
 
     public ObservableCollection<int> NumberOfPlayers { get; private set; }
 
-    public CreateGameDialogViewModel(IWindowManager windowManager, IMultiplayerMenuViewModel multiplayerViewModel, RiskClient client)
+    public CreateGameDialogViewModel(IWindowManager windowManager, IMultiplayerMenuViewModel multiplayerViewModel, RiskClient client, SynchronizationContext ui)
     {
       _multiplayerViewModel = multiplayerViewModel;
       _windowManager = windowManager;
       _client = client;
+      _client.OnConfirmation += OnConfirmation;
+      _ui = ui;
 
       Create_Click = new Command(CreateClick);
       Cancel_Click = new Command(CancelClick);
@@ -101,21 +106,26 @@ namespace Risk.ViewModel.Multiplayer
 
     private async void CreateClick()
     {
-      bool result = await _client.SendCreateGameRequest(new CreateGameRoomInfo(GameName, Players, Map == "Default"));
-      if (result)
-      {
-        _windowManager.WindowViewModel = new MultiplayerRoomViewModel(_windowManager, _client);
-      }
-      else
-      {
-        Error = "Game with this name already exists!";
-      }
+      await _client.SendCreateGameRequest(new CreateGameRoomInfo(GameName, Players, Map == "Default"));
     }
 
     private void CancelClick()
     {
       _multiplayerViewModel.DialogViewModel = null;
       _multiplayerViewModel.IsEnabled = true;
+    }
+
+    private void OnConfirmation(object sender, EventArgs ev)
+    {
+      if (((ConfirmationEventArgs)ev).Data)
+      {
+        _client.OnConfirmation -= OnConfirmation;
+        _windowManager.WindowViewModel = new MultiplayerRoomViewModel(_windowManager, _client, _ui);
+      }
+      else
+      {
+        Error = "Game with this name already exists!";
+      }
     }
 
     private ObservableCollection<string> CreateMaps()

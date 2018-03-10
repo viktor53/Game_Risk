@@ -17,6 +17,16 @@ using Newtonsoft.Json.Linq;
 
 namespace Risk.Networking.Client
 {
+  public class ConfirmationEventArgs : EventArgs
+  {
+    public bool Data { get; private set; }
+
+    public ConfirmationEventArgs(bool data)
+    {
+      Data = data;
+    }
+  }
+
   public class RiskClient
   {
     private Socket _client;
@@ -37,6 +47,10 @@ namespace Risk.Networking.Client
 
     public event EventHandler OnUpdate;
 
+    public event EventHandler OnUpdateRoom;
+
+    public event EventHandler OnConfirmation;
+
     private IList<GameRoomInfo> _rooms;
 
     public IList<GameRoomInfo> Rooms
@@ -50,6 +64,28 @@ namespace Risk.Networking.Client
         _rooms = value;
         OnUpdate?.Invoke(this, new EventArgs());
       }
+    }
+
+    private IList<string> _players;
+
+    public IList<string> Players => _players;
+
+    private void AddPlayers(IList<string> names)
+    {
+      foreach (var name in names)
+      {
+        Players.Add(name);
+      }
+      OnUpdate?.Invoke(this, new EventArgs());
+    }
+
+    private void RemovePlayer(IList<string> names)
+    {
+      foreach (var name in names)
+      {
+        Players.Remove(name);
+      }
+      OnUpdate?.Invoke(this, new EventArgs());
     }
 
     public RiskClient() : this("localhost", 11000)
@@ -73,6 +109,8 @@ namespace Risk.Networking.Client
       _serializer = new JsonSerializer();
 
       _listen = true;
+
+      _players = new List<string>();
 
       Debug.WriteLine("**Client inicialization: OK");
     }
@@ -111,10 +149,11 @@ namespace Risk.Networking.Client
       });
     }
 
-    public async void ListenToUpdates()
+    public async void StartListenToUpdates()
     {
       await Task.Run(() =>
       {
+        _listen = true;
         while (_listen)
         {
           Message m;
@@ -122,13 +161,37 @@ namespace Risk.Networking.Client
           lock (_receiveLock)
           {
             m = ReceiveMessage();
-          }
+            switch (m.MessageType)
+            {
+              case MessageType.UpdateGameList:
+                Rooms = GetData<IList<GameRoomInfo>>((JArray)m.Data);
+                break;
 
-          if (m.MessageType == MessageType.UpdateGameList)
-          {
-            Rooms = GetData<IList<GameRoomInfo>>((JArray)m.Data);
+              case MessageType.UpdatePlayerListAdd:
+                AddPlayers(GetData<IList<string>>((JArray)m.Data));
+                break;
+
+              case MessageType.UpdatePlayerListRemove:
+                RemovePlayer(GetData<IList<string>>((JArray)m.Data));
+                break;
+
+              case MessageType.Confirmation:
+                OnConfirmation?.Invoke(this, new ConfirmationEventArgs((bool)m.Data));
+                break;
+
+              default:
+                break;
+            }
           }
         }
+      });
+    }
+
+    public async void StopListenToUpdates()
+    {
+      await Task.Run(() =>
+      {
+        _listen = false;
       });
     }
 
@@ -145,19 +208,10 @@ namespace Risk.Networking.Client
       return await Task.Run(() =>
       {
         Message mess = new Message(MessageType.ConnectToGame, gameName);
-        _client.Send(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(mess)));
 
-        mess = ReceiveMessage();
+        SendMessage(mess);
 
-        if (mess.MessageType == MessageType.Confirmation)
-        {
-          return (bool)mess.Data;
-        }
-        else
-        {
-          ProcessError(mess);
-          return false;
-        }
+        return true;
       });
     }
 
@@ -166,19 +220,10 @@ namespace Risk.Networking.Client
       return await Task.Run(() =>
       {
         Message mess = new Message(MessageType.CreateGame, roomInfo);
+
         SendMessage(mess);
 
-        mess = ReceiveMessage();
-
-        if (mess.MessageType == MessageType.Confirmation)
-        {
-          return (bool)mess.Data;
-        }
-        else
-        {
-          ProcessError(mess);
-          return false;
-        }
+        return true;
       });
     }
 
@@ -186,6 +231,7 @@ namespace Risk.Networking.Client
     {
       await Task.Run(() =>
       {
+        _listen = false;
         Message mess = new Message(MessageType.Logout, null);
         SendMessage(mess);
       });

@@ -31,7 +31,7 @@ namespace Risk.Networking.Server
 
     private RiskServer _server;
 
-    public IGame _game;
+    private IGame _game;
 
     public IList<RiskCard> Cards { get; private set; }
 
@@ -326,6 +326,7 @@ namespace Risk.Networking.Server
               if (_server.CreateGame(GetData<CreateGameRoomInfo>((JObject)m.Data), PlayerName))
               {
                 SendMessage(new Message(MessageType.Confirmation, true));
+
                 isInGameOrLeave = true;
               }
               else
@@ -338,6 +339,7 @@ namespace Risk.Networking.Server
               if (_server.ConnectToGame(PlayerName, (string)m.Data))
               {
                 SendMessage(new Message(MessageType.Confirmation, true));
+
                 isInGameOrLeave = true;
               }
               else
@@ -355,6 +357,8 @@ namespace Risk.Networking.Server
               break;
           }
         }
+
+        SendConnectedPlayers(GameRoom.GetPlayers());
       });
     }
 

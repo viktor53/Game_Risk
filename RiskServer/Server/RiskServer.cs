@@ -133,9 +133,10 @@ namespace Risk.Networking.Server
         if (!_gameRooms.ContainsKey(gameRoom.RoomName))
         {
           Debug.WriteLine($"** Create new Room: {gameRoom.RoomName}", "Server");
-          _gameRooms.Add(gameRoom.RoomName, new GameRoom(gameRoom.RoomName, gameRoom.Capacity, gameRoom.IsClassic));
+          _gameRooms.Add(gameRoom.RoomName, new GameRoom(gameRoom.RoomName, gameRoom.Capacity, gameRoom.IsClassic, this));
           _gameRooms[gameRoom.RoomName].AddPlayer(_players[playerName]);
           _playersInMenu.Remove(_players[playerName]);
+          _players[playerName].GameRoom = _gameRooms[gameRoom.RoomName];
 
           result = true;
         }
@@ -148,6 +149,7 @@ namespace Risk.Networking.Server
     {
       if (_gameRooms.ContainsKey(gameName) && _gameRooms[gameName].AddPlayer(_players[playerName]))
       {
+        _players[playerName].GameRoom = _gameRooms[gameName];
         _playersInMenu.Remove(_players[playerName]);
         if (_gameRooms[gameName].IsFull())
         {
