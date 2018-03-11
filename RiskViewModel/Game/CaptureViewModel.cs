@@ -48,6 +48,11 @@ namespace Risk.ViewModel.Game
 
       MinSizeOfArmy = attackSize;
 
+      if (MaxSizeOfArmy == MinSizeOfArmy)
+      {
+        Army = MaxSizeOfArmy;
+      }
+
       Action_Click = new Command(MoveClick);
     }
 

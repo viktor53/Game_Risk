@@ -31,7 +31,16 @@ namespace Risk.ViewModel.Game
     {
       Client.OnMoveResult += OnMoveResult;
 
-      MaxSizeOfAttack = GameBoardVM.Selected1.SizeOfArmy - 1;
+      int max = GameBoardVM.Selected1.SizeOfArmy - 1;
+
+      if (max > 3)
+      {
+        MaxSizeOfAttack = 3;
+      }
+      else
+      {
+        MaxSizeOfAttack = max;
+      }
 
       Action_Click = new Command(AttackClick);
     }

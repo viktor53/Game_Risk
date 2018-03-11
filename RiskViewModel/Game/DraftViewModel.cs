@@ -11,9 +11,26 @@ namespace Risk.ViewModel.Game
 {
   public class DraftViewModel : ActionViewModelBase
   {
+    private int _maxSizeOfArmy;
+
+    public int MaxSizeOfArmy
+    {
+      get
+      {
+        return _maxSizeOfArmy;
+      }
+      set
+      {
+        _maxSizeOfArmy = value;
+        OnPropertyChanged("MaxSizeOfArmy");
+      }
+    }
+
     public DraftViewModel(IGameBoardViewModel gameBoardVM, RiskClient client) : base(gameBoardVM, client)
     {
       Client.OnMoveResult += OnMoveResult;
+
+      MaxSizeOfArmy = GameBoardVM.FreeArmy;
 
       Action_Click = new Command(AddArmyClick);
     }

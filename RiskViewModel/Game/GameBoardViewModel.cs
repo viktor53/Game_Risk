@@ -78,6 +78,16 @@ namespace Risk.ViewModel.Game
         if (_gameDialog == null)
         {
           _client.OnMoveResult += OnMoveResult;
+          switch (CurrentPhase)
+          {
+            case Phase.ATTACK:
+              WhoCanAttack();
+              break;
+
+            default:
+              EnableAllPlanet(true);
+              break;
+          }
         }
         OnPropertyChanged("GameDialogViewModel");
       }
@@ -212,15 +222,10 @@ namespace Risk.ViewModel.Game
       _client.ListenToGameCommands();
 
       BG = Properties.Resources.bg1;
-
       CurrentPhase = Phase.SETUP;
-
       Turn = Turn.ENEMY;
-
       NumberCards = 0;
-
       IsEnabled = false;
-
       FreeArmy = 0;
 
       Planet_Click = new Command(PlanetClick);
@@ -272,14 +277,17 @@ namespace Risk.ViewModel.Game
         {
           IsEnabled = false;
           FreeArmy--;
+          Turn = Turn.ENEMY;
         }
         else
         {
-          CurrentPhase = (Phase)(((int)CurrentPhase + 1) % 4);
+          int i = ((int)CurrentPhase + 1) % 4;
+          CurrentPhase = (Phase)i;
           if (CurrentPhase == Phase.SETUP)
           {
             IsEnabled = false;
             CurrentPhase = Phase.DRAFT;
+            Turn = Turn.ENEMY;
           }
           switch (CurrentPhase)
           {
@@ -315,6 +323,8 @@ namespace Risk.ViewModel.Game
         Planet p = new Planet(ai.Position.X, ai.Position.Y, Properties.Resources.planet1, ai.Area, Planet_Click);
         _planets.Insert(p.ID, p);
       }
+
+      _connections = gbi.Connections;
 
       for (int i = 0; i < gbi.Connections.Count; ++i)
       {

@@ -37,7 +37,6 @@
           </Border>
         </Grid>
         <StackPanel Grid.Row="1" Orientation="Horizontal">
-          <Button Style="{StaticResource MenuButton}" Content="Cancel" Margin="10,0,10,10" Command="{Binding Cancel_Click}" />
           <Border BorderBrush="Black" BorderThickness="2" Background="#FF323232" CornerRadius="3" Margin="10,5,10,20">
             <Slider x:Name="SliderArmy" Style="{StaticResource Horizontal_Slider}" Minimum="{Binding MinSizeOfArmy}" Maximum="{Binding MaxSizeOfArmy}" TickFrequency="1" Width="100" Margin="10,5,10,5" IsSnapToTickEnabled="True" Value="{Binding Army}" />
           </Border>

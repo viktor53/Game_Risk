@@ -38,7 +38,9 @@ namespace Risk.Networking.Server
 
     private int _freeUnit;
 
-    public IList<RiskCard> Cards { get; private set; }
+    private IList<RiskCard> _cards;
+
+    public IList<RiskCard> Cards => _cards;
 
     public int FreeUnit
     {
@@ -77,6 +79,7 @@ namespace Risk.Networking.Server
       _server = server;
       _listeningLock = new object();
       _listenToReady = false;
+      _cards = new List<RiskCard>();
     }
 
     public void PlayAttack()
@@ -150,6 +153,7 @@ namespace Risk.Networking.Server
             break;
 
           case MessageType.NextPhase:
+            SendMoveResult(MoveResult.OK);
             isNextPhase = true;
             break;
 

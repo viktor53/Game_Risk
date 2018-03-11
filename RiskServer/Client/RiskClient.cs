@@ -108,7 +108,20 @@ namespace Risk.Networking.Client
 
     public event EventHandler OnYourTurn;
 
-    public event EventHandler OnMoveResult;
+    private event EventHandler _onMoveresult;
+
+    public event EventHandler OnMoveResult
+    {
+      add
+      {
+        _onMoveresult = null;
+        _onMoveresult += value;
+      }
+      remove
+      {
+        _onMoveresult = null;
+      }
+    }
 
     public event EventHandler OnFreeUnit;
 
@@ -269,10 +282,11 @@ namespace Risk.Networking.Client
         while (!end)
         {
           Message m = ReceiveMessage();
+
           switch (m.MessageType)
           {
             case MessageType.YourTurn:
-              OnYourTurn(this, new ConfirmationEventArgs((bool)m.Data));
+              OnYourTurn?.Invoke(this, new ConfirmationEventArgs((bool)m.Data));
               break;
 
             case MessageType.UpdateGame:
@@ -284,7 +298,7 @@ namespace Risk.Networking.Client
               break;
 
             case MessageType.MoveResult:
-              OnMoveResult?.Invoke(this, new MoveResultEventArgs((long)m.Data));
+              _onMoveresult?.Invoke(this, new MoveResultEventArgs((long)m.Data));
               break;
 
             case MessageType.ArmyColor:
@@ -292,7 +306,7 @@ namespace Risk.Networking.Client
               break;
 
             case MessageType.EndGame:
-              OnEndGame(this, new EventArgs());
+              OnEndGame?.Invoke(this, new EventArgs());
               end = true;
               break;
           }

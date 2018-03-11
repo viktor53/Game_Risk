@@ -59,6 +59,7 @@ namespace Risk.Model.GameCore
         PlayerColor = playerColor;
         FreeUnits = freeUnits;
         IsAlive = true;
+        Cards = new List<RiskCard>();
       }
     }
 
@@ -121,7 +122,7 @@ namespace Risk.Model.GameCore
       {
         SetUpPlayerInfo();
 
-        SetUpPlayersOrder();
+        //SetUpPlayersOrder();
 
         StartAllPlayer();
 
@@ -155,10 +156,12 @@ namespace Risk.Model.GameCore
 
       foreach (var player in _players)
       {
-        player.FreeUnit = GameSettings.GetStartNumberFreeUnit(_players.Count);
+        //player.FreeUnit = GameSettings.GetStartNumberFreeUnit(_players.Count);
+        player.FreeUnit = 2;
       }
 
-      for (int i = 0; i < GameSettings.GetStartNumberFreeUnit(_players.Count); ++i)
+      // GameSettings.GetStartNumberFreeUnit(_players.Count)
+      for (int i = 0; i < 2; ++i)
       {
         foreach (var player in _players)
         {
@@ -305,7 +308,8 @@ namespace Risk.Model.GameCore
     private void SetUpPlayerInfo()
     {
       _playersInfo = new Dictionary<ArmyColor, PlayerInfo>();
-      int numberFreeUnits = GameSettings.GetStartNumberFreeUnit(_players.Count);
+      //int numberFreeUnits = GameSettings.GetStartNumberFreeUnit(_players.Count);
+      int numberFreeUnits = 2;
       foreach (var player in _players)
       {
         _playersInfo.Add(player.PlayerColor, new PlayerInfo(player.PlayerColor, numberFreeUnits));
@@ -458,6 +462,8 @@ namespace Risk.Model.GameCore
             UpdateAllPlayers(_gameBoard.Areas[_capturing.AttackerAreaID]);
             UpdateAllPlayers(_gameBoard.Areas[_capturing.DefenderAreaID]);
 
+            _isAreaCaptured = false;
+
             return MoveResult.OK;
           }
           else
@@ -556,7 +562,7 @@ namespace Risk.Model.GameCore
     private MoveResult MakeAttack(Attack move)
     {
       int[] attRoll = _gameBoard.Dice.RollDice((int)move.AttackSize);
-      int[] defRoll = _gameBoard.Areas[move.DefenderAreaID].SizeOfArmy < 2 ? _gameBoard.Dice.RollDice(1) : _gameBoard.Dice.RollDice(2);
+      int[] defRoll = _gameBoard.Areas[move.DefenderAreaID].SizeOfArmy > 2 ? _gameBoard.Dice.RollDice(2) : _gameBoard.Dice.RollDice(1);
 
       int attDied = 0;
       int defDied = 0;
@@ -574,6 +580,8 @@ namespace Risk.Model.GameCore
 
       _gameBoard.Areas[move.AttackerAreaID].SizeOfArmy -= attDied;
       _gameBoard.Areas[move.DefenderAreaID].SizeOfArmy -= defDied;
+
+      MoveResult result = MoveResult.OK;
 
       if (_gameBoard.Areas[move.DefenderAreaID].SizeOfArmy == 0)
       {
@@ -595,20 +603,20 @@ namespace Risk.Model.GameCore
           _playersInfo[defColor].Cards.Clear();
         }
 
-        UpdateAllPlayers(_gameBoard.Areas[move.AttackerAreaID]);
-        UpdateAllPlayers(_gameBoard.Areas[move.DefenderAreaID]);
-
         if (IsWinner())
         {
-          return MoveResult.Winner;
+          result = MoveResult.Winner;
         }
         else
         {
-          return MoveResult.AreaCaptured;
+          result = MoveResult.AreaCaptured;
         }
       }
 
-      return MoveResult.OK;
+      UpdateAllPlayers(_gameBoard.Areas[move.AttackerAreaID]);
+      UpdateAllPlayers(_gameBoard.Areas[move.DefenderAreaID]);
+
+      return result;
     }
 
     private bool IsDefenderAlive(ArmyColor defenderColor)
