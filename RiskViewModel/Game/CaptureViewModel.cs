@@ -5,13 +5,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Input;
 
 namespace Risk.ViewModel.Game
 {
-  public class FortifyViewModel : ActionViewModelBase
+  public class CaptureViewModel : ActionViewModelBase
   {
     private int _maxSizeOfArmy;
+
+    private int _minSizeOfArmy;
 
     public int MaxSizeOfArmy
     {
@@ -26,18 +27,33 @@ namespace Risk.ViewModel.Game
       }
     }
 
-    public FortifyViewModel(IGameBoardViewModel gameBoardVM, RiskClient client) : base(gameBoardVM, client)
+    public int MinSizeOfArmy
+    {
+      get
+      {
+        return _minSizeOfArmy;
+      }
+      set
+      {
+        _minSizeOfArmy = value;
+        OnPropertyChanged("MinSizeOfArmy");
+      }
+    }
+
+    public CaptureViewModel(IGameBoardViewModel gameBoardVM, int attackSize, RiskClient client) : base(gameBoardVM, client)
     {
       Client.OnMoveResult += OnMoveResult;
 
-      MaxSizeOfArmy = GameBoardVM.Selected1.SizeOfArmy - 1;
+      MaxSizeOfArmy = gameBoardVM.Selected1.SizeOfArmy - 1;
 
-      Action_Click = new Command(MoveArmyClick);
+      MinSizeOfArmy = attackSize;
+
+      Action_Click = new Command(MoveClick);
     }
 
-    private void MoveArmyClick()
+    private void MoveClick()
     {
-      Client.SendFortifyMove(GameBoardVM.PlayerColor, GameBoardVM.Selected1.ID, GameBoardVM.Selected2.ID, Army);
+      Client.SendCaptureMove(GameBoardVM.PlayerColor, Army);
     }
 
     private void OnMoveResult(object sender, EventArgs ev)

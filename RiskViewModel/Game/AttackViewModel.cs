@@ -1,22 +1,65 @@
-﻿using System;
+﻿using Risk.Model.Enums;
+using Risk.Networking.Client;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 
 namespace Risk.ViewModel.Game
 {
-  public class AttackViewModel: ActionViewModelBase
+  public class AttackViewModel : ActionViewModelBase
   {
-    public AttackViewModel(IGameBoardViewModel gameBoardVM): base(gameBoardVM)
+    private int _maxSizeOfAttack;
+
+    public int MaxSizeOfAttack
     {
+      get
+      {
+        return _maxSizeOfAttack;
+      }
+      set
+      {
+        _maxSizeOfAttack = value;
+        OnPropertyChanged("MaxSizeOfAttack");
+      }
+    }
+
+    public AttackViewModel(IGameBoardViewModel gameBoardVM, RiskClient client) : base(gameBoardVM, client)
+    {
+      Client.OnMoveResult += OnMoveResult;
+
+      MaxSizeOfAttack = GameBoardVM.Selected1.SizeOfArmy - 1;
+
       Action_Click = new Command(AttackClick);
     }
 
     private void AttackClick()
     {
+      Client.SendAttackMove(GameBoardVM.PlayerColor, GameBoardVM.Selected1.ID, GameBoardVM.Selected2.ID, (AttackSize)Army);
+    }
 
+    private void OnMoveResult(object sender, EventArgs ev)
+    {
+      MoveResult mr = (MoveResult)((MoveResultEventArgs)ev).Data;
+      switch (mr)
+      {
+        case MoveResult.OK:
+          Client.OnMoveResult -= OnMoveResult;
+          GameBoardVM.GameDialogViewModel = null;
+          break;
+
+        case MoveResult.AreaCaptured:
+          Client.OnMoveResult -= OnMoveResult;
+          GameBoardVM.GameDialogViewModel = new CaptureViewModel(GameBoardVM, Army, Client);
+          break;
+
+        default:
+          ErrorText = $"Move ends with error {mr}";
+          break;
+      }
     }
   }
 }

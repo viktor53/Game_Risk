@@ -58,6 +58,8 @@ namespace Risk.ViewModel.Game
 
     private Planet _selected2;
 
+    private bool _firstClick = true;
+
     public ICommand Planet_Click { get; private set; }
 
     public ICommand Next_Click { get; private set; }
@@ -73,6 +75,10 @@ namespace Risk.ViewModel.Game
       set
       {
         _gameDialog = value;
+        if (_gameDialog == null)
+        {
+          _client.OnMoveResult += OnMoveResult;
+        }
         OnPropertyChanged("GameDialogViewModel");
       }
     }
@@ -260,7 +266,6 @@ namespace Risk.ViewModel.Game
     private void OnMoveResult(object sender, EventArgs ev)
     {
       MoveResult mr = (MoveResult)((MoveResultEventArgs)ev).Data;
-      if (CurrentPhase == Phase.SETUP) IsEnabled = false;
       if (mr == MoveResult.OK)
       {
         if (CurrentPhase == Phase.SETUP)
@@ -275,6 +280,21 @@ namespace Risk.ViewModel.Game
           {
             IsEnabled = false;
             CurrentPhase = Phase.DRAFT;
+          }
+          switch (CurrentPhase)
+          {
+            case Phase.ATTACK:
+              _firstClick = true;
+              WhoCanAttack();
+              break;
+
+            case Phase.FORTIFY:
+              EnableAllPlanet(true);
+              _firstClick = true;
+              break;
+
+            default:
+              break;
           }
         }
       }
@@ -313,8 +333,6 @@ namespace Risk.ViewModel.Game
       }
     }
 
-    private bool firstClick = true;
-
     private void PlanetClick()
     {
       System.Windows.Point p = Mouse.GetPosition(Application.Current.MainWindow);
@@ -344,7 +362,7 @@ namespace Risk.ViewModel.Game
       }
       else
       {
-        firstClick = true;
+        _firstClick = true;
         switch (CurrentPhase)
         {
           case Phase.DRAFT:
@@ -358,6 +376,9 @@ namespace Risk.ViewModel.Game
           case Phase.FORTIFY:
             EnableAllPlanet(true);
             break;
+
+          default:
+            break;
         }
       }
     }
@@ -367,24 +388,6 @@ namespace Risk.ViewModel.Game
       if (CurrentPhase != Phase.SETUP)
       {
         _client.SendNextPhase();
-      }
-      CurrentPhase += 1 % 3;
-
-      switch (CurrentPhase)
-      {
-        case Phase.DRAFT:
-          Turn = Turn.ENEMY;
-          break;
-
-        case Phase.ATTACK:
-          firstClick = true;
-          WhoCanAttack();
-          break;
-
-        case Phase.FORTIFY:
-          EnableAllPlanet(true);
-          firstClick = true;
-          break;
       }
     }
 
@@ -405,13 +408,14 @@ namespace Risk.ViewModel.Game
       if (!IsEnemy(planet))
       {
         Selected1 = planet;
-        GameDialogViewModel = new DraftViewModel(this);
+        _client.OnMoveResult -= OnMoveResult;
+        GameDialogViewModel = new DraftViewModel(this, _client);
       }
     }
 
     private void AttackClick(Planet planet)
     {
-      if (firstClick && planet.SizeOfArmy > 1)
+      if (_firstClick && planet.SizeOfArmy > 1)
       {
         WhoCanBeAttacked(planet);
 
@@ -419,7 +423,7 @@ namespace Risk.ViewModel.Game
 
         Selected1 = planet;
 
-        firstClick = false;
+        _firstClick = false;
       }
       else
       {
@@ -433,9 +437,11 @@ namespace Risk.ViewModel.Game
 
           Selected2 = planet;
 
-          firstClick = false;
+          _firstClick = true;
 
-          GameDialogViewModel = new AttackViewModel(this);
+          _client.OnMoveResult -= OnMoveResult;
+
+          GameDialogViewModel = new AttackViewModel(this, _client);
         }
       }
     }
@@ -485,7 +491,7 @@ namespace Risk.ViewModel.Game
 
     private void FortifyClick(Planet planet)
     {
-      if (firstClick)
+      if (_firstClick)
       {
         if (!IsEnemy(planet) && planet.SizeOfArmy > 1)
         {
@@ -495,16 +501,18 @@ namespace Risk.ViewModel.Game
 
           planet.IsEnabled = true;
 
-          firstClick = false;
+          _firstClick = false;
         }
       }
       else
       {
         Selected2 = planet;
 
-        GameDialogViewModel = new FortifyViewModel(this);
+        _client.OnMoveResult -= OnMoveResult;
 
-        firstClick = true;
+        _firstClick = true;
+
+        GameDialogViewModel = new FortifyViewModel(this, _client);
       }
     }
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Risk.Model.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,6 +11,8 @@ namespace Risk.ViewModel.Game
   {
     ViewModelBase GameDialogViewModel { get; set; }
 
+    ArmyColor PlayerColor { get; }
+
     bool IsEnabled { get; set; }
 
     int FreeArmy { get; set; }
@@ -17,6 +20,5 @@ namespace Risk.ViewModel.Game
     Planet Selected1 { get; }
 
     Planet Selected2 { get; }
-
   }
 }

@@ -28,7 +28,7 @@ namespace Risk.Networking.Server
 
     private byte[] _buffer;
 
-    private JsonSerializer _serializer;
+    private Deserializer _deserializer;
 
     private RiskServer _server;
 
@@ -72,7 +72,7 @@ namespace Risk.Networking.Server
     {
       _connection = connection;
       _buffer = new byte[_bufferSize];
-      _serializer = new JsonSerializer();
+      _deserializer = new Deserializer();
       _sendingLock = new object();
       _server = server;
       _listeningLock = new object();
@@ -88,11 +88,11 @@ namespace Risk.Networking.Server
         switch (m.MessageType)
         {
           case MessageType.AttackMove:
-            SendMoveResult(_game.MakeMove(GetData<Attack>((JObject)m.Data)));
+            SendMoveResult(_game.MakeMove(_deserializer.DeserializeAttackMove((JObject)m.Data)));
             break;
 
           case MessageType.CaptureMove:
-            SendMoveResult(_game.MakeMove(GetData<Capture>((JObject)m.Data)));
+            SendMoveResult(_game.MakeMove(_deserializer.DeserilizeCaptureMove((JObject)m.Data)));
             break;
 
           case MessageType.NextPhase:
@@ -118,11 +118,11 @@ namespace Risk.Networking.Server
         switch (m.MessageType)
         {
           case MessageType.DraftMove:
-            SendMoveResult(_game.MakeMove(GetData<Draft>((JObject)m.Data)));
+            SendMoveResult(_game.MakeMove(_deserializer.DeserializeDraftMove((JObject)m.Data)));
             break;
 
           case MessageType.ExchangeCardsMove:
-            SendMoveResult(_game.MakeMove(GetData<ExchangeCard>((JObject)m.Data)));
+            SendMoveResult(_game.MakeMove(_deserializer.DeserializeExchangeCardMove((JObject)m.Data)));
             break;
 
           case MessageType.NextPhase:
@@ -146,12 +146,11 @@ namespace Risk.Networking.Server
         switch (m.MessageType)
         {
           case MessageType.FortifyMove:
-            SendMoveResult(_game.MakeMove(GetData<Fortify>((JObject)m.Data)));
+            SendMoveResult(_game.MakeMove(_deserializer.DeserializeFortifyMove((JObject)m.Data)));
             break;
 
           case MessageType.NextPhase:
             isNextPhase = true;
-            SendMoveResult(MoveResult.OK);
             break;
 
           default:
@@ -172,8 +171,7 @@ namespace Risk.Networking.Server
         switch (m.MessageType)
         {
           case MessageType.SetUpMove:
-            var jo = (JObject)m.Data;
-            MoveResult result = _game.MakeMove(new SetUp((ArmyColor)GetData<long>(jo["PlayerColor"]), (int)GetData<long>(jo["AreaID"])));
+            MoveResult result = _game.MakeMove(_deserializer.DeserializeSetUpMove((JObject)m.Data));
             SendMoveResult(result);
             isCorrect = result == MoveResult.OK ? true : false;
             break;
@@ -192,14 +190,6 @@ namespace Risk.Networking.Server
         Message m = new Message(MessageType.UpdateGame, area);
         SendMessage(m);
       });
-    }
-
-    private T GetData<T>(JToken data)
-    {
-      using (JTokenReader reader = new JTokenReader(data))
-      {
-        return _serializer.Deserialize<T>(reader);
-      }
     }
 
     private void SendYourTurnMessage(bool isSetUp)
@@ -370,7 +360,7 @@ namespace Risk.Networking.Server
           switch (m.MessageType)
           {
             case MessageType.CreateGame:
-              if (_server.CreateGame(GetData<CreateGameRoomInfo>((JObject)m.Data), PlayerName))
+              if (_server.CreateGame(_deserializer.GetData<CreateGameRoomInfo>((JObject)m.Data), PlayerName))
               {
                 SendMessage(new Message(MessageType.Confirmation, true));
 

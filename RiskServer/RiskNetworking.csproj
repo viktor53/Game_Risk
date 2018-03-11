@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Deserializer.cs" />
     <Compile Include="Enums\ErrorType.cs" />
     <Compile Include="Enums\MessageType.cs" />
     <Compile Include="Exceptions\ServerErrorException.cs" />
@@ -58,7 +59,6 @@
     <Compile Include="Messages\Data\Error.cs" />
     <Compile Include="Messages\IMessage.cs" />
     <Compile Include="Messages\Message.cs" />
-    <Compile Include="Player.cs" />
     <Compile Include="Client\RiskClient.cs" />
     <Compile Include="Messages\Data\AreaInfo.cs" />
     <Compile Include="Messages\Data\GameBoardInfo.cs" />

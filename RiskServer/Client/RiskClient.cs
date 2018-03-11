@@ -96,7 +96,7 @@ namespace Risk.Networking.Client
 
     private bool _listen;
 
-    private JsonSerializer _serializer;
+    private Deserializer _deserializer;
 
     public event EventHandler OnUpdate;
 
@@ -171,7 +171,7 @@ namespace Risk.Networking.Client
 
       _receiveLock = new object();
 
-      _serializer = new JsonSerializer();
+      _deserializer = new Deserializer();
 
       _listen = false;
 
@@ -232,15 +232,15 @@ namespace Risk.Networking.Client
               switch (m.MessageType)
               {
                 case MessageType.UpdateGameList:
-                  Rooms = GetData<IList<GameRoomInfo>>((JArray)m.Data);
+                  Rooms = _deserializer.GetData<IList<GameRoomInfo>>((JArray)m.Data);
                   break;
 
                 case MessageType.UpdatePlayerListAdd:
-                  AddPlayers(GetData<IList<string>>((JArray)m.Data));
+                  AddPlayers(_deserializer.GetData<IList<string>>((JArray)m.Data));
                   break;
 
                 case MessageType.UpdatePlayerListRemove:
-                  RemovePlayer(GetData<IList<string>>((JArray)m.Data));
+                  RemovePlayer(_deserializer.GetData<IList<string>>((JArray)m.Data));
                   break;
 
                 case MessageType.Confirmation:
@@ -248,10 +248,7 @@ namespace Risk.Networking.Client
                   break;
 
                 case MessageType.InitializeGame:
-                  var jo = (JObject)m.Data;
-                  IList<IList<bool>> con = GetData<IList<IList<bool>>>(jo["Connections"]);
-                  var areas = GetData<List<AreaInfo>>(jo["AreaInfos"]);
-                  OnInicialization?.Invoke(this, new InicializationEventArgs(new GameBoardInfo(con, areas)));
+                  OnInicialization?.Invoke(this, new InicializationEventArgs(_deserializer.DeserializeGameBoardInfo((JObject)m.Data)));
                   _listen = false;
                   break;
 
@@ -279,7 +276,7 @@ namespace Risk.Networking.Client
               break;
 
             case MessageType.UpdateGame:
-              OnUpdate?.Invoke(this, new UpdateGameEventArgs(DeserializeArea((JObject)m.Data)));
+              OnUpdate?.Invoke(this, new UpdateGameEventArgs(_deserializer.DeserializeArea((JObject)m.Data)));
               break;
 
             case MessageType.FreeUnit:
@@ -303,28 +300,12 @@ namespace Risk.Networking.Client
       });
     }
 
-    private Area DeserializeArea(JObject data)
-    {
-      Area a = new Area((int)GetData<long>(data["ID"]), (int)GetData<long>(data["RegionID"]));
-      a.ArmyColor = (ArmyColor)GetData<long>(data["ArmyColor"]);
-      a.SizeOfArmy = (int)GetData<long>(data["SizeOfArmy"]);
-      return a;
-    }
-
     public async void StopListenToUpdates()
     {
       await Task.Run(() =>
       {
         _listen = false;
       });
-    }
-
-    private T GetData<T>(JToken data)
-    {
-      using (JTokenReader reader = new JTokenReader(data))
-      {
-        return _serializer.Deserialize<T>(reader);
-      }
     }
 
     public async Task<bool> SendConnectToGameRequest(string gameName)
@@ -421,6 +402,15 @@ namespace Risk.Networking.Client
       await Task.Run(() =>
       {
         Message mess = new Message(MessageType.FortifyMove, new Fortify(playerColor, fromAreaID, toAreaID, sizeOfArmy));
+        SendMessage(mess);
+      });
+    }
+
+    public async void SendCaptureMove(ArmyColor playerColor, int armyToMove)
+    {
+      await Task.Run(() =>
+      {
+        Message mess = new Message(MessageType.CaptureMove, new Capture(playerColor, armyToMove));
         SendMessage(mess);
       });
     }
