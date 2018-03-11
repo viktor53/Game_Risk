@@ -77,7 +77,7 @@ namespace Risk.ViewModel.Game
         _gameDialog = value;
         if (_gameDialog == null)
         {
-          _client.OnMoveResult += OnMoveResult;
+          _client.OnMoveResult += OnMoveResultNextPhase;
           switch (CurrentPhase)
           {
             case Phase.ATTACK:
@@ -218,7 +218,8 @@ namespace Risk.ViewModel.Game
       _client.OnFreeUnit += OnFreeUnit;
       _client.OnArmyColor += OnArmyColor;
       _client.OnYourTurn += OnYourTurn;
-      _client.OnMoveResult += OnMoveResult;
+      _client.OnMoveResult += OnMoveResultSetUp;
+      _client.OnUpdateCard += OnUpdateCard;
       _client.ListenToGameCommands();
 
       BG = Properties.Resources.bg1;
@@ -253,6 +254,19 @@ namespace Risk.ViewModel.Game
       PlayerColor = (ArmyColor)color;
     }
 
+    private void OnUpdateCard(object sender, EventArgs ev)
+    {
+      bool isAdd = ((UpdateCardEventArgs)ev).Data;
+      if (isAdd)
+      {
+        NumberCards++;
+      }
+      else
+      {
+        NumberCards--;
+      }
+    }
+
     private void OnYourTurn(object sender, EventArgs ev)
     {
       bool isSetUp = ((ConfirmationEventArgs)ev).Data;
@@ -261,51 +275,76 @@ namespace Risk.ViewModel.Game
       if (isSetUp)
       {
         CurrentPhase = Phase.SETUP;
+        _client.OnMoveResult += OnMoveResultSetUp;
       }
       else
       {
         CurrentPhase = Phase.DRAFT;
+        _client.OnMoveResult += OnMoveResultNextPhase;
       }
     }
 
-    private void OnMoveResult(object sender, EventArgs ev)
+    private void OnMoveResultSetUp(object sender, EventArgs ev)
     {
       MoveResult mr = (MoveResult)((MoveResultEventArgs)ev).Data;
       if (mr == MoveResult.OK)
       {
+        IsEnabled = false;
+        FreeArmy--;
+        Turn = Turn.ENEMY;
+      }
+      else
+      {
+        IsEnabled = false;
+        GameDialogViewModel = new ErrorViewModel(this, $"Move ends with error: {mr}");
+      }
+    }
+
+    private void OnMoveResultNextPhase(object sender, EventArgs ev)
+    {
+      MoveResult mr = (MoveResult)((MoveResultEventArgs)ev).Data;
+      if (mr == MoveResult.OK)
+      {
+        int i = ((int)CurrentPhase + 1) % 4;
+        CurrentPhase = (Phase)i;
         if (CurrentPhase == Phase.SETUP)
         {
           IsEnabled = false;
-          FreeArmy--;
+          CurrentPhase = Phase.DRAFT;
           Turn = Turn.ENEMY;
         }
-        else
+        switch (CurrentPhase)
         {
-          int i = ((int)CurrentPhase + 1) % 4;
-          CurrentPhase = (Phase)i;
-          if (CurrentPhase == Phase.SETUP)
-          {
-            IsEnabled = false;
-            CurrentPhase = Phase.DRAFT;
-            Turn = Turn.ENEMY;
-          }
-          switch (CurrentPhase)
-          {
-            case Phase.ATTACK:
-              _firstClick = true;
-              WhoCanAttack();
-              break;
+          case Phase.ATTACK:
+            _firstClick = true;
+            WhoCanAttack();
+            break;
 
-            case Phase.FORTIFY:
-              EnableAllPlanet(true);
-              _firstClick = true;
-              break;
+          case Phase.FORTIFY:
+            EnableAllPlanet(true);
+            _firstClick = true;
+            break;
 
-            default:
-              break;
-          }
+          default:
+            break;
         }
       }
+      else
+      {
+        IsEnabled = false;
+        GameDialogViewModel = new ErrorViewModel(this, $"Move ends with error: {mr}");
+      }
+    }
+
+    private void OnMoveResultCard(object sender, EventArgs ev)
+    {
+      MoveResult mr = (MoveResult)((MoveResultEventArgs)ev).Data;
+      if (mr == MoveResult.InvalidCombination)
+      {
+        IsEnabled = false;
+        GameDialogViewModel = new ErrorViewModel(this, $"No combination of card.");
+      }
+      _client.OnMoveResult += OnMoveResultNextPhase;
     }
 
     private int GetDistance(int x1, int y1, int x2, int y2)
@@ -405,6 +444,8 @@ namespace Risk.ViewModel.Game
     {
       if (CurrentPhase == Phase.DRAFT)
       {
+        _client.OnMoveResult += OnMoveResultCard;
+        _client.SendExchangeCard(PlayerColor);
       }
     }
 
@@ -418,7 +459,6 @@ namespace Risk.ViewModel.Game
       if (!IsEnemy(planet))
       {
         Selected1 = planet;
-        _client.OnMoveResult -= OnMoveResult;
         GameDialogViewModel = new DraftViewModel(this, _client);
       }
     }
@@ -448,8 +488,6 @@ namespace Risk.ViewModel.Game
           Selected2 = planet;
 
           _firstClick = true;
-
-          _client.OnMoveResult -= OnMoveResult;
 
           GameDialogViewModel = new AttackViewModel(this, _client);
         }
@@ -517,8 +555,6 @@ namespace Risk.ViewModel.Game
       else
       {
         Selected2 = planet;
-
-        _client.OnMoveResult -= OnMoveResult;
 
         _firstClick = true;
 

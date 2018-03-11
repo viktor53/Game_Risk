@@ -60,6 +60,16 @@ namespace Risk.Networking.Client
     }
   }
 
+  public class UpdateCardEventArgs : EventArgs
+  {
+    public bool Data { get; private set; }
+
+    public UpdateCardEventArgs(bool data)
+    {
+      Data = data;
+    }
+  }
+
   public class ArmyColorEventArgs : EventArgs
   {
     public long Data { get; private set; }
@@ -126,6 +136,8 @@ namespace Risk.Networking.Client
     public event EventHandler OnFreeUnit;
 
     public event EventHandler OnArmyColor;
+
+    public event EventHandler OnUpdateCard;
 
     public event EventHandler OnEndGame;
 
@@ -305,6 +317,10 @@ namespace Risk.Networking.Client
               OnArmyColor?.Invoke(this, new ArmyColorEventArgs((long)m.Data));
               break;
 
+            case MessageType.UpdateCard:
+              OnUpdateCard?.Invoke(this, new UpdateCardEventArgs((bool)m.Data));
+              break;
+
             case MessageType.EndGame:
               OnEndGame?.Invoke(this, new EventArgs());
               end = true;
@@ -425,6 +441,15 @@ namespace Risk.Networking.Client
       await Task.Run(() =>
       {
         Message mess = new Message(MessageType.CaptureMove, new Capture(playerColor, armyToMove));
+        SendMessage(mess);
+      });
+    }
+
+    public async void SendExchangeCard(ArmyColor playerColor)
+    {
+      await Task.Run(() =>
+      {
+        Message mess = new Message(MessageType.ExchangeCardsMove, playerColor);
         SendMessage(mess);
       });
     }

@@ -157,11 +157,11 @@ namespace Risk.Model.GameCore
       foreach (var player in _players)
       {
         //player.FreeUnit = GameSettings.GetStartNumberFreeUnit(_players.Count);
-        player.FreeUnit = 2;
+        player.FreeUnit = 1;
       }
 
       // GameSettings.GetStartNumberFreeUnit(_players.Count)
-      for (int i = 0; i < 2; ++i)
+      for (int i = 0; i < 1; ++i)
       {
         foreach (var player in _players)
         {
@@ -188,7 +188,7 @@ namespace Risk.Model.GameCore
 
             RiskCard card = _gameBoard.GetCard();
             _playersInfo[player.PlayerColor].Cards.Add(card);
-            player.Cards.Add(card);
+            player.AddCard(card);
 
             _currentPhase = Phase.DRAFT;
             player.PlayDraft();
@@ -309,7 +309,7 @@ namespace Risk.Model.GameCore
     {
       _playersInfo = new Dictionary<ArmyColor, PlayerInfo>();
       //int numberFreeUnits = GameSettings.GetStartNumberFreeUnit(_players.Count);
-      int numberFreeUnits = 2;
+      int numberFreeUnits = 1;
       foreach (var player in _players)
       {
         _playersInfo.Add(player.PlayerColor, new PlayerInfo(player.PlayerColor, numberFreeUnits));
@@ -550,7 +550,7 @@ namespace Risk.Model.GameCore
       {
         _gameBoard.ReturnCard(card);
         _playersInfo[_currentPlayer.PlayerColor].Cards.Remove(card);
-        _currentPlayer.Cards.Remove(card);
+        _currentPlayer.RemoveCard(card);
       }
     }
 
@@ -597,7 +597,7 @@ namespace Risk.Model.GameCore
           foreach (var card in _playersInfo[defColor].Cards)
           {
             _playersInfo[move.PlayerColor].Cards.Add(card);
-            _currentPlayer.Cards.Add(card);
+            _currentPlayer.AddCard(card);
           }
 
           _playersInfo[defColor].Cards.Clear();

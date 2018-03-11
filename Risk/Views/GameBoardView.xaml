@@ -21,6 +21,9 @@
     <DataTemplate DataType="{x:Type gameViewModels:CaptureViewModel}">
       <local:CaptureView />
     </DataTemplate>
+    <DataTemplate DataType="{x:Type gameViewModels:ErrorViewModel}">
+      <local:ErrorView />
+    </DataTemplate>
     <converters:EnumToStringConverter x:Key="EnumToString" />
     <converters:EnumToColorConverter x:Key="EnumToColor" />
   </UserControl.Resources>

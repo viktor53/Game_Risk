@@ -40,8 +40,6 @@ namespace Risk.Networking.Server
 
     private IList<RiskCard> _cards;
 
-    public IList<RiskCard> Cards => _cards;
-
     public int FreeUnit
     {
       get
@@ -80,6 +78,24 @@ namespace Risk.Networking.Server
       _listeningLock = new object();
       _listenToReady = false;
       _cards = new List<RiskCard>();
+    }
+
+    public void AddCard(RiskCard card)
+    {
+      _cards.Add(card);
+      Task.Run(() =>
+      {
+        SendMessage(new Message(MessageType.UpdateCard, true));
+      });
+    }
+
+    public void RemoveCard(RiskCard card)
+    {
+      _cards.Remove(card);
+      Task.Run(() =>
+      {
+        SendMessage(new Message(MessageType.UpdateCard, false));
+      });
     }
 
     public void PlayAttack()
@@ -125,7 +141,7 @@ namespace Risk.Networking.Server
             break;
 
           case MessageType.ExchangeCardsMove:
-            SendMoveResult(_game.MakeMove(_deserializer.DeserializeExchangeCardMove((JObject)m.Data)));
+            SendMoveResult(_game.MakeMove(new ExchangeCard((ArmyColor)(long)m.Data, GetCombination())));
             break;
 
           case MessageType.NextPhase:
@@ -138,6 +154,97 @@ namespace Risk.Networking.Server
             break;
         }
       }
+    }
+
+    private IList<RiskCard> GetCombination()
+    {
+      IList<RiskCard> combination;
+
+      combination = GetMixCombination();
+
+      if (combination.Count == 3) return combination;
+
+      combination = GetSameCombination();
+
+      return combination;
+    }
+
+    private IList<RiskCard> GetMixCombination()
+    {
+      IList<RiskCard> combination = new List<RiskCard>();
+
+      bool isInfatry = false;
+      bool isCavalery = false;
+      bool isCannon = false;
+      bool isMix = false;
+      foreach (var card in _cards)
+      {
+        if (combination.Count < 3)
+        {
+          switch (card.TypeUnit)
+          {
+            case UnitType.Infantry:
+              if (!isInfatry)
+              {
+                combination.Add(card);
+                isInfatry = true;
+              }
+              break;
+
+            case UnitType.Cavalary:
+              if (!isCavalery)
+              {
+                combination.Add(card);
+                isCavalery = true;
+              }
+              break;
+
+            case UnitType.Cannon:
+              if (!isCannon)
+              {
+                combination.Add(card);
+                isCavalery = true;
+              }
+              break;
+
+            case UnitType.Mix:
+              if (!isMix)
+              {
+                combination.Add(card);
+                isMix = true;
+              }
+              break;
+          }
+        }
+      }
+
+      return combination;
+    }
+
+    private IList<RiskCard> GetSameCombination()
+    {
+      for (int i = 0; i < 4; ++i)
+      {
+        IList<RiskCard> combination = new List<RiskCard>();
+
+        bool isMix = false;
+        foreach (var card in _cards)
+        {
+          if (card.TypeUnit == (UnitType)i)
+          {
+            combination.Add(card);
+          }
+          else if (card.TypeUnit == UnitType.Mix && !isMix)
+          {
+            combination.Add(card);
+            isMix = true;
+          }
+        }
+
+        if (combination.Count == 3) return combination;
+      }
+
+      return new List<RiskCard>();
     }
 
     public void PlayFortify()

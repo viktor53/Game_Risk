@@ -32,6 +32,7 @@ namespace Risk.Networking.Enums
     EndGame = 21,
     Leave = 22,
     FreeUnit = 23,
-    ArmyColor = 24
+    ArmyColor = 24,
+    UpdateCard = 25
   }
 }

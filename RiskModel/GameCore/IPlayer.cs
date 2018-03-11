@@ -15,7 +15,9 @@ namespace Risk.Model.GameCore
 
     int FreeUnit { get; set; }
 
-    IList<RiskCard> Cards { get; }
+    void AddCard(RiskCard card);
+
+    void RemoveCard(RiskCard card);
 
     void StartPlayer(IGame game);
 
