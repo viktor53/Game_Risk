@@ -70,6 +70,8 @@ namespace Risk.Model.GameCore
 
     private bool _alreadySetUp;
 
+    private bool _alreadyFortify;
+
     private bool _isAreaCaptured;
 
     private Attack _capturing;
@@ -162,6 +164,7 @@ namespace Risk.Model.GameCore
         {
           _currentPlayer = player;
           player.PlaySetUp();
+          _alreadySetUp = false;
         }
       }
     }
@@ -194,6 +197,7 @@ namespace Risk.Model.GameCore
 
             _currentPhase = Phase.FORTIFY;
             player.PlayFortify();
+            _alreadyFortify = false;
           }
         }
       }
@@ -262,12 +266,12 @@ namespace Risk.Model.GameCore
         foreach (var player in _players)
         {
           playersRoll.Add(player, _gameBoard.Dice.RollDice(1)[0]);
-          IPlayer max = GetMax(playersRoll);
-          if (max != null)
-          {
-            orderedPlayers.Add(max);
-            _players.Remove(max);
-          }
+        }
+        IPlayer max = GetMax(playersRoll);
+        if (max != null)
+        {
+          orderedPlayers.Add(max);
+          _players.Remove(max);
         }
       }
       _players = orderedPlayers;
@@ -370,26 +374,35 @@ namespace Risk.Model.GameCore
     {
       if (IsCorrectMove(Phase.FORTIFY, move.PlayerColor))
       {
-        if (_gameBoard.IsConnected(move.FromAreaID, move.ToAreaID))
+        if (!_alreadyFortify)
         {
-          if (_gameBoard.Areas[move.FromAreaID].SizeOfArmy > move.SizeOfArmy)
+          if (_gameBoard.IsConnected(move.FromAreaID, move.ToAreaID))
           {
-            _gameBoard.Areas[move.FromAreaID].SizeOfArmy -= move.SizeOfArmy;
-            _gameBoard.Areas[move.ToAreaID].SizeOfArmy += move.SizeOfArmy;
+            if (_gameBoard.Areas[move.FromAreaID].SizeOfArmy > move.SizeOfArmy)
+            {
+              _alreadyFortify = true;
 
-            UpdateAllPlayers(_gameBoard.Areas[move.FromAreaID]);
-            UpdateAllPlayers(_gameBoard.Areas[move.ToAreaID]);
+              _gameBoard.Areas[move.FromAreaID].SizeOfArmy -= move.SizeOfArmy;
+              _gameBoard.Areas[move.ToAreaID].SizeOfArmy += move.SizeOfArmy;
 
-            return MoveResult.OK;
+              UpdateAllPlayers(_gameBoard.Areas[move.FromAreaID]);
+              UpdateAllPlayers(_gameBoard.Areas[move.ToAreaID]);
+
+              return MoveResult.OK;
+            }
+            else
+            {
+              return MoveResult.InvalidNumberUnit;
+            }
           }
           else
           {
-            return MoveResult.InvalidNumberUnit;
+            return MoveResult.NotConnected;
           }
         }
         else
         {
-          return MoveResult.NotConnected;
+          return MoveResult.AlreadyFortifyThisTurn;
         }
       }
       else
@@ -476,6 +489,7 @@ namespace Risk.Model.GameCore
               _alreadySetUp = true;
 
               _gameBoard.Areas[move.AreaID].SizeOfArmy++;
+              _gameBoard.Areas[move.AreaID].ArmyColor = move.PlayerColor;
               _playersInfo[move.PlayerColor].FreeUnits--;
 
               UpdateAllPlayers(_gameBoard.Areas[move.AreaID]);
@@ -613,10 +627,7 @@ namespace Risk.Model.GameCore
     {
       foreach (var player in _players)
       {
-        if (player != _currentPlayer)
-        {
-          await player.UpdateGame(area);
-        }
+        await player.UpdateGame(area);
       }
     }
   }

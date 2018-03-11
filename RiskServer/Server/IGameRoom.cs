@@ -16,11 +16,13 @@ namespace Risk.Networking.Server
 
     int Connected { get; }
 
+    event EventHandler OnStart;
+
     bool AddPlayer(IClientManager player);
 
     bool IsFull();
 
-    Task StartGame();
+    //Task StartGame();
 
     void LeaveGame(string playerName);
 

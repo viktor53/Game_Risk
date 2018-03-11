@@ -14,6 +14,7 @@ using Risk.Networking.Enums;
 using Risk.Model.GameCore.Moves;
 using Risk.Model.GamePlan;
 using Risk.Networking.Messages.Data;
+using System.Threading;
 
 namespace Risk.Networking.Server
 {
@@ -23,7 +24,7 @@ namespace Risk.Networking.Server
 
     private Socket _connection;
 
-    private const int _bufferSize = 1024;
+    private const int _bufferSize = 4096;
 
     private byte[] _buffer;
 
@@ -33,15 +34,39 @@ namespace Risk.Networking.Server
 
     private IGame _game;
 
+    private bool _listenToReady;
+
+    private int _freeUnit;
+
     public IList<RiskCard> Cards { get; private set; }
 
-    public int FreeUnit { get; set; }
+    public int FreeUnit
+    {
+      get
+      {
+        return _freeUnit;
+      }
+      set
+      {
+        _freeUnit = value;
+        Task.Run(() =>
+        {
+          SendMessage(new Message(MessageType.FreeUnit, _freeUnit));
+        });
+      }
+    }
 
     public ArmyColor PlayerColor { get; set; }
 
     public string PlayerName { get; private set; }
 
     public IGameRoom GameRoom { get; set; }
+
+    public event EventHandler OnReady;
+
+    public event EventHandler OnLeave;
+
+    private object _listeningLock;
 
     public Player(Socket connection, RiskServer server)
     {
@@ -50,6 +75,8 @@ namespace Risk.Networking.Server
       _serializer = new JsonSerializer();
       _sendingLock = new object();
       _server = server;
+      _listeningLock = new object();
+      _listenToReady = false;
     }
 
     public void PlayAttack()
@@ -82,7 +109,7 @@ namespace Risk.Networking.Server
 
     public void PlayDraft()
     {
-      SendYourTurnMessage();
+      SendYourTurnMessage(false);
 
       bool isNextPhase = false;
       while (!isNextPhase)
@@ -136,7 +163,7 @@ namespace Risk.Networking.Server
 
     public void PlaySetUp()
     {
-      SendYourTurnMessage();
+      SendYourTurnMessage(true);
 
       bool isCorrect = false;
       while (!isCorrect)
@@ -145,7 +172,8 @@ namespace Risk.Networking.Server
         switch (m.MessageType)
         {
           case MessageType.SetUpMove:
-            MoveResult result = _game.MakeMove(GetData<SetUp>((JObject)m.Data));
+            var jo = (JObject)m.Data;
+            MoveResult result = _game.MakeMove(new SetUp((ArmyColor)GetData<long>(jo["PlayerColor"]), (int)GetData<long>(jo["AreaID"])));
             SendMoveResult(result);
             isCorrect = result == MoveResult.OK ? true : false;
             break;
@@ -166,7 +194,7 @@ namespace Risk.Networking.Server
       });
     }
 
-    private T GetData<T>(JObject data)
+    private T GetData<T>(JToken data)
     {
       using (JTokenReader reader = new JTokenReader(data))
       {
@@ -174,9 +202,9 @@ namespace Risk.Networking.Server
       }
     }
 
-    private void SendYourTurnMessage()
+    private void SendYourTurnMessage(bool isSetUp)
     {
-      Message m = new Message(MessageType.YourTurn, null);
+      Message m = new Message(MessageType.YourTurn, isSetUp);
       SendMessage(m);
     }
 
@@ -197,6 +225,7 @@ namespace Risk.Networking.Server
       lock (_sendingLock)
       {
         _connection.Send(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(m)));
+        Thread.Sleep(100);
       }
     }
 
@@ -213,6 +242,8 @@ namespace Risk.Networking.Server
       Task.Run(() =>
       {
         SendMessage(m);
+
+        SendMessage(new Message(MessageType.ArmyColor, PlayerColor));
       });
     }
 
@@ -256,30 +287,38 @@ namespace Risk.Networking.Server
       });
     }
 
-    public Task<bool> WaitUntilPlayerIsReady()
+    public Task ListenToReadyTag()
     {
-      return Task.Run(() =>
+      if (!_listenToReady)
       {
-        Message m = new Message(MessageType.ReadyTag, null);
-        SendMessage(m);
-
-        while (true)
+        return Task.Run(() =>
         {
-          Message received = ReceiveMessage();
-          switch (received.MessageType)
+          _listenToReady = true;
+          while (_listenToReady)
           {
-            case MessageType.ReadyTag:
-              return true;
+            Message received = ReceiveMessage();
+            switch (received.MessageType)
+            {
+              case MessageType.ReadyTag:
+                OnReady?.Invoke(this, new EventArgs());
+                _listenToReady = false;
+                break;
 
-            case MessageType.Leave:
-              return false;
+              case MessageType.Leave:
+                OnLeave?.Invoke(this, new EventArgs());
+                SendUpdateGameList(_server.GetUpdateInfo());
+                ManagingConnectingToRoom();
+                _listenToReady = false;
+                break;
 
-            default:
-              SendErrorMessage();
-              break;
+              default:
+                SendErrorMessage();
+                break;
+            }
           }
-        }
-      });
+        });
+      }
+      return null;
     }
 
     public Task SartListening()
@@ -316,6 +355,14 @@ namespace Risk.Networking.Server
 
         SendUpdateGameList(_server.GetUpdateInfo());
 
+        ManagingConnectingToRoom();
+      });
+    }
+
+    private async void ManagingConnectingToRoom()
+    {
+      await Task.Run(() =>
+      {
         bool isInGameOrLeave = false;
         while (!isInGameOrLeave)
         {

@@ -14,15 +14,12 @@ namespace Risk.Model.GamePlan
 
     public int SizeOfArmy { get; set; }
 
-    public List<Unit> Units { get; private set; }
-
     public Area(int id, int regionID)
     {
       ID = id;
       RegionID = regionID;
       ArmyColor = ArmyColor.Neutral;
       SizeOfArmy = 0;
-      Units = new List<Unit>();
     }
   }
 }

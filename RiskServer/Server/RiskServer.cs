@@ -109,6 +109,7 @@ namespace Risk.Networking.Server
           Debug.WriteLine($"** Add new Player: {name}", "Server");
           _players.Add(name, player);
           _playersInMenu.Add(player);
+          player.OnLeave += OnLeave;
           return true;
         }
         return false;
@@ -125,6 +126,42 @@ namespace Risk.Networking.Server
       }
     }
 
+    public void LeaveGame(string name, string gameName)
+    {
+      if (_gameRooms.ContainsKey(gameName))
+      {
+        lock (_gameRoomsLock)
+        {
+          _gameRooms[gameName].LeaveGame(name);
+          _playersInMenu.Add(_players[name]);
+          if (_gameRooms[gameName].Connected == 0)
+          {
+            _gameRooms.Remove(gameName);
+          }
+        }
+      }
+      else
+      {
+        _playersInMenu.Add(_players[name]);
+      }
+    }
+
+    private void OnLeave(object sender, EventArgs ev)
+    {
+      IClientManager client = (IClientManager)sender;
+      LeaveGame(client.PlayerName, client.GameRoom.RoomName);
+      client.GameRoom = null;
+    }
+
+    private void OnStart(object sender, EventArgs ev)
+    {
+      IGameRoom room = (IGameRoom)sender;
+      lock (_gameRoomsLock)
+      {
+        _gameRooms.Remove(room.RoomName);
+      }
+    }
+
     public bool CreateGame(CreateGameRoomInfo gameRoom, string playerName)
     {
       bool result = false;
@@ -134,6 +171,7 @@ namespace Risk.Networking.Server
         {
           Debug.WriteLine($"** Create new Room: {gameRoom.RoomName}", "Server");
           _gameRooms.Add(gameRoom.RoomName, new GameRoom(gameRoom.RoomName, gameRoom.Capacity, gameRoom.IsClassic, this));
+          _gameRooms[gameRoom.RoomName].OnStart += OnStart;
           _gameRooms[gameRoom.RoomName].AddPlayer(_players[playerName]);
           _playersInMenu.Remove(_players[playerName]);
           _players[playerName].GameRoom = _gameRooms[gameRoom.RoomName];
@@ -151,14 +189,6 @@ namespace Risk.Networking.Server
       {
         _players[playerName].GameRoom = _gameRooms[gameName];
         _playersInMenu.Remove(_players[playerName]);
-        if (_gameRooms[gameName].IsFull())
-        {
-          _gameRooms[gameName].StartGame();
-          lock (_gameRoomsLock)
-          {
-            _gameRooms.Remove(gameName);
-          }
-        }
         SendUpdateToAll();
         return true;
       }

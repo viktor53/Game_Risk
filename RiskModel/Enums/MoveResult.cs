@@ -12,6 +12,7 @@ namespace Risk.Model.Enums
     BadPhase,
     NotYourTurn,
     AlreadySetUpThisTurn,
+    AlreadyFortifyThisTurn,
     NotEnoughFreeUnit,
     NotYourArea,
     InvalidAttackerOrDefender,

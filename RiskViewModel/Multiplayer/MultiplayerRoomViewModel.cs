@@ -17,7 +17,7 @@ namespace Risk.ViewModel.Multiplayer
 
     private RiskClient _client;
 
-    private bool _isEnableb = true;
+    private bool _isEnableb;
 
     private string _text = "";
 
@@ -60,6 +60,7 @@ namespace Risk.ViewModel.Multiplayer
       _windowManager = windowManager;
       _client = client;
       _client.OnUpdate += OnUpdate;
+      _client.OnInicialization += OnInicialization;
 
       Ready_Click = new Command(ReadyClick);
       Cancel_Click = new Command(CancelClick);
@@ -67,8 +68,7 @@ namespace Risk.ViewModel.Multiplayer
       _ui = ui;
       Players = new ObservableCollection<string>();
 
-      Players.Add("PlayerOne");
-      Players.Add("PLayerTwo");
+      IsEnabled = false;
     }
 
     private void ReadyClick()
@@ -77,21 +77,38 @@ namespace Risk.ViewModel.Multiplayer
 
       IsEnabled = false;
 
-      _windowManager.WindowViewModel = new GameBoardViewModel(_windowManager);
+      _client.SendReadyTag();
     }
 
     private void CancelClick()
     {
+      _client.SendLeaveGame();
+
+      _client.OnUpdate -= OnUpdate;
+      _client.OnInicialization -= OnInicialization;
+
       _windowManager.WindowViewModel = new MultiplayerViewModel(_windowManager, _client);
     }
 
     private void OnUpdate(object sender, EventArgs e)
     {
+      IsEnabled = true;
+
+      Text = "";
+
       _ui.Send(x => Players.Clear(), null);
       foreach (var player in _client.Players)
       {
         _ui.Send(x => Players.Add(player), null);
       }
+    }
+
+    private void OnInicialization(object sender, EventArgs e)
+    {
+      _client.OnUpdate -= OnUpdate;
+      _client.OnInicialization -= OnInicialization;
+
+      _windowManager.WindowViewModel = new GameBoardViewModel(_windowManager, _client, ((InicializationEventArgs)e).Data, _ui);
     }
   }
 }

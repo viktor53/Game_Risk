@@ -11,9 +11,9 @@ namespace Risk.Networking.Messages.Data
   {
     public IList<IList<bool>> Connections { get; private set; }
 
-    public List<AreaInfo> AreaInfos { get; private set; }
+    public IList<AreaInfo> AreaInfos { get; private set; }
 
-    public GameBoardInfo(bool[][] con, List<AreaInfo> areaInfos)
+    public GameBoardInfo(IList<IList<bool>> con, IList<AreaInfo> areaInfos)
     {
       Connections = con;
       AreaInfos = areaInfos;

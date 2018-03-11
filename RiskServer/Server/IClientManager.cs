@@ -14,13 +14,17 @@ namespace Risk.Networking.Server
 
     IGameRoom GameRoom { get; set; }
 
+    event EventHandler OnReady;
+
+    event EventHandler OnLeave;
+
     Task SendNewPlayerConnected(string name);
 
     Task SendPlayerLeave(string name);
 
     Task SendConnectedPlayers(IList<string> players);
 
-    Task<bool> WaitUntilPlayerIsReady();
+    Task ListenToReadyTag();
 
     Task SartListening();
 

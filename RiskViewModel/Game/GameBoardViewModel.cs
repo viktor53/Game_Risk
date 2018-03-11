@@ -17,6 +17,8 @@ using System.Windows.Input;
 using System.Globalization;
 using Risk.Model.Enums;
 using Risk.Networking.Messages.Data;
+using Risk.Networking.Client;
+using System.Threading;
 
 namespace Risk.ViewModel.Game
 {
@@ -25,6 +27,8 @@ namespace Risk.ViewModel.Game
     private IWindowManager _windowManager;
 
     private ViewModelBase _gameDialog;
+
+    private RiskClient _client;
 
     private const int _diameter = 70;
 
@@ -42,7 +46,7 @@ namespace Risk.ViewModel.Game
 
     private int _freeArmy;
 
-    private readonly ArmyColor _playerColor;
+    private ArmyColor _playerColor;
 
     private string _bg;
 
@@ -151,6 +155,19 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    public ArmyColor PlayerColor
+    {
+      get
+      {
+        return _playerColor;
+      }
+      set
+      {
+        _playerColor = value;
+        OnPropertyChanged("PlayerColor");
+      }
+    }
+
     public Planet Selected1
     {
       get
@@ -177,107 +194,95 @@ namespace Risk.ViewModel.Game
 
     public BindingList<MapItem> MapItems { get; private set; }
 
-    public GameBoardViewModel(IWindowManager windowManager)
+    public GameBoardViewModel(IWindowManager windowManager, RiskClient client, GameBoardInfo boardInfo, SynchronizationContext ui)
     {
       _windowManager = windowManager;
+      _client = client;
+      _client.OnUpdate += OnUpdate;
+      _client.OnFreeUnit += OnFreeUnit;
+      _client.OnArmyColor += OnArmyColor;
+      _client.OnYourTurn += OnYourTurn;
+      _client.OnMoveResult += OnMoveResult;
+      _client.ListenToGameCommands();
 
       BG = Properties.Resources.bg1;
 
-      CurrentPhase = Phase.DRAFT;
+      CurrentPhase = Phase.SETUP;
 
-      Turn = Turn.YOU;
+      Turn = Turn.ENEMY;
 
-      NumberCards = 3;
+      NumberCards = 0;
 
       IsEnabled = false;
 
-      FreeArmy = 30;
-
-      GameDialogViewModel = new FortifyViewModel(this);
-
-      _playerColor = ArmyColor.Blue;
+      FreeArmy = 0;
 
       Planet_Click = new Command(PlanetClick);
       Next_Click = new Command(NextClick);
       Cards_Click = new Command(CardsClick);
 
-      var temp = new Risk.Model.Factories.ClassicGameBoardFactory();
-      var game = temp.CreateGameBoard();
+      LoadMap(boardInfo);
+    }
 
-      int X = (int)(Application.Current.MainWindow.ActualWidth - 100) / 3;
-      int Y = (int)(Application.Current.MainWindow.ActualHeight - 200) / 2;
-      int g = 3000;
+    private void OnUpdate(object sender, EventArgs ev)
+    {
+      Area a = ((UpdateGameEventArgs)ev).Data;
+      _planets[a.ID].SizeOfArmy = a.SizeOfArmy;
+      _planets[a.ID].ArmyColor = a.ArmyColor;
+    }
 
-      List<AreaInfo> ais = new List<AreaInfo>();
+    private void OnFreeUnit(object sender, EventArgs ev)
+    {
+      FreeArmy = (int)((FreeUnitEventArgs)ev).Data;
+    }
 
-      int Ym = g;
-      int Xm = (int)Math.Round((double)(g * X / Y));
+    private void OnArmyColor(object sender, EventArgs ev)
+    {
+      long color = ((ArmyColorEventArgs)ev).Data;
+      PlayerColor = (ArmyColor)color;
+    }
 
-      Random ran = new Random();
-      bool mark = false;
-
-      int xa = 0;
-      int ya = 0;
-
-      List<Coordinates> coords = new List<Coordinates>();
-
-      int prevReg = game.Areas[0].RegionID;
-      ArmyColor c = game.Areas[0].ArmyColor;
-      for (int i = 0; i < game.Areas.Length; ++i)
+    private void OnYourTurn(object sender, EventArgs ev)
+    {
+      bool isSetUp = ((ConfirmationEventArgs)ev).Data;
+      Turn = Turn.YOU;
+      IsEnabled = true;
+      if (isSetUp)
       {
-        if (prevReg != game.Areas[i].RegionID)
-        {
-          prevReg = game.Areas[i].RegionID;
-          c++;
-          if (mark)
-          {
-            xa = 0;
-            ya += Y;
-            mark = false;
-          }
-          else
-          {
-            xa += X;
-            mark = xa >= 2 * X;
-          }
-        }
-        game.Areas[i].ArmyColor = c;
-        game.Areas[i].SizeOfArmy = 3;
-        bool correct = false;
-        int a = 0;
-        int b = 0;
-        while (!correct)
-        {
-          a = X * ran.Next(Xm) / Xm + xa;
-          b = Y * ran.Next(Ym) / Ym + ya;
-          correct = IsCorrect(a, b, coords);
-        }
-        var co = new Coordinates(a, b);
-        coords.Add(co);
-        ais.Add(new AreaInfo(co, game.Areas[i]));
+        CurrentPhase = Phase.SETUP;
       }
+      else
+      {
+        CurrentPhase = Phase.DRAFT;
+      }
+    }
 
-      GameBoardInfo gbi = new GameBoardInfo(game.Connections, ais);
-
-      _connections = gbi.Connections;
-      LoadMap(gbi);
+    private void OnMoveResult(object sender, EventArgs ev)
+    {
+      MoveResult mr = (MoveResult)((MoveResultEventArgs)ev).Data;
+      if (CurrentPhase == Phase.SETUP) IsEnabled = false;
+      if (mr == MoveResult.OK)
+      {
+        if (CurrentPhase == Phase.SETUP)
+        {
+          IsEnabled = false;
+          FreeArmy--;
+        }
+        else
+        {
+          CurrentPhase = (Phase)(((int)CurrentPhase + 1) % 4);
+          if (CurrentPhase == Phase.SETUP)
+          {
+            IsEnabled = false;
+            CurrentPhase = Phase.DRAFT;
+          }
+        }
+      }
     }
 
     private int GetDistance(int x1, int y1, int x2, int y2)
     {
       return (int)Math.Sqrt(Math.Pow(x1 - x2, 2) + Math.Pow(y1 - y2, 2));
-    }
-
-    private bool IsCorrect(int x, int y, List<Coordinates> coords)
-    {
-      foreach (var co in coords)
-      {
-        if (GetDistance(x, y, co.X, co.Y) < 110)
-        {
-          return false;
-        }
-      }
-      return true;
     }
 
     private void LoadMap(GameBoardInfo gbi)
@@ -288,7 +293,7 @@ namespace Risk.ViewModel.Game
       foreach (var ai in gbi.AreaInfos)
       {
         Planet p = new Planet(ai.Position.X, ai.Position.Y, Properties.Resources.planet1, ai.Area, Planet_Click);
-        _planets.Insert(p.Area.ID, p);
+        _planets.Insert(p.ID, p);
       }
 
       for (int i = 0; i < gbi.Connections.Count; ++i)
@@ -320,6 +325,10 @@ namespace Risk.ViewModel.Game
       {
         switch (CurrentPhase)
         {
+          case Phase.SETUP:
+            SetUpClick(clicked);
+            break;
+
           case Phase.DRAFT:
             DraftClick(clicked);
             break;
@@ -355,6 +364,10 @@ namespace Risk.ViewModel.Game
 
     private void NextClick()
     {
+      if (CurrentPhase != Phase.SETUP)
+      {
+        _client.SendNextPhase();
+      }
       CurrentPhase += 1 % 3;
 
       switch (CurrentPhase)
@@ -380,6 +393,11 @@ namespace Risk.ViewModel.Game
       if (CurrentPhase == Phase.DRAFT)
       {
       }
+    }
+
+    private void SetUpClick(Planet planet)
+    {
+      _client.SendSetUpMove(planet.ID, PlayerColor);
     }
 
     private void DraftClick(Planet planet)
@@ -439,9 +457,9 @@ namespace Risk.ViewModel.Game
     {
       EnableAllPlanet(false);
 
-      for (int i = 0; i < _connections[planet.Area.ID].Count; ++i)
+      for (int i = 0; i < _connections[planet.ID].Count; ++i)
       {
-        if (_connections[planet.Area.ID][i] && IsEnemy(_planets[i]))
+        if (_connections[planet.ID][i] && IsEnemy(_planets[i]))
         {
           _planets[i].IsEnabled = true;
         }
@@ -450,14 +468,14 @@ namespace Risk.ViewModel.Game
 
     private bool IsEnemy(Planet planet)
     {
-      return planet.Area.ArmyColor != _playerColor;
+      return planet.ArmyColor != _playerColor;
     }
 
     private bool HasEnemy(Planet planet)
     {
-      for (int i = 0; i < _connections[planet.Area.ID].Count; ++i)
+      for (int i = 0; i < _connections[planet.ID].Count; ++i)
       {
-        if (_connections[planet.Area.ID][i] && IsEnemy(_planets[i]))
+        if (_connections[planet.ID][i] && IsEnemy(_planets[i]))
         {
           return true;
         }
@@ -526,9 +544,9 @@ namespace Risk.ViewModel.Game
 
         p.IsEnabled = true;
 
-        for (int i = 0; i < _connections[p.Area.ID].Count; ++i)
+        for (int i = 0; i < _connections[p.ID].Count; ++i)
         {
-          if (_connections[p.Area.ID][i] && !IsEnemy(_planets[i]) && !visited.Contains(_planets[i]))
+          if (_connections[p.ID][i] && !IsEnemy(_planets[i]) && !visited.Contains(_planets[i]))
           {
             toVisit.Push(_planets[i]);
             visited.Add(_planets[i]);
@@ -549,9 +567,13 @@ namespace Risk.ViewModel.Game
   {
     private bool _isEnabled;
 
-    public string IMG { get; set; }
+    private int _id;
 
-    public Area Area { get; private set; }
+    private int _sizeOfArmy;
+
+    private ArmyColor _armyColor;
+
+    public string IMG { get; set; }
 
     public ICommand Planet_Click { get; private set; }
 
@@ -568,15 +590,17 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    public int ID => _id;
+
     public int SizeOfArmy
     {
       get
       {
-        return Area.SizeOfArmy;
+        return _sizeOfArmy;
       }
       set
       {
-        Area.SizeOfArmy = value;
+        _sizeOfArmy = value;
         OnPropertyChanged("SizeOfArmy");
       }
     }
@@ -585,11 +609,11 @@ namespace Risk.ViewModel.Game
     {
       get
       {
-        return Area.ArmyColor;
+        return _armyColor;
       }
       set
       {
-        Area.ArmyColor = value;
+        _armyColor = value;
         OnPropertyChanged("ArmyColor");
       }
     }
@@ -599,7 +623,9 @@ namespace Risk.ViewModel.Game
       X = x;
       Y = y;
       IMG = img;
-      Area = area;
+      SizeOfArmy = area.SizeOfArmy;
+      ArmyColor = area.ArmyColor;
+      _id = area.ID;
       IsEnabled = true;
       Planet_Click = click;
     }

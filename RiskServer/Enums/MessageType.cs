@@ -30,6 +30,8 @@ namespace Risk.Networking.Enums
     YourTurn = 19,
     UpdateGame = 20,
     EndGame = 21,
-    Leave = 22
+    Leave = 22,
+    FreeUnit = 23,
+    ArmyColor = 24
   }
 }

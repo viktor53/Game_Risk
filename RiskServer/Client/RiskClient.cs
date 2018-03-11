@@ -14,6 +14,9 @@ using Risk.Networking.Messages;
 using Risk.Networking.Exceptions;
 using Risk.Model.GameCore.Moves;
 using Newtonsoft.Json.Linq;
+using System.Windows;
+using Risk.Model.GamePlan;
+using Risk.Model.Enums;
 
 namespace Risk.Networking.Client
 {
@@ -27,6 +30,56 @@ namespace Risk.Networking.Client
     }
   }
 
+  public class InicializationEventArgs : EventArgs
+  {
+    public GameBoardInfo Data { get; private set; }
+
+    public InicializationEventArgs(GameBoardInfo data)
+    {
+      Data = data;
+    }
+  }
+
+  public class UpdateGameEventArgs : EventArgs
+  {
+    public Area Data { get; private set; }
+
+    public UpdateGameEventArgs(Area data)
+    {
+      Data = data;
+    }
+  }
+
+  public class FreeUnitEventArgs : EventArgs
+  {
+    public long Data { get; private set; }
+
+    public FreeUnitEventArgs(long data)
+    {
+      Data = data;
+    }
+  }
+
+  public class ArmyColorEventArgs : EventArgs
+  {
+    public long Data { get; private set; }
+
+    public ArmyColorEventArgs(long data)
+    {
+      Data = data;
+    }
+  }
+
+  public class MoveResultEventArgs : EventArgs
+  {
+    public long Data { get; private set; }
+
+    public MoveResultEventArgs(long data)
+    {
+      Data = data;
+    }
+  }
+
   public class RiskClient
   {
     private Socket _client;
@@ -35,7 +88,7 @@ namespace Risk.Networking.Client
 
     private byte[] _buffer;
 
-    private const int _bufferSize = 1024;
+    private const int _bufferSize = 16384;
 
     private string _username;
 
@@ -47,9 +100,21 @@ namespace Risk.Networking.Client
 
     public event EventHandler OnUpdate;
 
-    public event EventHandler OnUpdateRoom;
-
     public event EventHandler OnConfirmation;
+
+    public event EventHandler OnReadyTag;
+
+    public event EventHandler OnInicialization;
+
+    public event EventHandler OnYourTurn;
+
+    public event EventHandler OnMoveResult;
+
+    public event EventHandler OnFreeUnit;
+
+    public event EventHandler OnArmyColor;
+
+    public event EventHandler OnEndGame;
 
     private IList<GameRoomInfo> _rooms;
 
@@ -108,7 +173,7 @@ namespace Risk.Networking.Client
 
       _serializer = new JsonSerializer();
 
-      _listen = true;
+      _listen = false;
 
       _players = new List<string>();
 
@@ -151,40 +216,99 @@ namespace Risk.Networking.Client
 
     public async void StartListenToUpdates()
     {
+      if (!_listen)
+      {
+        await Task.Run(() =>
+        {
+          _listen = true;
+          while (_listen)
+          {
+            Message m = null;
+
+            lock (_receiveLock)
+            {
+              m = ReceiveMessage();
+
+              switch (m.MessageType)
+              {
+                case MessageType.UpdateGameList:
+                  Rooms = GetData<IList<GameRoomInfo>>((JArray)m.Data);
+                  break;
+
+                case MessageType.UpdatePlayerListAdd:
+                  AddPlayers(GetData<IList<string>>((JArray)m.Data));
+                  break;
+
+                case MessageType.UpdatePlayerListRemove:
+                  RemovePlayer(GetData<IList<string>>((JArray)m.Data));
+                  break;
+
+                case MessageType.Confirmation:
+                  OnConfirmation?.Invoke(this, new ConfirmationEventArgs((bool)m.Data));
+                  break;
+
+                case MessageType.InitializeGame:
+                  var jo = (JObject)m.Data;
+                  IList<IList<bool>> con = GetData<IList<IList<bool>>>(jo["Connections"]);
+                  var areas = GetData<List<AreaInfo>>(jo["AreaInfos"]);
+                  OnInicialization?.Invoke(this, new InicializationEventArgs(new GameBoardInfo(con, areas)));
+                  _listen = false;
+                  break;
+
+                default:
+                  break;
+              }
+            }
+          }
+        });
+      }
+    }
+
+    public async void ListenToGameCommands()
+    {
       await Task.Run(() =>
       {
-        _listen = true;
-        while (_listen)
+        bool end = false;
+        while (!end)
         {
-          Message m;
-
-          lock (_receiveLock)
+          Message m = ReceiveMessage();
+          switch (m.MessageType)
           {
-            m = ReceiveMessage();
-            switch (m.MessageType)
-            {
-              case MessageType.UpdateGameList:
-                Rooms = GetData<IList<GameRoomInfo>>((JArray)m.Data);
-                break;
+            case MessageType.YourTurn:
+              OnYourTurn(this, new ConfirmationEventArgs((bool)m.Data));
+              break;
 
-              case MessageType.UpdatePlayerListAdd:
-                AddPlayers(GetData<IList<string>>((JArray)m.Data));
-                break;
+            case MessageType.UpdateGame:
+              OnUpdate?.Invoke(this, new UpdateGameEventArgs(DeserializeArea((JObject)m.Data)));
+              break;
 
-              case MessageType.UpdatePlayerListRemove:
-                RemovePlayer(GetData<IList<string>>((JArray)m.Data));
-                break;
+            case MessageType.FreeUnit:
+              OnFreeUnit?.Invoke(this, new FreeUnitEventArgs((long)m.Data));
+              break;
 
-              case MessageType.Confirmation:
-                OnConfirmation?.Invoke(this, new ConfirmationEventArgs((bool)m.Data));
-                break;
+            case MessageType.MoveResult:
+              OnMoveResult?.Invoke(this, new MoveResultEventArgs((long)m.Data));
+              break;
 
-              default:
-                break;
-            }
+            case MessageType.ArmyColor:
+              OnArmyColor?.Invoke(this, new ArmyColorEventArgs((long)m.Data));
+              break;
+
+            case MessageType.EndGame:
+              OnEndGame(this, new EventArgs());
+              end = true;
+              break;
           }
         }
       });
+    }
+
+    private Area DeserializeArea(JObject data)
+    {
+      Area a = new Area((int)GetData<long>(data["ID"]), (int)GetData<long>(data["RegionID"]));
+      a.ArmyColor = (ArmyColor)GetData<long>(data["ArmyColor"]);
+      a.SizeOfArmy = (int)GetData<long>(data["SizeOfArmy"]);
+      return a;
     }
 
     public async void StopListenToUpdates()
@@ -195,7 +319,7 @@ namespace Risk.Networking.Client
       });
     }
 
-    private T GetData<T>(JArray data)
+    private T GetData<T>(JToken data)
     {
       using (JTokenReader reader = new JTokenReader(data))
       {
@@ -227,12 +351,76 @@ namespace Risk.Networking.Client
       });
     }
 
+    public async void SendLeaveGame()
+    {
+      await Task.Run(() =>
+      {
+        Message mess = new Message(MessageType.Leave, null);
+        SendMessage(mess);
+        _players.Clear();
+      });
+    }
+
+    public async void SendReadyTag()
+    {
+      await Task.Run(() =>
+      {
+        Message mess = new Message(MessageType.ReadyTag, null);
+        SendMessage(mess);
+      });
+    }
+
     public async void SendLougOut()
     {
       await Task.Run(() =>
       {
         _listen = false;
         Message mess = new Message(MessageType.Logout, null);
+        SendMessage(mess);
+      });
+    }
+
+    public async void SendSetUpMove(int idArea, ArmyColor playerColor)
+    {
+      await Task.Run(() =>
+      {
+        Message mess = new Message(MessageType.SetUpMove, new SetUp(playerColor, idArea));
+        SendMessage(mess);
+      });
+    }
+
+    public async void SendNextPhase()
+    {
+      await Task.Run(() =>
+      {
+        Message mess = new Message(MessageType.NextPhase, null);
+        SendMessage(mess);
+      });
+    }
+
+    public async void SendDraftMove(ArmyColor playerColor, int areaID, int numberOfUnit)
+    {
+      await Task.Run(() =>
+      {
+        Message mess = new Message(MessageType.DraftMove, new Draft(playerColor, areaID, numberOfUnit));
+        SendMessage(mess);
+      });
+    }
+
+    public async void SendAttackMove(ArmyColor playerColor, int attackerAreaID, int defenderAreaID, AttackSize attackSize)
+    {
+      await Task.Run(() =>
+      {
+        Message mess = new Message(MessageType.AttackMove, new Attack(playerColor, attackerAreaID, defenderAreaID, attackSize));
+        SendMessage(mess);
+      });
+    }
+
+    public async void SendFortifyMove(ArmyColor playerColor, int fromAreaID, int toAreaID, int sizeOfArmy)
+    {
+      await Task.Run(() =>
+      {
+        Message mess = new Message(MessageType.FortifyMove, new Fortify(playerColor, fromAreaID, toAreaID, sizeOfArmy));
         SendMessage(mess);
       });
     }

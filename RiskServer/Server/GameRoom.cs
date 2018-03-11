@@ -23,7 +23,11 @@ namespace Risk.Networking.Server
 
     private int _capacity;
 
+    private int _ready;
+
     public string RoomName { get; private set; }
+
+    public event EventHandler OnStart;
 
     public int Capacity
     {
@@ -49,6 +53,7 @@ namespace Risk.Networking.Server
       _playersLock = new object();
       _players = new Dictionary<string, IClientManager>();
       _server = server;
+      _ready = 0;
     }
 
     public bool AddPlayer(IClientManager player)
@@ -63,7 +68,8 @@ namespace Risk.Networking.Server
           }
           _players.Add(player.PlayerName, player);
           player.PlayerColor = Model.Enums.ArmyColor.Green + _players.Count;
-
+          player.OnReady += OnReady;
+          player.ListenToReadyTag();
           return true;
         }
         return false;
@@ -173,32 +179,40 @@ namespace Risk.Networking.Server
     {
       lock (_playersLock)
       {
+        _ready = 0;
+        _players[playerName].OnReady -= OnReady;
         _players.Remove(playerName);
         foreach (var player in _players)
         {
           player.Value.SendPlayerLeave(playerName);
+          player.Value.ListenToReadyTag();
         }
       }
     }
 
-    public Task StartGame()
+    private void OnReady(object sender, EventArgs ev)
     {
-      return Task.Run(async () =>
+      if (++_ready == _capacity)
       {
-        bool isAllReady = true;
+        OnStart?.Invoke(this, new EventArgs());
+        Start();
+      }
+    }
+
+    private async void Start()
+    {
+      await Task.Run(() =>
+      {
         foreach (var player in _players)
         {
-          isAllReady = isAllReady && await player.Value.WaitUntilPlayerIsReady();
+          _game.AddPlayer(player.Value);
         }
 
-        if (isAllReady)
-        {
-          foreach (var player in _players)
-          {
-            _game.AddPlayer(player.Value);
-          }
+        _game.StartGame();
 
-          _game.StartGame();
+        foreach (var player in _players)
+        {
+          //TODO move player to server
         }
       });
     }
