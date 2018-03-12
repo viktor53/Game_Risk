@@ -17,7 +17,7 @@
       <ColumnDefinition Width="Auto" />
       <ColumnDefinition Width="*" />
     </Grid.ColumnDefinitions>
-    <Border Background="{StaticResource MenuBg2}" CornerRadius="5" BorderThickness="3" BorderBrush="Black" Grid.Column="1" Grid.Row="1">
+    <Border Background="{StaticResource MenuBg}" CornerRadius="5" BorderThickness="3" BorderBrush="Black" Grid.Column="1" Grid.Row="1">
       <StackPanel>
         <Label Style="{StaticResource LabelUnivers}" Content="{Binding Error}" FontSize="15" FontWeight="Medium" />
         <StackPanel Orientation="Horizontal" Margin="30, 30, 30, 10">

@@ -18,7 +18,7 @@
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
     <Border Background="Gray" CornerRadius="5" BorderThickness="3" BorderBrush="Black" Grid.Column="1" Grid.Row="1">
-      <StackPanel Background="{StaticResource MenuBg2}" Orientation="Horizontal">
+      <StackPanel Background="{StaticResource MenuBg}" Orientation="Horizontal">
         <Label Style="{StaticResource Warning}" Margin="30,30,10,30" />
         <Label Style="{StaticResource LabelUnivers}" Content="Not implemented yet." Margin="10,30,30,30" FontSize="15" FontWeight="Bold" />
       </StackPanel>

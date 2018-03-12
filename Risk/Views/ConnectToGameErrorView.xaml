@@ -18,7 +18,7 @@
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
     <Border Background="Gray" CornerRadius="5" BorderThickness="3" BorderBrush="Black" Grid.Column="1" Grid.Row="1">
-      <StackPanel Background="{StaticResource MenuBg2}" Orientation="Horizontal">
+      <StackPanel Background="{StaticResource MenuBg}" Orientation="Horizontal">
         <Label Style="{StaticResource Warning}" Margin="30,30,10,30" />
         <Label Style="{StaticResource LabelUnivers}" Content="Game is full or does not exist!" Margin="10,30,10,30" FontSize="15" FontWeight="Bold" />
         <Button Style="{StaticResource MenuButton}" Content="OK" Command="{Binding OK_Click}" Margin="10,15,30,15" />

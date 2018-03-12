@@ -16,7 +16,7 @@
       <RowDefinition Height="auto" />
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
-    <Border Background="{StaticResource MenuBg2}" CornerRadius="0,0,5,5" BorderThickness="3,0,3,3" BorderBrush="Black" Grid.Column="1" Grid.Row="0">
+    <Border Background="{StaticResource MenuBg}" CornerRadius="0,0,5,5" BorderThickness="3,0,3,3" BorderBrush="Black" Grid.Column="1" Grid.Row="0">
       <Grid>
         <Grid.RowDefinitions>
           <RowDefinition Height="auto" />
