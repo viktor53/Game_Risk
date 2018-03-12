@@ -13,10 +13,13 @@ namespace Risk.Networking.Messages.Data
 
     public Area Area { get; private set; }
 
-    public AreaInfo(Coordinates position, Area area)
+    public int IMG { get; private set; }
+
+    public AreaInfo(Coordinates position, Area area, int img)
     {
       Position = position;
       Area = area;
+      IMG = img;
     }
   }
 }

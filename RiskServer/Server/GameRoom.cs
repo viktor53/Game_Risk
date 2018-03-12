@@ -146,7 +146,7 @@ namespace Risk.Networking.Server
         }
         var c = new Coordinates(a, b);
         coords.Add(c);
-        areasInfo.Add(new AreaInfo(c, gamePlan.Areas[i]));
+        areasInfo.Add(new AreaInfo(c, gamePlan.Areas[i], ran.Next(1, 9)));
       }
 
       _gameInfo = new GameBoardInfo(gamePlan.Connections, areasInfo);

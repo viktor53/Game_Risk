@@ -222,7 +222,7 @@ namespace Risk.ViewModel.Game
       _client.OnUpdateCard += OnUpdateCard;
       _client.ListenToGameCommands();
 
-      BG = Properties.Resources.bg1;
+      BG = Properties.Resources.gameBg;
       CurrentPhase = Phase.SETUP;
       Turn = Turn.ENEMY;
       NumberCards = 0;
@@ -356,7 +356,7 @@ namespace Risk.ViewModel.Game
 
       foreach (var ai in gbi.AreaInfos)
       {
-        Planet p = new Planet(ai.Position.X, ai.Position.Y, Properties.Resources.planet1, ai.Area, Planet_Click);
+        Planet p = new Planet(ai.Position.X, ai.Position.Y, GetPlanetIMG(ai.IMG), ai.Area, Planet_Click);
         _planets.Insert(p.ID, p);
       }
 
@@ -376,6 +376,39 @@ namespace Risk.ViewModel.Game
       foreach (var p in _planets)
       {
         MapItems.Add(p);
+      }
+    }
+
+    private string GetPlanetIMG(int img)
+    {
+      switch (img)
+      {
+        case 1:
+          return Properties.Resources.planet1;
+
+        case 2:
+          return Properties.Resources.planet2;
+
+        case 3:
+          return Properties.Resources.planet3;
+
+        case 4:
+          return Properties.Resources.planet4;
+
+        case 5:
+          return Properties.Resources.planet5;
+
+        case 6:
+          return Properties.Resources.planet6;
+
+        case 7:
+          return Properties.Resources.planet7;
+
+        case 8:
+          return Properties.Resources.planet8;
+
+        default:
+          return Properties.Resources.planet1;
       }
     }
 

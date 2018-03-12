@@ -61,20 +61,11 @@ namespace Risk.ViewModel.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to pack://application:,,,/RiskViewModel;component/Images/Background/bg1.png.
+        ///   Looks up a localized string similar to pack://application:,,,/RiskViewModel;component/Images/Background/gameBg.png.
         /// </summary>
-        internal static string bg1 {
+        internal static string gameBg {
             get {
-                return ResourceManager.GetString("bg1", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to pack://application:,,,/RiskViewModel;component/Images/Background/bg2.png.
-        /// </summary>
-        internal static string bg2 {
-            get {
-                return ResourceManager.GetString("bg2", resourceCulture);
+                return ResourceManager.GetString("gameBg", resourceCulture);
             }
         }
         
@@ -88,11 +79,65 @@ namespace Risk.ViewModel.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to pack://application:,,,/RiskViewModel;component/Images/Planets/planet_07.png.
+        ///   Looks up a localized string similar to pack://application:,,,/RiskViewModel;component/Images/Planets/planet2.png.
         /// </summary>
         internal static string planet2 {
             get {
                 return ResourceManager.GetString("planet2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to pack://application:,,,/RiskViewModel;component/Images/Planets/planet3.png.
+        /// </summary>
+        internal static string planet3 {
+            get {
+                return ResourceManager.GetString("planet3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to pack://application:,,,/RiskViewModel;component/Images/Planets/planet4.png.
+        /// </summary>
+        internal static string planet4 {
+            get {
+                return ResourceManager.GetString("planet4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to pack://application:,,,/RiskViewModel;component/Images/Planets/planet5.png.
+        /// </summary>
+        internal static string planet5 {
+            get {
+                return ResourceManager.GetString("planet5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to pack://application:,,,/RiskViewModel;component/Images/Planets/planet6.png.
+        /// </summary>
+        internal static string planet6 {
+            get {
+                return ResourceManager.GetString("planet6", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to pack://application:,,,/RiskViewModel;component/Images/Planets/planet7.png.
+        /// </summary>
+        internal static string planet7 {
+            get {
+                return ResourceManager.GetString("planet7", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to pack://application:,,,/RiskViewModel;component/Images/Planets/planet8.png.
+        /// </summary>
+        internal static string planet8 {
+            get {
+                return ResourceManager.GetString("planet8", resourceCulture);
             }
         }
     }
