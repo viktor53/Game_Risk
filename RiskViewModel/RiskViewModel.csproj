@@ -51,10 +51,13 @@
     <Compile Include="Game\ActionViewModelBase.cs" />
     <Compile Include="Game\AttackViewModel.cs" />
     <Compile Include="Game\CaptureViewModel.cs" />
+    <Compile Include="Game\Connection.cs" />
     <Compile Include="Game\DraftViewModel.cs" />
     <Compile Include="Game\ErrorViewModel.cs" />
     <Compile Include="Game\FortifyViewModel.cs" />
     <Compile Include="Game\IGameBoardViewModel.cs" />
+    <Compile Include="Game\MapItem.cs" />
+    <Compile Include="Game\Planet.cs" />
     <Compile Include="IWindowManager.cs" />
     <Compile Include="Game\GameBoardViewModel.cs" />
     <Compile Include="Main\IMainMenuViewModel.cs" />
