@@ -295,7 +295,6 @@ namespace Risk.ViewModel.Game
       }
       else
       {
-        IsEnabled = false;
         GameDialogViewModel = new ErrorViewModel(this, $"Move ends with error: {mr}");
       }
     }
@@ -331,7 +330,6 @@ namespace Risk.ViewModel.Game
       }
       else
       {
-        IsEnabled = false;
         GameDialogViewModel = new ErrorViewModel(this, $"Move ends with error: {mr}");
       }
     }
@@ -341,7 +339,6 @@ namespace Risk.ViewModel.Game
       MoveResult mr = (MoveResult)((MoveResultEventArgs)ev).Data;
       if (mr == MoveResult.InvalidCombination)
       {
-        IsEnabled = false;
         GameDialogViewModel = new ErrorViewModel(this, $"No combination of card.");
       }
       _client.OnMoveResult += OnMoveResultNextPhase;
