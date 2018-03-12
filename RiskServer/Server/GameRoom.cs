@@ -66,8 +66,8 @@ namespace Risk.Networking.Server
           {
             pl.Value.SendNewPlayerConnected(player.PlayerName);
           }
-          _players.Add(player.PlayerName, player);
           player.PlayerColor = Model.Enums.ArmyColor.Green + _players.Count;
+          _players.Add(player.PlayerName, player);
           player.OnReady += OnReady;
           player.ListenToReadyTag();
           return true;
