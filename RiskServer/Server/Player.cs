@@ -354,6 +354,7 @@ namespace Risk.Networking.Server
       {
         Message m = new Message(MessageType.EndGame, isWinner);
         SendMessage(m);
+        ManagingConnectingToRoom();
       });
     }
 
@@ -407,7 +408,6 @@ namespace Risk.Networking.Server
 
               case MessageType.Leave:
                 OnLeave?.Invoke(this, new EventArgs());
-                SendUpdateGameList(_server.GetUpdateInfo());
                 ManagingConnectingToRoom();
                 _listenToReady = false;
                 break;
@@ -454,8 +454,6 @@ namespace Risk.Networking.Server
           }
         }
 
-        SendUpdateGameList(_server.GetUpdateInfo());
-
         ManagingConnectingToRoom();
       });
     }
@@ -464,6 +462,7 @@ namespace Risk.Networking.Server
     {
       await Task.Run(() =>
       {
+        SendUpdateGameList(_server.GetUpdateInfo());
         bool isInGameOrLeave = false;
         while (!isInGameOrLeave)
         {

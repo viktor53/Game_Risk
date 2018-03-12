@@ -212,7 +212,7 @@ namespace Risk.Networking.Server
 
         foreach (var player in _players)
         {
-          //TODO move player to server
+          _server.LeaveGame(player.Value.PlayerName, RoomName);
         }
       });
     }

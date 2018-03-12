@@ -27,8 +27,6 @@ namespace Risk.ViewModel.Multiplayer
 
     private string _error;
 
-    private SynchronizationContext _ui;
-
     public ICommand Create_Click { get; private set; }
 
     public ICommand Cancel_Click { get; private set; }
@@ -89,13 +87,12 @@ namespace Risk.ViewModel.Multiplayer
 
     public ObservableCollection<int> NumberOfPlayers { get; private set; }
 
-    public CreateGameDialogViewModel(IWindowManager windowManager, IMultiplayerMenuViewModel multiplayerViewModel, RiskClient client, SynchronizationContext ui)
+    public CreateGameDialogViewModel(IWindowManager windowManager, IMultiplayerMenuViewModel multiplayerViewModel, RiskClient client)
     {
       _multiplayerViewModel = multiplayerViewModel;
       _windowManager = windowManager;
       _client = client;
       _client.OnConfirmation += OnConfirmation;
-      _ui = ui;
 
       Create_Click = new Command(CreateClick);
       Cancel_Click = new Command(CancelClick);
@@ -120,7 +117,7 @@ namespace Risk.ViewModel.Multiplayer
       if (((ConfirmationEventArgs)ev).Data)
       {
         _client.OnConfirmation -= OnConfirmation;
-        _windowManager.WindowViewModel = new MultiplayerRoomViewModel(_windowManager, _client, _ui);
+        _windowManager.WindowViewModel = new MultiplayerRoomViewModel(_windowManager, _client);
       }
       else
       {

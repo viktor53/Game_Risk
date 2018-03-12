@@ -5,12 +5,15 @@ using System.Text;
 using System.Threading.Tasks;
 using Risk.ViewModel.Main;
 using System.Windows;
+using System.Threading;
 
 namespace Risk.ViewModel
 {
-  public class WindowManagerViewModel: ViewModelBase, IWindowManager
+  public class WindowManagerViewModel : ViewModelBase, IWindowManager
   {
     private ViewModelBase _windowViewModel;
+
+    private SynchronizationContext _ui;
 
     public ViewModelBase WindowViewModel
     {
@@ -26,9 +29,12 @@ namespace Risk.ViewModel
       }
     }
 
+    public SynchronizationContext UI => _ui;
+
     public WindowManagerViewModel()
     {
       WindowViewModel = new MainMenuViewModel(this);
+      _ui = SynchronizationContext.Current;
     }
 
     public void CloseWindow()

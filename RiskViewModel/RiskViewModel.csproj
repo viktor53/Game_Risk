@@ -58,6 +58,7 @@
     <Compile Include="Game\IGameBoardViewModel.cs" />
     <Compile Include="Game\MapItem.cs" />
     <Compile Include="Game\Planet.cs" />
+    <Compile Include="Game\WinnerViewModel.cs" />
     <Compile Include="IWindowManager.cs" />
     <Compile Include="Game\GameBoardViewModel.cs" />
     <Compile Include="Main\IMainMenuViewModel.cs" />

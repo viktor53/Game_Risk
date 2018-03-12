@@ -19,6 +19,7 @@ using Risk.Model.Enums;
 using Risk.Networking.Messages.Data;
 using Risk.Networking.Client;
 using System.Threading;
+using Risk.ViewModel.Multiplayer;
 
 namespace Risk.ViewModel.Game
 {
@@ -210,7 +211,7 @@ namespace Risk.ViewModel.Game
 
     public BindingList<MapItem> MapItems { get; private set; }
 
-    public GameBoardViewModel(IWindowManager windowManager, RiskClient client, GameBoardInfo boardInfo, SynchronizationContext ui)
+    public GameBoardViewModel(IWindowManager windowManager, RiskClient client, GameBoardInfo boardInfo)
     {
       _windowManager = windowManager;
       _client = client;
@@ -220,6 +221,7 @@ namespace Risk.ViewModel.Game
       _client.OnYourTurn += OnYourTurn;
       _client.OnMoveResult += OnMoveResultSetUp;
       _client.OnUpdateCard += OnUpdateCard;
+      _client.OnEndGame += OnEndGame;
       _client.ListenToGameCommands();
 
       BG = Properties.Resources.gameBg;
@@ -342,6 +344,13 @@ namespace Risk.ViewModel.Game
         GameDialogViewModel = new ErrorViewModel(this, $"No combination of card.");
       }
       _client.OnMoveResult += OnMoveResultNextPhase;
+    }
+
+    private void OnEndGame(object sender, EventArgs ev)
+    {
+      ViewModelBase viewModel = new MultiplayerViewModel(_windowManager, _client);
+      IsEnabled = true;
+      GameDialogViewModel = new WinnerViewModel(_windowManager, viewModel, ((EndGameEventArgs)ev).Data);
     }
 
     private int GetDistance(int x1, int y1, int x2, int y2)

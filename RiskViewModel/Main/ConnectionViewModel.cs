@@ -65,6 +65,7 @@ namespace Risk.ViewModel.Main
 
     private async void ConnectClick()
     {
+      //TODO change positon of Connecting
       _client.ConnectAsync();
       bool succes = await _client.SendRegistrationRequestAsync(_name);
       if (succes)

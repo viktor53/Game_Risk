@@ -20,76 +20,6 @@ using Risk.Model.Enums;
 
 namespace Risk.Networking.Client
 {
-  public class ConfirmationEventArgs : EventArgs
-  {
-    public bool Data { get; private set; }
-
-    public ConfirmationEventArgs(bool data)
-    {
-      Data = data;
-    }
-  }
-
-  public class InicializationEventArgs : EventArgs
-  {
-    public GameBoardInfo Data { get; private set; }
-
-    public InicializationEventArgs(GameBoardInfo data)
-    {
-      Data = data;
-    }
-  }
-
-  public class UpdateGameEventArgs : EventArgs
-  {
-    public Area Data { get; private set; }
-
-    public UpdateGameEventArgs(Area data)
-    {
-      Data = data;
-    }
-  }
-
-  public class FreeUnitEventArgs : EventArgs
-  {
-    public long Data { get; private set; }
-
-    public FreeUnitEventArgs(long data)
-    {
-      Data = data;
-    }
-  }
-
-  public class UpdateCardEventArgs : EventArgs
-  {
-    public bool Data { get; private set; }
-
-    public UpdateCardEventArgs(bool data)
-    {
-      Data = data;
-    }
-  }
-
-  public class ArmyColorEventArgs : EventArgs
-  {
-    public long Data { get; private set; }
-
-    public ArmyColorEventArgs(long data)
-    {
-      Data = data;
-    }
-  }
-
-  public class MoveResultEventArgs : EventArgs
-  {
-    public long Data { get; private set; }
-
-    public MoveResultEventArgs(long data)
-    {
-      Data = data;
-    }
-  }
-
   public class RiskClient
   {
     private Socket _client;
@@ -108,7 +38,20 @@ namespace Risk.Networking.Client
 
     private Deserializer _deserializer;
 
-    public event EventHandler OnUpdate;
+    private event EventHandler _onUpdate;
+
+    public event EventHandler OnUpdate
+    {
+      add
+      {
+        _onUpdate = null;
+        _onUpdate += value;
+      }
+      remove
+      {
+        _onUpdate -= value;
+      }
+    }
 
     public event EventHandler OnConfirmation;
 
@@ -139,7 +82,20 @@ namespace Risk.Networking.Client
 
     public event EventHandler OnUpdateCard;
 
-    public event EventHandler OnEndGame;
+    private event EventHandler _onEndGame;
+
+    public event EventHandler OnEndGame
+    {
+      add
+      {
+        _onEndGame = null;
+        _onEndGame += value;
+      }
+      remove
+      {
+        _onEndGame -= value;
+      }
+    }
 
     private IList<GameRoomInfo> _rooms;
 
@@ -152,7 +108,7 @@ namespace Risk.Networking.Client
       private set
       {
         _rooms = value;
-        OnUpdate?.Invoke(this, new EventArgs());
+        _onUpdate?.Invoke(this, new EventArgs());
       }
     }
 
@@ -166,7 +122,7 @@ namespace Risk.Networking.Client
       {
         Players.Add(name);
       }
-      OnUpdate?.Invoke(this, new EventArgs());
+      _onUpdate?.Invoke(this, new EventArgs());
     }
 
     private void RemovePlayer(IList<string> names)
@@ -175,7 +131,7 @@ namespace Risk.Networking.Client
       {
         Players.Remove(name);
       }
-      OnUpdate?.Invoke(this, new EventArgs());
+      _onUpdate?.Invoke(this, new EventArgs());
     }
 
     public RiskClient() : this("localhost", 11000)
@@ -248,38 +204,34 @@ namespace Risk.Networking.Client
           _listen = true;
           while (_listen)
           {
-            Message m = null;
+            Message m = ReceiveMessage();
 
-            lock (_receiveLock)
+            switch (m.MessageType)
             {
-              m = ReceiveMessage();
+              case MessageType.UpdateGameList:
+                Rooms = _deserializer.GetData<IList<GameRoomInfo>>((JArray)m.Data);
+                break;
 
-              switch (m.MessageType)
-              {
-                case MessageType.UpdateGameList:
-                  Rooms = _deserializer.GetData<IList<GameRoomInfo>>((JArray)m.Data);
-                  break;
+              case MessageType.UpdatePlayerListAdd:
+                AddPlayers(_deserializer.GetData<IList<string>>((JArray)m.Data));
+                break;
 
-                case MessageType.UpdatePlayerListAdd:
-                  AddPlayers(_deserializer.GetData<IList<string>>((JArray)m.Data));
-                  break;
+              case MessageType.UpdatePlayerListRemove:
+                RemovePlayer(_deserializer.GetData<IList<string>>((JArray)m.Data));
+                break;
 
-                case MessageType.UpdatePlayerListRemove:
-                  RemovePlayer(_deserializer.GetData<IList<string>>((JArray)m.Data));
-                  break;
+              case MessageType.Confirmation:
+                OnConfirmation?.Invoke(this, new ConfirmationEventArgs((bool)m.Data));
+                break;
 
-                case MessageType.Confirmation:
-                  OnConfirmation?.Invoke(this, new ConfirmationEventArgs((bool)m.Data));
-                  break;
+              case MessageType.InitializeGame:
+                OnInicialization?.Invoke(this, new InicializationEventArgs(_deserializer.DeserializeGameBoardInfo((JObject)m.Data)));
+                _players.Clear();
+                _listen = false;
+                break;
 
-                case MessageType.InitializeGame:
-                  OnInicialization?.Invoke(this, new InicializationEventArgs(_deserializer.DeserializeGameBoardInfo((JObject)m.Data)));
-                  _listen = false;
-                  break;
-
-                default:
-                  break;
-              }
+              default:
+                break;
             }
           }
         });
@@ -302,7 +254,7 @@ namespace Risk.Networking.Client
               break;
 
             case MessageType.UpdateGame:
-              OnUpdate?.Invoke(this, new UpdateGameEventArgs(_deserializer.DeserializeArea((JObject)m.Data)));
+              _onUpdate?.Invoke(this, new UpdateGameEventArgs(_deserializer.DeserializeArea((JObject)m.Data)));
               break;
 
             case MessageType.FreeUnit:
@@ -322,7 +274,7 @@ namespace Risk.Networking.Client
               break;
 
             case MessageType.EndGame:
-              OnEndGame?.Invoke(this, new EventArgs());
+              _onEndGame?.Invoke(this, new EndGameEventArgs((bool)m.Data));
               end = true;
               break;
           }

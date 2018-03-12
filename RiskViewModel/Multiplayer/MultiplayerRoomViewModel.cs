@@ -21,8 +21,6 @@ namespace Risk.ViewModel.Multiplayer
 
     private string _text = "";
 
-    private SynchronizationContext _ui;
-
     public ICommand Ready_Click { get; private set; }
 
     public ICommand Cancel_Click { get; private set; }
@@ -55,7 +53,7 @@ namespace Risk.ViewModel.Multiplayer
       }
     }
 
-    public MultiplayerRoomViewModel(IWindowManager windowManager, RiskClient client, SynchronizationContext ui)
+    public MultiplayerRoomViewModel(IWindowManager windowManager, RiskClient client)
     {
       _windowManager = windowManager;
       _client = client;
@@ -65,7 +63,6 @@ namespace Risk.ViewModel.Multiplayer
       Ready_Click = new Command(ReadyClick);
       Cancel_Click = new Command(CancelClick);
 
-      _ui = ui;
       Players = new ObservableCollection<string>();
 
       IsEnabled = false;
@@ -96,10 +93,10 @@ namespace Risk.ViewModel.Multiplayer
 
       Text = "";
 
-      _ui.Send(x => Players.Clear(), null);
+      _windowManager.UI.Send(x => Players.Clear(), null);
       foreach (var player in _client.Players)
       {
-        _ui.Send(x => Players.Add(player), null);
+        _windowManager.UI.Send(x => Players.Add(player), null);
       }
     }
 
@@ -108,7 +105,7 @@ namespace Risk.ViewModel.Multiplayer
       _client.OnUpdate -= OnUpdate;
       _client.OnInicialization -= OnInicialization;
 
-      _windowManager.WindowViewModel = new GameBoardViewModel(_windowManager, _client, ((InicializationEventArgs)e).Data, _ui);
+      _windowManager.WindowViewModel = new GameBoardViewModel(_windowManager, _client, ((InicializationEventArgs)e).Data);
     }
   }
 }
