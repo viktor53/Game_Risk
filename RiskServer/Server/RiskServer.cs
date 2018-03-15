@@ -41,7 +41,7 @@ namespace Risk.Networking.Server
     {
     }
 
-    public RiskServer(int port) : this("locahost", port, 100, new FileInfo(AppDomain.CurrentDomain.BaseDirectory + "\\Config\\DefaultLogger.xml"))
+    public RiskServer(int port) : this("localhost", port, 100, new FileInfo(AppDomain.CurrentDomain.BaseDirectory + "\\Config\\DefaultLogger.xml"))
     {
     }
 
