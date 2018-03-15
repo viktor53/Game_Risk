@@ -8,12 +8,12 @@ using Risk.Model.GameCore.Moves;
 using Risk.Model.GamePlan;
 using Risk.Model.Cards;
 using Risk.Model.Factories;
+using log4net;
 
 namespace Risk.Model.GameCore
 {
   public class Game : IGame
   {
-    //TODO Risk Cards add region counting
     private class GameSettings
     {
       public static GameBoard GetGameBoard(bool isClassic)
@@ -63,6 +63,8 @@ namespace Risk.Model.GameCore
       }
     }
 
+    private ILog _logger;
+
     private GameBoard _gameBoard;
 
     private Phase _currentPhase;
@@ -83,12 +85,15 @@ namespace Risk.Model.GameCore
 
     private Dictionary<ArmyColor, PlayerInfo> _playersInfo;
 
-    public Game(bool isClassic, int capacity)
+    public Game(bool isClassic, int capacity, ILog logger)
     {
       _capacity = capacity < 3 ? 3 : capacity;
 
       _players = new List<IPlayer>();
       _gameBoard = GameSettings.GetGameBoard(isClassic);
+
+      _logger = logger;
+      _logger.Info($"New game with capacity {capacity}, classic {isClassic}");
     }
 
     public bool AddPlayer(IPlayer player)
@@ -120,6 +125,8 @@ namespace Risk.Model.GameCore
     {
       if (_players.Count >= 3)
       {
+        _logger.Info("Start game");
+
         SetUpPlayerInfo();
 
         SetUpPlayersOrder();
@@ -131,6 +138,8 @@ namespace Risk.Model.GameCore
         PlayToTheEnd();
 
         EndAllPlayer();
+
+        _logger.Info("End game");
       }
     }
 
@@ -146,12 +155,16 @@ namespace Risk.Model.GameCore
     {
       foreach (var player in _players)
       {
+        _logger.Info($"Player={player.PlayerColor},Winner={_playersInfo[player.PlayerColor].IsAlive}");
+
         player.EndPlayer(_playersInfo[player.PlayerColor].IsAlive);
       }
     }
 
     private void PlaySetUpPhase()
     {
+      _logger.Info("SetUp phase");
+
       _currentPhase = Phase.SETUP;
 
       foreach (var player in _players)
@@ -184,17 +197,26 @@ namespace Risk.Model.GameCore
             _playersInfo[player.PlayerColor].FreeUnits = numberFreeUnit;
             player.FreeUnit = numberFreeUnit;
 
+            _logger.Info("Draft phase");
+            _logger.Info($"Player={player.PlayerColor},FreeUnit={numberFreeUnit}");
+
             RiskCard card = _gameBoard.GetCard();
             _playersInfo[player.PlayerColor].Cards.Add(card);
             player.AddCard(card);
 
+            _logger.Info($"Player={player.PlayerColor},NewCard={card.TypeUnit}");
+
             _currentPhase = Phase.DRAFT;
             player.PlayDraft();
+
+            _logger.Info("Attack phase");
 
             _currentPhase = Phase.ATTACK;
             player.PlayAttack();
 
             if (IsWinner()) break;
+
+            _logger.Info("Fortify phase");
 
             _currentPhase = Phase.FORTIFY;
             player.PlayFortify();
@@ -260,6 +282,8 @@ namespace Risk.Model.GameCore
 
     private void SetUpPlayersOrder()
     {
+      _logger.Info("SetUping players order");
+
       List<IPlayer> orderedPlayers = new List<IPlayer>();
       while (_players.Count != 0)
       {
@@ -307,6 +331,9 @@ namespace Risk.Model.GameCore
     {
       _playersInfo = new Dictionary<ArmyColor, PlayerInfo>();
       int numberFreeUnits = GameSettings.GetStartNumberFreeUnit(_players.Count);
+
+      _logger.Info($"Starting number of unit {numberFreeUnits}");
+
       foreach (var player in _players)
       {
         _playersInfo.Add(player.PlayerColor, new PlayerInfo(player.PlayerColor, numberFreeUnits));
@@ -327,6 +354,8 @@ namespace Risk.Model.GameCore
             _currentPlayer.FreeUnit -= move.NumberOfUnit;
 
             UpdateAllPlayers(_gameBoard.Areas[move.AreaID]);
+
+            _logger.Info($"Player={move.PlayerColor},Area={move.AreaID},Units=+{move.NumberOfUnit}");
 
             return MoveResult.OK;
           }
@@ -358,6 +387,8 @@ namespace Risk.Model.GameCore
             _playersInfo[move.PlayerColor].FreeUnits = units;
             _currentPlayer.FreeUnit = units;
 
+            _logger.Info($"Player={move.PlayerColor},ExchangeCombination=({move.Combination[0].TypeUnit},{move.Combination[1].TypeUnit},{move.Combination[2].TypeUnit}),ExchangeResult{units}");
+
             RemoveCards(move.Combination);
 
             return MoveResult.OK;
@@ -385,6 +416,8 @@ namespace Risk.Model.GameCore
 
               _gameBoard.Areas[move.FromAreaID].SizeOfArmy -= move.SizeOfArmy;
               _gameBoard.Areas[move.ToAreaID].SizeOfArmy += move.SizeOfArmy;
+
+              _logger.Info($"Player={move.PlayerColor},FromArea={move.FromAreaID},ToArea={move.ToAreaID},Units={move.SizeOfArmy}");
 
               UpdateAllPlayers(_gameBoard.Areas[move.FromAreaID]);
               UpdateAllPlayers(_gameBoard.Areas[move.ToAreaID]);
@@ -456,6 +489,8 @@ namespace Risk.Model.GameCore
             _gameBoard.Areas[_capturing.AttackerAreaID].SizeOfArmy -= move.ArmyToMove;
             _gameBoard.Areas[_capturing.DefenderAreaID].SizeOfArmy += move.ArmyToMove;
 
+            _logger.Info($"Player={move.PlayerColor},AttackerArea={_capturing.AttackerAreaID},DefenderArea={_capturing.DefenderAreaID},Units={move.ArmyToMove}");
+
             UpdateAllPlayers(_gameBoard.Areas[_capturing.AttackerAreaID]);
             UpdateAllPlayers(_gameBoard.Areas[_capturing.DefenderAreaID]);
 
@@ -494,6 +529,8 @@ namespace Risk.Model.GameCore
               _gameBoard.Areas[move.AreaID].SizeOfArmy++;
               _gameBoard.Areas[move.AreaID].ArmyColor = move.PlayerColor;
               _playersInfo[move.PlayerColor].FreeUnits--;
+
+              _logger.Info($"Player={move.PlayerColor},Area={move.AreaID}");
 
               UpdateAllPlayers(_gameBoard.Areas[move.AreaID]);
 
@@ -578,6 +615,8 @@ namespace Risk.Model.GameCore
       _gameBoard.Areas[move.AttackerAreaID].SizeOfArmy -= attDied;
       _gameBoard.Areas[move.DefenderAreaID].SizeOfArmy -= defDied;
 
+      _logger.Info($"Player={move.PlayerColor},AttackerArea={move.AttackerAreaID},DefenderArea={move.DefenderAreaID},AttLost={attDied},DefLost={defDied}");
+
       MoveResult result = MoveResult.OK;
 
       if (_gameBoard.Areas[move.DefenderAreaID].SizeOfArmy == 0)
@@ -595,6 +634,8 @@ namespace Risk.Model.GameCore
           {
             _playersInfo[move.PlayerColor].Cards.Add(card);
             _currentPlayer.AddCard(card);
+
+            _logger.Info($"Player={move.PlayerColor},NewCard={card.TypeUnit}");
           }
 
           _playersInfo[defColor].Cards.Clear();

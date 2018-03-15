@@ -68,7 +68,7 @@ namespace Risk.ViewModel.Main
 
     private void MultiplayerClick()
     {
-      ContentViewModel = new ConnectionViewModel(_windowManager, this, new Networking.Client.RiskClient());
+      ContentViewModel = new ConnectionViewModel(_windowManager, this, new Networking.Client.RiskClient("Enterprise"));
       IsEnabled = false;
     }
 

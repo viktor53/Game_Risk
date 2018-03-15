@@ -395,27 +395,37 @@ namespace Risk.Networking.Server
       {
         return Task.Run(() =>
         {
-          _listenToReady = true;
-          while (_listenToReady)
+          try
           {
-            Message received = ReceiveMessage();
-            switch (received.MessageType)
+            _listenToReady = true;
+            while (_listenToReady)
             {
-              case MessageType.ReadyTag:
-                OnReady?.Invoke(this, new EventArgs());
-                _listenToReady = false;
-                break;
+              Message m = ReceiveMessage();
 
-              case MessageType.Leave:
-                OnLeave?.Invoke(this, new EventArgs());
-                ManagingConnectingToRoom();
-                _listenToReady = false;
-                break;
+              switch (m.MessageType)
+              {
+                case MessageType.ReadyTag:
+                  OnReady?.Invoke(this, new EventArgs());
+                  _listenToReady = false;
+                  break;
 
-              default:
-                SendErrorMessage();
-                break;
+                case MessageType.Leave:
+                  OnLeave?.Invoke(this, new EventArgs());
+                  ManagingConnectingToRoom();
+                  _listenToReady = false;
+                  break;
+
+                default:
+                  SendErrorMessage();
+                  break;
+              }
             }
+          }
+          catch (SocketException e)
+          {
+            OnLeave?.Invoke(this, new EventArgs());
+            _server.LogOutPlayer(PlayerName);
+            return;
           }
         });
       }
@@ -426,35 +436,47 @@ namespace Risk.Networking.Server
     {
       return Task.Run(() =>
       {
-        bool isCorrect = false;
-        while (!isCorrect)
+        try
         {
-          Message m = ReceiveMessage();
-          switch (m.MessageType)
+          bool isCorrect = false;
+          while (!isCorrect)
           {
-            case MessageType.Registration:
-              if (_server.AddPlayer((string)m.Data, this))
-              {
-                PlayerName = (string)m.Data;
-                SendMessage(new Message(MessageType.Confirmation, true));
-                isCorrect = true;
-              }
-              else
-              {
-                SendMessage(new Message(MessageType.Confirmation, false));
-              }
-              break;
+            Message m = ReceiveMessage();
 
-            case MessageType.Logout:
-              return;
+            switch (m.MessageType)
+            {
+              case MessageType.Registration:
+                if (_server.AddPlayer((string)m.Data, this))
+                {
+                  PlayerName = (string)m.Data;
+                  SendMessage(new Message(MessageType.Confirmation, true));
+                  isCorrect = true;
+                }
+                else
+                {
+                  SendMessage(new Message(MessageType.Confirmation, false));
+                }
+                break;
 
-            default:
-              SendErrorMessage();
-              break;
+              case MessageType.Logout:
+                return;
+
+              default:
+                SendErrorMessage();
+                break;
+            }
           }
-        }
 
-        ManagingConnectingToRoom();
+          ManagingConnectingToRoom();
+        }
+        catch (SocketException e)
+        {
+          if (PlayerName != null)
+          {
+            _server.LogOutPlayer(PlayerName);
+          }
+          return;
+        }
       });
     }
 
@@ -462,50 +484,59 @@ namespace Risk.Networking.Server
     {
       await Task.Run(() =>
       {
-        SendUpdateGameList(_server.GetUpdateInfo());
-        bool isInGameOrLeave = false;
-        while (!isInGameOrLeave)
+        try
         {
-          Message m = ReceiveMessage();
-          switch (m.MessageType)
+          SendUpdateGameList(_server.GetUpdateInfo());
+
+          bool isInGameOrLeave = false;
+          while (!isInGameOrLeave)
           {
-            case MessageType.CreateGame:
-              if (_server.CreateGame(_deserializer.GetData<CreateGameRoomInfo>((JObject)m.Data), PlayerName))
-              {
-                SendMessage(new Message(MessageType.Confirmation, true));
+            Message m = ReceiveMessage();
 
-                isInGameOrLeave = true;
-              }
-              else
-              {
-                SendMessage(new Message(MessageType.Confirmation, false));
-              }
-              break;
+            switch (m.MessageType)
+            {
+              case MessageType.CreateGame:
+                if (_server.CreateGame(_deserializer.GetData<CreateGameRoomInfo>((JObject)m.Data), PlayerName))
+                {
+                  SendMessage(new Message(MessageType.Confirmation, true));
 
-            case MessageType.ConnectToGame:
-              if (_server.ConnectToGame(PlayerName, (string)m.Data))
-              {
-                SendMessage(new Message(MessageType.Confirmation, true));
+                  isInGameOrLeave = true;
+                }
+                else
+                {
+                  SendMessage(new Message(MessageType.Confirmation, false));
+                }
+                break;
 
-                isInGameOrLeave = true;
-              }
-              else
-              {
-                SendMessage(new Message(MessageType.Confirmation, false));
-              }
-              break;
+              case MessageType.ConnectToGame:
+                if (_server.ConnectToGame(PlayerName, (string)m.Data))
+                {
+                  SendMessage(new Message(MessageType.Confirmation, true));
 
-            case MessageType.Logout:
-              _server.LogOutPlayer(PlayerName);
-              return;
+                  isInGameOrLeave = true;
+                }
+                else
+                {
+                  SendMessage(new Message(MessageType.Confirmation, false));
+                }
+                break;
 
-            default:
-              SendErrorMessage();
-              break;
+              case MessageType.Logout:
+                _server.LogOutPlayer(PlayerName);
+                return;
+
+              default:
+                SendErrorMessage();
+                break;
+            }
           }
-        }
 
-        SendConnectedPlayers(GameRoom.GetPlayers());
+          SendConnectedPlayers(GameRoom.GetPlayers());
+        }
+        catch (SocketException e)
+        {
+          _server.LogOutPlayer(PlayerName);
+        }
       });
     }
 

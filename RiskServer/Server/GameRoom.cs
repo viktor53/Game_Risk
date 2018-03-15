@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 using Risk.Model.GameCore;
 using Risk.Model.GamePlan;
 using Risk.Networking.Messages.Data;
+using log4net;
+using log4net.Config;
+using System.IO;
+using Risk.Model.GameCore.Loggers;
 
 namespace Risk.Networking.Server
 {
@@ -49,7 +53,11 @@ namespace Risk.Networking.Server
     {
       RoomName = roomName;
       _capacity = capacity < 3 ? 3 : capacity;
-      _game = new Game(isClassic, _capacity);
+      var date = DateTime.Now;
+
+      ILog gameLogger = Loggers.GetDateFileLogger(AppDomain.CurrentDomain.BaseDirectory + "Logs\\Games");
+
+      _game = new Game(isClassic, _capacity, gameLogger);
       _playersLock = new object();
       _players = new Dictionary<string, IClientManager>();
       _server = server;
@@ -66,8 +74,8 @@ namespace Risk.Networking.Server
           {
             pl.Value.SendNewPlayerConnected(player.PlayerName);
           }
-          _players.Add(player.PlayerName, player);
           player.PlayerColor = Model.Enums.ArmyColor.Green + _players.Count;
+          _players.Add(player.PlayerName, player);
           player.OnReady += OnReady;
           player.ListenToReadyTag();
           return true;
