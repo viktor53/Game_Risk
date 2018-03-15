@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace Server
 {
@@ -11,7 +12,7 @@ namespace Server
   {
     private static void Main(string[] args)
     {
-      RiskServer server = new RiskServer("localhost", 11000);
+      RiskServer server = new RiskServer("Enterprise", 11000);
 
       server.Start();
     }
