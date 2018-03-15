@@ -12,3 +12,9 @@
 /RiskModel/obj/Debug
 /RiskViewModel/obj/Debug
 /RiskServer/obj/Debug
+/RiskViewModel/obj/Release
+/Server/obj
+/RiskServer/obj/Release
+/RiskModel/obj/Release
+/Risk/obj/Release
+/builds/Release
