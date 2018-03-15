@@ -9,11 +9,16 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using log4net;
+using log4net.Config;
+using System.IO;
 
 namespace Risk.Networking.Server
 {
   public class RiskServer
   {
+    private readonly ILog _logger;
+
     private ManualResetEvent _allDone = new ManualResetEvent(false);
 
     private string _hostNameOrAddress;
@@ -32,35 +37,41 @@ namespace Risk.Networking.Server
 
     private IDictionary<string, IGameRoom> _gameRooms;
 
-    public RiskServer() : this("localhost", 1100, 100)
+    public RiskServer() : this("localhost", 1100, 100, new FileInfo(AppDomain.CurrentDomain.BaseDirectory + "\\Config\\DefaultLogger.xml"))
     {
     }
 
-    public RiskServer(int port) : this("localhost", port, 100)
+    public RiskServer(int port) : this("locahost", port, 100, new FileInfo(AppDomain.CurrentDomain.BaseDirectory + "\\Config\\DefaultLogger.xml"))
     {
     }
 
-    public RiskServer(string hostNameOrAddress, int port) : this(hostNameOrAddress, port, 100)
+    public RiskServer(string hostNameOrAddress, int port) : this(hostNameOrAddress, port, 100, new FileInfo(AppDomain.CurrentDomain.BaseDirectory + "\\Config\\DefaultLogger.xml"))
     {
     }
 
-    public RiskServer(string hostNameOrAddress, int port, int maxLengthConQueue)
+    public RiskServer(string hostNameOrAddress, int port, int maxLengthConQueue, FileInfo pathToConfig)
     {
       _hostNameOrAddress = hostNameOrAddress;
       _port = port;
       _maxLengthConQueue = maxLengthConQueue;
+
+      XmlConfigurator.Configure(pathToConfig);
+
+      _logger = LogManager.GetLogger("ServerLogger");
+
       _playersLock = new object();
       _players = new Dictionary<string, IClientManager>();
       _gameRoomsLock = new object();
       _gameRooms = new Dictionary<string, IGameRoom>();
       _playersInMenu = new HashSet<IClientManager>();
 
-      Debug.WriteLine("**Server inicialization: host={0} port={1} maxLengthConQueue={2} OK", _hostNameOrAddress, _port, _maxLengthConQueue);
+      _logger.Info($"New instance of server: {DateTime.Now.ToLocalTime()}");
+      _logger.Info($"Server inicialization: host={_hostNameOrAddress} port={_port} maxLengthConQueue={_maxLengthConQueue}");
     }
 
     public void Start()
     {
-      Debug.WriteLine("**Server: Starting listenig");
+      _logger.Info("Server is starting to listen");
 
       IPAddress ipHost = Dns.GetHostEntry(_hostNameOrAddress).AddressList[0];
       IPEndPoint localEnd = new IPEndPoint(ipHost, _port);
@@ -83,13 +94,13 @@ namespace Risk.Networking.Server
       }
       catch (Exception e)
       {
-        Debug.WriteLine("**Server ERROR: " + e.StackTrace);
+        _logger.Error($"Message: {e.Message} \n StackTrace: {e.StackTrace}");
       }
     }
 
     public void AcceptCallback(IAsyncResult result)
     {
-      Debug.WriteLine("**Server: NEW CLIENT");
+      _logger.Info("Accepting new client");
 
       _allDone.Set();
 
@@ -106,7 +117,8 @@ namespace Risk.Networking.Server
       {
         if (!_players.ContainsKey(name))
         {
-          Debug.WriteLine($"** Add new Player: {name}", "Server");
+          _logger.Info($"Registrating new player: {name}");
+
           _players.Add(name, player);
           _playersInMenu.Add(player);
           player.OnLeave += OnLeave;
@@ -120,9 +132,13 @@ namespace Risk.Networking.Server
     {
       lock (_playersLock)
       {
-        Debug.WriteLine($"** LogOut player: {name}", "Server");
-        _playersInMenu.Remove(_players[name]);
-        _players.Remove(name);
+        if (_players.ContainsKey(name))
+        {
+          _logger.Info($"Logout player: {name}");
+
+          _playersInMenu.Remove(_players[name]);
+          _players.Remove(name);
+        }
       }
     }
 
@@ -130,19 +146,21 @@ namespace Risk.Networking.Server
     {
       if (_gameRooms.ContainsKey(gameName))
       {
+        _logger.Info($"Player {name} is leaving game room {gameName}");
         lock (_gameRoomsLock)
         {
           _gameRooms[gameName].LeaveGame(name);
           _playersInMenu.Add(_players[name]);
           if (_gameRooms[gameName].Connected == 0)
           {
+            _logger.Info($"Removing empty game room {gameName}");
             _gameRooms.Remove(gameName);
           }
         }
       }
       else
       {
-        _playersInMenu.Add(_players[name]);
+        if (!_playersInMenu.Contains(_players[name])) _playersInMenu.Add(_players[name]);
       }
     }
 
@@ -158,6 +176,8 @@ namespace Risk.Networking.Server
       IGameRoom room = (IGameRoom)sender;
       lock (_gameRoomsLock)
       {
+        _logger.Info($"Game room {room.RoomName} is starting play");
+
         _gameRooms.Remove(room.RoomName);
       }
     }
@@ -169,7 +189,8 @@ namespace Risk.Networking.Server
       {
         if (!_gameRooms.ContainsKey(gameRoom.RoomName))
         {
-          Debug.WriteLine($"** Create new Room: {gameRoom.RoomName}", "Server");
+          _logger.Info($"Creating new game room {gameRoom.RoomName} for {gameRoom.Capacity} players, classic: {gameRoom.IsClassic}");
+
           _gameRooms.Add(gameRoom.RoomName, new GameRoom(gameRoom.RoomName, gameRoom.Capacity, gameRoom.IsClassic, this));
           _gameRooms[gameRoom.RoomName].OnStart += OnStart;
           _gameRooms[gameRoom.RoomName].AddPlayer(_players[playerName]);
@@ -187,6 +208,8 @@ namespace Risk.Networking.Server
     {
       if (_gameRooms.ContainsKey(gameName) && _gameRooms[gameName].AddPlayer(_players[playerName]))
       {
+        _logger.Info($"Player {playerName} is connecting to game room {gameName}");
+
         _players[playerName].GameRoom = _gameRooms[gameName];
         _playersInMenu.Remove(_players[playerName]);
         SendUpdateToAll();
@@ -218,8 +241,6 @@ namespace Risk.Networking.Server
         {
           roomsInfo.Add(new GameRoomInfo(room.Value.RoomName, room.Value.Capacity, room.Value.Connected));
         }
-        roomsInfo.Add(new GameRoomInfo("test1", 6, 3));
-        roomsInfo.Add(new GameRoomInfo("test2", 5, 2));
       }
 
       return roomsInfo;

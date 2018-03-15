@@ -61,12 +61,13 @@ namespace Risk.ViewModel.Main
 
       Connect_Click = new Command(ConnectClick);
       Cancel_Click = new Command(CancelClick);
+
+      _client.ConnectAsync();
     }
 
     private async void ConnectClick()
     {
       //TODO change positon of Connecting
-      _client.ConnectAsync();
       bool succes = await _client.SendRegistrationRequestAsync(_name);
       if (succes)
       {
@@ -80,6 +81,7 @@ namespace Risk.ViewModel.Main
 
     private void CancelClick()
     {
+      _client.SendLougOut();
       _mainMenu.ContentViewModel = null;
       _mainMenu.IsEnabled = true;
     }
