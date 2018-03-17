@@ -64,6 +64,7 @@
     <Compile Include="Factories\BlueUnitFactory.cs" />
     <Compile Include="Factories\ClassicGameBoardFactory.cs" />
     <Compile Include="Factories\GreenUnitFactory.cs" />
+    <Compile Include="Factories\RandomGameBoardFactory.cs" />
     <Compile Include="Factories\RedUnitFactory.cs" />
     <Compile Include="Factories\UnitFactory.cs" />
     <Compile Include="Factories\WhiteUnitFactory.cs" />

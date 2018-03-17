@@ -18,8 +18,16 @@ namespace Risk.Model.GameCore
     {
       public static GameBoard GetGameBoard(bool isClassic)
       {
-        ClassicGameBoardFactory creator = new ClassicGameBoardFactory();
-        return creator.CreateGameBoard();
+        if (isClassic)
+        {
+          ClassicGameBoardFactory creator = new ClassicGameBoardFactory();
+          return creator.CreateGameBoard();
+        }
+        else
+        {
+          RandomGameBoardFactory creator = new RandomGameBoardFactory();
+          return creator.CreateGameBoard();
+        }
       }
 
       public static int GetStartNumberFreeUnit(int numberPlayers)

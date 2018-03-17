@@ -106,7 +106,10 @@ namespace Risk.Networking.Server
       const int width = 1920;
       const int height = 1080;
 
-      int X = (width - 100) / 3;
+      int numberOfregions = GetNumberOfRegions(gamePlan);
+      int areasInRow = numberOfregions / 2 + numberOfregions % 2;
+
+      int X = (width - 100) / areasInRow;
       int Y = (height - 200) / 2;
       int g = 3000;
 
@@ -138,7 +141,7 @@ namespace Risk.Networking.Server
           else
           {
             xa += X;
-            mark = xa >= 2 * X;
+            mark = xa >= (areasInRow - 1) * X;
           }
         }
 
@@ -159,6 +162,21 @@ namespace Risk.Networking.Server
 
       _gameInfo = new GameBoardInfo(gamePlan.Connections, areasInfo);
       return _gameInfo;
+    }
+
+    private int GetNumberOfRegions(GamePlanInfo gamePlan)
+    {
+      int count = 0;
+      int prev = -1;
+      for (int i = 0; i < gamePlan.Areas.Length; ++i)
+      {
+        if (prev != gamePlan.Areas[i].RegionID)
+        {
+          count++;
+          prev = gamePlan.Areas[i].RegionID;
+        }
+      }
+      return count;
     }
 
     private int GetDistance(int x1, int y1, int x2, int y2)
