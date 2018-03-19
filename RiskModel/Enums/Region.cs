@@ -1,5 +1,8 @@
 ﻿namespace Risk.Model.Enums
 {
+  /// <summary>
+  /// Represents regions of the classic game plan.
+  /// </summary>
   public enum Region
   {
     Australie = 0,

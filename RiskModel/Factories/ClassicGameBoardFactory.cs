@@ -1,12 +1,14 @@
-﻿using Risk.Model.Interfacies;
+﻿using System;
+using System.Collections.Generic;
 using Risk.Model.GamePlan;
 using Risk.Model.Enums;
 using Risk.Model.Cards;
-using System;
-using System.Collections.Generic;
 
 namespace Risk.Model.Factories
 {
+  /// <summary>
+  /// Factory for creating classic game board.
+  /// </summary>
   public sealed class ClassicGameBoardFactory : IGameBoardFactory
   {
     private const int _areasOfNorthAmerica = 9;
@@ -19,36 +21,10 @@ namespace Risk.Model.Factories
     private const int _numberWildCards = 2;
     private const int _numberNormalCards = 42;
 
-    private int[] GetNumberUnitsForRegion()
-    {
-      return new int[] { 2, 5, 2, 3, 7, 5 };
-    }
-
-    private IList<RiskCard> GetPackage()
-    {
-      IList<RiskCard> package = new List<RiskCard>();
-
-      for (int i = 0; i < _numberWildCards; ++i)
-      {
-        package.Add(new WildCard());
-      }
-
-      Random ran = new Random();
-      int numberOfOneType = _numberNormalCards / 3;
-      int[] numberUnits = new int[] { numberOfOneType, numberOfOneType, numberOfOneType };
-      for (int i = 0; i < _numberNormalCards; ++i)
-      {
-        int unitType = ran.Next(3);
-        while (numberUnits[unitType] == 0)
-        {
-          unitType = ran.Next(3);
-        }
-        package.Add(new NormalCard((UnitType)unitType, i));
-      }
-
-      return package;
-    }
-
+    /// <summary>
+    /// Creates classic game board.
+    /// </summary>
+    /// <returns>new classic game board</returns>
     public GameBoard CreateGameBoard()
     {
       GameBoard board = new GameBoard(42, GetNumberUnitsForRegion(), GetPackage());
@@ -84,6 +60,50 @@ namespace Risk.Model.Factories
       return board;
     }
 
+    /// <summary>
+    /// Gets free units fro the region with ID as index.
+    /// </summary>
+    /// <returns>free units for the region</returns>
+    private int[] GetNumberUnitsForRegion()
+    {
+      return new int[] { 2, 5, 2, 3, 7, 5 };
+    }
+
+    /// <summary>
+    /// Creates package of risk cards.
+    /// </summary>
+    /// <returns>new package of risk cards</returns>
+    private IList<RiskCard> GetPackage()
+    {
+      IList<RiskCard> package = new List<RiskCard>();
+
+      for (int i = 0; i < _numberWildCards; ++i)
+      {
+        package.Add(new WildCard());
+      }
+
+      Random ran = new Random();
+      int numberOfOneType = _numberNormalCards / 3;
+      int[] numberUnits = new int[] { numberOfOneType, numberOfOneType, numberOfOneType };
+      for (int i = 0; i < _numberNormalCards; ++i)
+      {
+        int unitType = ran.Next(3);
+        while (numberUnits[unitType] == 0)
+        {
+          unitType = ran.Next(3);
+        }
+        package.Add(new NormalCard((UnitType)unitType, i));
+      }
+
+      return package;
+    }
+
+    /// <summary>
+    /// Creates North America region.
+    /// </summary>
+    /// <param name="board">game board where region is creted</param>
+    /// <param name="id">start id of areas</param>
+    /// <returns>next id without area</returns>
     private int CreateNorthAmerica(GameBoard board, int id)
     {
       // creating areas
@@ -128,6 +148,12 @@ namespace Risk.Model.Factories
       return id + _areasOfNorthAmerica;
     }
 
+    /// <summary>
+    /// Creates South America region.
+    /// </summary>
+    /// <param name="board">game board where region is creted</param>
+    /// <param name="id">start id of areas</param>
+    /// <returns>next id without area</returns>
     private static int CreateSouthAmerica(GameBoard board, int id)
     {
       // creating areas
@@ -152,6 +178,12 @@ namespace Risk.Model.Factories
       return id + _areasOfSouthAmerica;
     }
 
+    /// <summary>
+    /// Creates Africa region.
+    /// </summary>
+    /// <param name="board">game board where region is creted</param>
+    /// <param name="id">start id of areas</param>
+    /// <returns>next id without area</returns>
     private static int CreateAfrica(GameBoard board, int id)
     {
       // creating areas
@@ -183,6 +215,12 @@ namespace Risk.Model.Factories
       return id + _areasOfAfrica;
     }
 
+    /// <summary>
+    /// Creates Australia region.
+    /// </summary>
+    /// <param name="board">game board where region is creted</param>
+    /// <param name="id">start id of areas</param>
+    /// <returns>next id without area</returns>
     private static int CreateAustralia(GameBoard board, int id)
     {
       // creating areas
@@ -207,6 +245,12 @@ namespace Risk.Model.Factories
       return id + _areasOfAustralia;
     }
 
+    /// <summary>
+    /// Creates Asia region.
+    /// </summary>
+    /// <param name="board">game board where region is creted</param>
+    /// <param name="id">start id of areas</param>
+    /// <returns>next id without area</returns>
     private static int CreateAsia(GameBoard board, int id)
     {
       // creating areas
@@ -259,6 +303,12 @@ namespace Risk.Model.Factories
       return id + _areasOfAsia;
     }
 
+    /// <summary>
+    /// Creats Europe region.
+    /// </summary>
+    /// <param name="board">game board where region is creted</param>
+    /// <param name="id">start id of areas</param>
+    /// <returns>next id without area</returns>
     private static int CreateEurope(GameBoard board, int id)
     {
       // creating areas
@@ -293,33 +343,69 @@ namespace Risk.Model.Factories
       return id + _areasOfEuropa;
     }
 
+    /// <summary>
+    /// Creates connections between North America and South America.
+    /// </summary>
+    /// <param name="board">game board where connections are created</param>
+    /// <param name="idNorth">first ID of North America</param>
+    /// <param name="idSouth">firt ID of South America</param>
     private static void CreatingConNorthAmSouthAm(GameBoard board, int idNorth, int idSouth)
     {
       CreateEdge(board, idNorth + _areasOfNorthAmerica - 1, idSouth);
     }
 
+    /// <summary>
+    /// Creates connections between South America and Africa.
+    /// </summary>
+    /// <param name="board">game board where connections are created</param>
+    /// <param name="idSouth">first ID of South America</param>
+    /// <param name="idAf">first ID of Africa</param>
     private static void CreatingConSouthAmAfrica(GameBoard board, int idSouth, int idAf)
     {
       CreateEdge(board, idSouth + 2, idAf);
     }
 
+    /// <summary>
+    /// Creates connections between North America and Europe.
+    /// </summary>
+    /// <param name="board">game board where connections are created</param>
+    /// <param name="idNorth">first ID of North America</param>
+    /// <param name="idEur">first ID of Europe</param>
     private static void CreatingConNorthAmEurope(GameBoard board, int idNorth, int idEur)
     {
       CreateEdge(board, idNorth + 2, idEur);
     }
 
+    /// <summary>
+    /// Creates connectios between Europe and Africa.
+    /// </summary>
+    /// <param name="board">game board where connections are created</param>
+    /// <param name="idEur">first ID of Europe</param>
+    /// <param name="idAf">first ID of Africa</param>
     private static void CreatingConEuropeAfrica(GameBoard board, int idEur, int idAf)
     {
       CreateEdge(board, idEur + 5, idAf);
       CreateEdge(board, idEur + 6, idAf + 1);
     }
 
+    /// <summary>
+    /// Creates connections between Africa and Asia.
+    /// </summary>
+    /// <param name="board">game board where connections are created</param>
+    /// <param name="idAf">first ID of Africa</param>
+    /// <param name="idAs">first ID of Asia</param>
     private static void CreatingConAfricaAsia(GameBoard board, int idAf, int idAs)
     {
       CreateEdge(board, idAf + 1, idAs + 9);
       CreateEdge(board, idAf + 2, idAs + 9);
     }
 
+    /// <summary>
+    /// Creates connections between Europe and Asia.
+    /// </summary>
+    /// <param name="board">game board where connections are created</param>
+    /// <param name="idEur">first ID of Europe</param>
+    /// <param name="idAs">first ID of Asia</param>
     private static void CreatingConEuropeAsia(GameBoard board, int idEur, int idAs)
     {
       CreateEdge(board, idEur + 2, idAs + 6);
@@ -328,11 +414,23 @@ namespace Risk.Model.Factories
       CreateEdge(board, idEur + 6, idAs + 9);
     }
 
+    /// <summary>
+    /// Creates connections between Asia and Australia.
+    /// </summary>
+    /// <param name="board">game board where connections are created</param>
+    /// <param name="idAs">first ID of Asia</param>
+    /// <param name="idAus">first ID of Australia</param>
     private static void CreatingConAsiaAustralia(GameBoard board, int idAs, int idAus)
     {
       CreateEdge(board, idAs + 11, idAus);
     }
 
+    /// <summary>
+    /// Creates edge between areas A,B.
+    /// </summary>
+    /// <param name="board">game board where edge is created</param>
+    /// <param name="id1">area A</param>
+    /// <param name="id2">area B</param>
     private static void CreateEdge(GameBoard board, int id1, int id2)
     {
       board.Connections[id1][id2] = true;

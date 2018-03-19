@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Risk.Model.Enums
+﻿namespace Risk.Model.Enums
 {
+  /// <summary>
+  /// Represents who now play if the player or others.
+  /// </summary>
   public enum Turn
   {
     YOU = 0,

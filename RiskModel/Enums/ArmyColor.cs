@@ -1,13 +1,16 @@
 ﻿namespace Risk.Model.Enums
 {
+  /// <summary>
+  /// Represents color of player.
+  /// </summary>
   public enum ArmyColor
   {
-    Red = 3,
-    Blue = 2,
+    Neutral = 0,
     Green = 1,
+    Blue = 2,
+    Red = 3,
     Yellow = 4,
-    Black = 6,
     White = 5,
-    Neutral = 0
+    Black = 6
   }
 }

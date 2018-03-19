@@ -1,14 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Risk.Model.Enums
+﻿namespace Risk.Model.Enums
 {
+  /// <summary>
+  /// Represents game move result.
+  /// </summary>
   public enum MoveResult
   {
+    /// <summary>
+    /// Success
+    /// </summary>
+
     OK,
+    Winner,
+    AreaCaptured,
+
+    /// <summary>
+    /// Error
+    /// </summary>
+
     BadPhase,
     NotYourTurn,
     AlreadySetUpThisTurn,
@@ -17,12 +25,10 @@ namespace Risk.Model.Enums
     NotYourArea,
     InvalidAttackerOrDefender,
     InvalidAttack,
-    AreaCaptured,
     EmptyCapturedArea,
     NoCapturedArea,
     InvalidNumberUnit,
     NotConnected,
-    Winner,
     InvalidCombination
   }
 }

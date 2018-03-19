@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Risk.Model.Enums
+﻿namespace Risk.Model.Enums
 {
+  /// <summary>
+  /// Represents size of attack. It can be one, two or three units.
+  /// </summary>
   public enum AttackSize
   {
     One = 1,

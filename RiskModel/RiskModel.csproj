@@ -46,7 +46,7 @@
   <ItemGroup>
     <Compile Include="Cards\ConquerMission.cs" />
     <Compile Include="Cards\DestroyMission.cs" />
-    <Compile Include="Cards\MIssionCard.cs" />
+    <Compile Include="Cards\MissionCard.cs" />
     <Compile Include="Cards\NormalCard.cs" />
     <Compile Include="Cards\OccupyMission.cs" />
     <Compile Include="Cards\RiskCard.cs" />
@@ -55,20 +55,12 @@
     <Compile Include="Enums\AttackSize.cs" />
     <Compile Include="Enums\MissionTarget.cs" />
     <Compile Include="Enums\MoveResult.cs" />
-    <Compile Include="Enums\MoveType.cs" />
     <Compile Include="Enums\Phase.cs" />
     <Compile Include="Enums\Region.cs" />
     <Compile Include="Enums\Turn.cs" />
     <Compile Include="Enums\UnitType.cs" />
-    <Compile Include="Factories\BlackUnitFactory.cs" />
-    <Compile Include="Factories\BlueUnitFactory.cs" />
     <Compile Include="Factories\ClassicGameBoardFactory.cs" />
-    <Compile Include="Factories\GreenUnitFactory.cs" />
     <Compile Include="Factories\RandomGameBoardFactory.cs" />
-    <Compile Include="Factories\RedUnitFactory.cs" />
-    <Compile Include="Factories\UnitFactory.cs" />
-    <Compile Include="Factories\WhiteUnitFactory.cs" />
-    <Compile Include="Factories\YellowUnitFactory.cs" />
     <Compile Include="GameCore\Game.cs" />
     <Compile Include="GameCore\IGame.cs" />
     <Compile Include="GameCore\IPlayer.cs" />
@@ -85,12 +77,7 @@
     <Compile Include="GamePlan\GameBoard.cs" />
     <Compile Include="Factories\IGameBoardFactory.cs" />
     <Compile Include="GamePlan\GamePlanInfo.cs" />
-    <Compile Include="Interfacies\IUnitFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Units\Cannon.cs" />
-    <Compile Include="Units\Cavalary.cs" />
-    <Compile Include="Units\Infantry.cs" />
-    <Compile Include="Units\Unit.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

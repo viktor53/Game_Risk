@@ -1,19 +1,22 @@
-﻿using Risk.Model.Interfacies;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Risk.Model.GamePlan;
 using Risk.Model.Cards;
 using Risk.Model.Enums;
 
 namespace Risk.Model.Factories
 {
+  /// <summary>
+  /// Factory for creating random game board.
+  /// </summary>
   public sealed class RandomGameBoardFactory : IGameBoardFactory
   {
-    private const int numberOfAreas = 42;
+    private const int _numberOfAreas = 42;
 
+    /// <summary>
+    /// Creates random game board.
+    /// </summary>
+    /// <returns>new random game board</returns>
     public GameBoard CreateGameBoard()
     {
       Random ran = new Random();
@@ -22,7 +25,7 @@ namespace Risk.Model.Factories
 
       int[] numberOfAreasInRegion = DistributeAreasIntoRegion(numberOfRegion);
 
-      GameBoard gb = new GameBoard(numberOfAreas, GetUnitsPerRegion(numberOfAreasInRegion), GetPackage());
+      GameBoard gb = new GameBoard(_numberOfAreas, GetUnitsPerRegion(numberOfAreasInRegion), GetPackage());
 
       GenereteAreas(gb, numberOfAreasInRegion);
 
@@ -31,6 +34,10 @@ namespace Risk.Model.Factories
       return gb;
     }
 
+    /// <summary>
+    /// Creates package of risk cards.
+    /// </summary>
+    /// <returns>new package of risk cards</returns>
     private IList<RiskCard> GetPackage()
     {
       const int numberWildCards = 2;
@@ -59,6 +66,11 @@ namespace Risk.Model.Factories
       return package;
     }
 
+    /// <summary>
+    /// Randomly distribute areas into region, but does not creat areas only count them.
+    /// </summary>
+    /// <param name="numberOfRegion">number of region</param>
+    /// <returns>number of areas in the region with ID as index</returns>
     private int[] DistributeAreasIntoRegion(int numberOfRegion)
     {
       Random ran = new Random();
@@ -70,7 +82,7 @@ namespace Risk.Model.Factories
         numberOfAreasInRegion[i] = 3;
       }
 
-      for (int i = 0; i < numberOfAreas - 3 * numberOfRegion; ++i)
+      for (int i = 0; i < _numberOfAreas - 3 * numberOfRegion; ++i)
       {
         numberOfAreasInRegion[ran.Next(0, numberOfRegion)]++;
       }
@@ -78,6 +90,11 @@ namespace Risk.Model.Factories
       return numberOfAreasInRegion;
     }
 
+    /// <summary>
+    /// Counts free units for the region with ID as index.
+    /// </summary>
+    /// <param name="numberOfAreasInRegion">number of areas in the region with ID as index</param>
+    /// <returns>free units for the region</returns>
     private int[] GetUnitsPerRegion(int[] numberOfAreasInRegion)
     {
       int[] unitsPerRegion = new int[numberOfAreasInRegion.Length];
@@ -90,6 +107,11 @@ namespace Risk.Model.Factories
       return unitsPerRegion;
     }
 
+    /// <summary>
+    /// Generates areas into regions depending on number of areas in the region.
+    /// </summary>
+    /// <param name="gb">game board where areas are created</param>
+    /// <param name="numberOfAreasInRegion">number of areas in region</param>
     private void GenereteAreas(GameBoard gb, int[] numberOfAreasInRegion)
     {
       int offset = 0;
@@ -103,6 +125,11 @@ namespace Risk.Model.Factories
       }
     }
 
+    /// <summary>
+    /// Generetes connections between areas using algorithm for generating planar tri-connected graph.
+    /// </summary>
+    /// <param name="gb">game board where connections are created</param>
+    /// <param name="numberOfAreasInRegion">number of areas in region</param>
     private void GenereteConnections(GameBoard gb, int[] numberOfAreasInRegion)
     {
       List<List<int>> borders = new List<List<int>>();
@@ -154,6 +181,13 @@ namespace Risk.Model.Factories
       }
     }
 
+    /// <summary>
+    /// Creates triangle with verteces A,B,C.
+    /// </summary>
+    /// <param name="connections">connections where triangle is created</param>
+    /// <param name="a">vertex A</param>
+    /// <param name="b">vertex B</param>
+    /// <param name="c">vertex C</param>
     private void MakeTriangle(bool[][] connections, int a, int b, int c)
     {
       MakeEdge(connections, a, b);
@@ -161,6 +195,16 @@ namespace Risk.Model.Factories
       MakeEdge(connections, b, c);
     }
 
+    /// <summary>
+    /// Generates planar tri-connected graph with one more vertex using inner contraction.
+    /// </summary>
+    /// <param name="connections">connections where graph is created</param>
+    /// <param name="root">root vertex</param>
+    /// <param name="newVertex">new vertex</param>
+    /// <param name="neighbors">neighbors of root vertex in counterclockwise order</param>
+    /// <param name="i">i-th vertex in neighbors where 0 =&lt i &lt j</param>
+    /// <param name="j">j-th vertex in neighbors where i &lt j &lt d(root)</param>
+    /// <returns></returns>
     private List<int> InnerContraction(bool[][] connections, int root, int newVertex, List<int> neighbors, int i, int j)
     {
       if (i + 1 != j)
@@ -178,9 +222,19 @@ namespace Risk.Model.Factories
         MakeEdge(connections, newVertex, neighbors[k]);
       }
 
-      return CheckNeighborsInner(connections, newVertex, neighbors, i, j);
+      return CheckNeighborsInner(newVertex, neighbors, i, j);
     }
 
+    /// <summary>
+    /// Generates planar tri-connected graph with one more vertex using outer contraction.
+    /// </summary>
+    /// <param name="connections">connections where graph is created</param>
+    /// <param name="root">root vertex</param>
+    /// <param name="newVertex">new vertex</param>
+    /// <param name="neighbors">neighbors of root vertex in counterclockwise order</param>
+    /// <param name="i">i-th vertex in neighbors where i = d(root)</param>
+    /// <param name="j">j-th vertex in neighbors where 1 &lt j =&lt i</param>
+    /// <returns></returns>
     private List<int> OuterContraction(bool[][] connections, int root, int newVertex, List<int> neighbors, int i, int j)
     {
       for (int k = j; k < neighbors.Count; ++k)
@@ -196,10 +250,18 @@ namespace Risk.Model.Factories
         MakeEdge(connections, newVertex, neighbors[k]);
       }
 
-      return CheckNeighborsOuter(connections, newVertex, neighbors, j);
+      return CheckNeighborsOuter(newVertex, neighbors, j);
     }
 
-    private List<int> CheckNeighborsInner(bool[][] connections, int newVetrex, List<int> neighbors, int i, int j)
+    /// <summary>
+    /// Removes from neighbors verteces that now are not neighbors and adds new neighbors after inner contraction.
+    /// </summary>
+    /// <param name="newVetrex">new vertex that was added</param>
+    /// <param name="neighbors">neighbors of root vertex</param>
+    /// <param name="i">parametr i in inner contraction</param>
+    /// <param name="j">parametr j in inner contraction</param>
+    /// <returns></returns>
+    private List<int> CheckNeighborsInner(int newVetrex, List<int> neighbors, int i, int j)
     {
       List<int> newNeighbors = new List<int>();
 
@@ -218,7 +280,14 @@ namespace Risk.Model.Factories
       return newNeighbors;
     }
 
-    private List<int> CheckNeighborsOuter(bool[][] connections, int newVertex, List<int> neighbors, int j)
+    /// <summary>
+    /// Removes from neighbors verteces that now are not neighbors and adds new neighbors after outer contraction.
+    /// </summary>
+    /// <param name="newVertex">new vertex that was added</param>
+    /// <param name="neighbors">neighbors of root vertex</param>
+    /// <param name="j">parametr j in outer contraction</param>
+    /// <returns></returns>
+    private List<int> CheckNeighborsOuter(int newVertex, List<int> neighbors, int j)
     {
       List<int> newNeighbors = new List<int>();
 
@@ -232,12 +301,24 @@ namespace Risk.Model.Factories
       return newNeighbors;
     }
 
+    /// <summary>
+    /// Creates edge between verteces X,Y.
+    /// </summary>
+    /// <param name="connections">connections where edge is created</param>
+    /// <param name="x">vertex X</param>
+    /// <param name="y">vertex Y</param>
     private void MakeEdge(bool[][] connections, int x, int y)
     {
       connections[x][y] = true;
       connections[y][x] = true;
     }
 
+    /// <summary>
+    /// Removes edge between verteces X,Y.
+    /// </summary>
+    /// <param name="connections">connections where edge is created</param>
+    /// <param name="x">vertex X</param>
+    /// <param name="y">vertex Y</param>
     private void RemoveEdge(bool[][] connections, int x, int y)
     {
       connections[x][y] = false;

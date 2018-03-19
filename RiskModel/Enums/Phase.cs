@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Risk.Model.Enums
+﻿namespace Risk.Model.Enums
 {
+  /// <summary>
+  /// Represents phases of the game.
+  /// </summary>
   public enum Phase
   {
     SETUP = 0,

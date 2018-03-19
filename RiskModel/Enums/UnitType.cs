@@ -1,5 +1,8 @@
 ﻿namespace Risk.Model.Enums
 {
+  /// <summary>
+  /// Represents unit type. (Infantry, Cavalary, Cannon or joker/mix)
+  /// </summary>
   public enum UnitType
   {
     Infantry = 0,

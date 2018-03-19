@@ -1,20 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Risk.Model.Cards;
-using System;
 using Risk.Model.Enums;
 
 namespace Risk.Model.GamePlan
 {
+  /// <summary>
+  /// Represents game board with areas, connections, dice and package of cards.
+  /// </summary>
   public sealed class GameBoard
   {
-    public bool[][] Connections { get; private set; }
-
-    public Area[] Areas { get; private set; }
-
-    public Dice Dice { get; private set; }
-
-    public int[] ArmyForRegion { get; private set; }
-
     private Queue<RiskCard> _package;
 
     private IList<RiskCard> _returnedCards;
@@ -23,6 +18,32 @@ namespace Risk.Model.GamePlan
 
     private int _unitsPerCombination;
 
+    /// <summary>
+    /// Connections between areas.
+    /// </summary>
+    public bool[][] Connections { get; private set; }
+
+    /// <summary>
+    /// Areas of game plane.
+    /// </summary>
+    public Area[] Areas { get; private set; }
+
+    /// <summary>
+    /// Dice providing rolls.
+    /// </summary>
+    public Dice Dice { get; private set; }
+
+    /// <summary>
+    /// Determines free units for occupied region with the ID.
+    /// </summary>
+    public int[] ArmyForRegion { get; private set; }
+
+    /// <summary>
+    /// Initializes connections and areas, but does not create game plan.
+    /// </summary>
+    /// <param name="countOfAreas">number of areas</param>
+    /// <param name="armyForRegion">free unit for occupied region</param>
+    /// <param name="package">package of risk cards</param>
     public GameBoard(int countOfAreas, int[] armyForRegion, IList<RiskCard> package)
     {
       ArmyForRegion = armyForRegion;
@@ -47,6 +68,10 @@ namespace Risk.Model.GamePlan
       _unitsPerCombination = 4;
     }
 
+    /// <summary>
+    /// Gets risk card from top of package.
+    /// </summary>
+    /// <returns>risk card from top</returns>
     public RiskCard GetCard()
     {
       if (_package.Count == 0)
@@ -57,11 +82,19 @@ namespace Risk.Model.GamePlan
       return _package.Dequeue();
     }
 
+    /// <summary>
+    /// Returns cards into package.
+    /// </summary>
+    /// <param name="card">returned risk card</param>
     public void ReturnCard(RiskCard card)
     {
       _returnedCards.Add(card);
     }
 
+    /// <summary>
+    /// Gets free units for exchange risk cards combination.
+    /// </summary>
+    /// <returns>free units</returns>
     public int GetUnitPerCombination()
     {
       int units = _unitsPerCombination;
@@ -88,6 +121,11 @@ namespace Risk.Model.GamePlan
       return units;
     }
 
+    /// <summary>
+    /// Determines if the combination of risk cards is correct.
+    /// </summary>
+    /// <param name="combination">risk cards combination</param>
+    /// <returns>if the combination is correct</returns>
     public bool IsCorrectCombination(IList<RiskCard> combination)
     {
       if (combination.Count == 3)
@@ -100,6 +138,13 @@ namespace Risk.Model.GamePlan
       return false;
     }
 
+    /// <summary>
+    /// Determines if it is risk cards combination of the specific type.
+    /// (three Infantries, three Cavaleries, three Cannons or with joker)
+    /// </summary>
+    /// <param name="combination">risk cards combination</param>
+    /// <param name="unit">unit type combination of risk cards</param>
+    /// <returns>if it is risk cards combination</returns>
     private bool IsComOfType(IList<RiskCard> combination, UnitType unit)
     {
       foreach (var card in combination)
@@ -112,6 +157,12 @@ namespace Risk.Model.GamePlan
       return true;
     }
 
+    /// <summary>
+    /// Determines if it is mixed risk cards combination.
+    /// (one Infantry, one Cavalery, one Cannon or with joker)
+    /// </summary>
+    /// <param name="combination">risk cards combination</param>
+    /// <returns>if it is risk cards combination</returns>
     private bool IsMixCom(IList<RiskCard> combination)
     {
       bool isInfantry = false;
@@ -151,6 +202,12 @@ namespace Risk.Model.GamePlan
       }
     }
 
+    /// <summary>
+    /// Determines if two areas are connected through friendly areas.
+    /// </summary>
+    /// <param name="fromAreaID">id of firt area</param>
+    /// <param name="toAreaID">id of second area</param>
+    /// <returns></returns>
     public bool IsConnected(int fromAreaID, int toAreaID)
     {
       ArmyColor fromColor = Areas[fromAreaID].ArmyColor;
@@ -185,6 +242,9 @@ namespace Risk.Model.GamePlan
       return false;
     }
 
+    /// <summary>
+    /// Shuffles returned cards.
+    /// </summary>
     private void ShuffleCards()
     {
       Random ran = new Random();
@@ -197,6 +257,9 @@ namespace Risk.Model.GamePlan
       }
     }
 
+    /// <summary>
+    /// Puts returned cards into package.
+    /// </summary>
     private void PutInThePackage()
     {
       foreach (var card in _returnedCards)
