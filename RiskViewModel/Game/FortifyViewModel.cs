@@ -37,7 +37,7 @@ namespace Risk.ViewModel.Game
 
     private void MoveArmyClick()
     {
-      Client.SendFortifyMove(GameBoardVM.PlayerColor, GameBoardVM.Selected1.ID, GameBoardVM.Selected2.ID, Army);
+      Client.SendFortifyMoveAsync(GameBoardVM.PlayerColor, GameBoardVM.Selected1.ID, GameBoardVM.Selected2.ID, Army);
     }
 
     private void OnMoveResult(object sender, EventArgs ev)

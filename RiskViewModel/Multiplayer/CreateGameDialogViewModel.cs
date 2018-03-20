@@ -103,7 +103,7 @@ namespace Risk.ViewModel.Multiplayer
 
     private async void CreateClick()
     {
-      await _client.SendCreateGameRequest(new CreateGameRoomInfo(GameName, Players, Map == "Default"));
+      await _client.SendCreateGameRequestAsync(new CreateGameRoomInfo(GameName, Players, Map == "Default"));
     }
 
     private void CancelClick()

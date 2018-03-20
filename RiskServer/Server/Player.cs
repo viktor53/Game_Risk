@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using Risk.Model.Cards;
-using Risk.Model.Enums;
-using Risk.Model.GameCore;
 using System.Net.Sockets;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
@@ -14,10 +11,15 @@ using Risk.Networking.Enums;
 using Risk.Model.GameCore.Moves;
 using Risk.Model.GamePlan;
 using Risk.Networking.Messages.Data;
-using System.Threading;
+using Risk.Model.Cards;
+using Risk.Model.Enums;
+using Risk.Model.GameCore;
 
 namespace Risk.Networking.Server
 {
+  /// <summary>
+  /// Represents connection with the player on client side. Implements IClientManager.
+  /// </summary>
   internal class Player : IClientManager
   {
     private object _sendingLock;
@@ -39,6 +41,8 @@ namespace Risk.Networking.Server
     private int _freeUnit;
 
     private IList<RiskCard> _cards;
+
+    private object _listeningLock;
 
     public int FreeUnit
     {
@@ -66,8 +70,11 @@ namespace Risk.Networking.Server
 
     public event EventHandler OnLeave;
 
-    private object _listeningLock;
-
+    /// <summary>
+    /// Creates player connected player.
+    /// </summary>
+    /// <param name="connection">connection with the client</param>
+    /// <param name="server">risk server</param>
     public Player(Socket connection, RiskServer server)
     {
       _connection = connection;
@@ -80,6 +87,10 @@ namespace Risk.Networking.Server
       _cards = new List<RiskCard>();
     }
 
+    /// <summary>
+    /// Adds card into player's hand and notifies him.
+    /// </summary>
+    /// <param name="card">risk card for player</param>
     public void AddCard(RiskCard card)
     {
       _cards.Add(card);
@@ -89,6 +100,10 @@ namespace Risk.Networking.Server
       });
     }
 
+    /// <summary>
+    /// Removes card from player's hand and notifies him.
+    /// </summary>
+    /// <param name="card">risk card from its hand</param>
     public void RemoveCard(RiskCard card)
     {
       _cards.Remove(card);
@@ -98,6 +113,9 @@ namespace Risk.Networking.Server
       });
     }
 
+    /// <summary>
+    /// Plays attack phase.
+    /// </summary>
     public void PlayAttack()
     {
       bool isNextPhase = false;
@@ -126,6 +144,9 @@ namespace Risk.Networking.Server
       }
     }
 
+    /// <summary>
+    /// Plays draft phase.
+    /// </summary>
     public void PlayDraft()
     {
       SendYourTurnMessage(false);
@@ -156,6 +177,10 @@ namespace Risk.Networking.Server
       }
     }
 
+    /// <summary>
+    /// Gets risk cards combination if it exists.
+    /// </summary>
+    /// <returns>risk cards combination or empty combination</returns>
     private IList<RiskCard> GetCombination()
     {
       IList<RiskCard> combination;
@@ -169,6 +194,10 @@ namespace Risk.Networking.Server
       return combination;
     }
 
+    /// <summary>
+    /// Gets mix risk cards combination.
+    /// </summary>
+    /// <returns>mix risk cards combination or not full combination</returns>
     private IList<RiskCard> GetMixCombination()
     {
       IList<RiskCard> combination = new List<RiskCard>();
@@ -221,6 +250,10 @@ namespace Risk.Networking.Server
       return combination;
     }
 
+    /// <summary>
+    /// Gets same risk cards combination.
+    /// </summary>
+    /// <returns>same risk cards combination or empty combination</returns>
     private IList<RiskCard> GetSameCombination()
     {
       for (int i = 0; i < 4; ++i)
@@ -247,6 +280,9 @@ namespace Risk.Networking.Server
       return new List<RiskCard>();
     }
 
+    /// <summary>
+    /// Plays fortify phase.
+    /// </summary>
     public void PlayFortify()
     {
       bool isNextPhase = false;
@@ -271,6 +307,9 @@ namespace Risk.Networking.Server
       }
     }
 
+    /// <summary>
+    /// Plays setup phase.
+    /// </summary>
     public void PlaySetUp()
     {
       SendYourTurnMessage(true);
@@ -294,33 +333,53 @@ namespace Risk.Networking.Server
       }
     }
 
-    public Task UpdateGame(Area area)
+    /// <summary>
+    /// Asynchronously updates player's game board.
+    /// </summary>
+    /// <param name="area">changed area</param>
+    /// <returns></returns>
+    public async Task UpdateGame(Area area)
     {
-      return Task.Run(() =>
+      await Task.Run(() =>
       {
         Message m = new Message(MessageType.UpdateGame, area);
         SendMessage(m);
       });
     }
 
+    /// <summary>
+    /// Sends to player that it is his turn.
+    /// </summary>
+    /// <param name="isSetUp">notify if it is setup or draft phase</param>
     private void SendYourTurnMessage(bool isSetUp)
     {
       Message m = new Message(MessageType.YourTurn, isSetUp);
       SendMessage(m);
     }
 
+    /// <summary>
+    /// Sends to player result of his move.
+    /// </summary>
+    /// <param name="result">result of player's move</param>
     private void SendMoveResult(MoveResult result)
     {
       Message m = new Message(MessageType.MoveResult, result);
       SendMessage(m);
     }
 
+    /// <summary>
+    /// Sends to player error message that its request is bad or unknown
+    /// </summary>
     private void SendErrorMessage()
     {
-      Message m = new Message(MessageType.Error, new Error(ErrorType.UknownRequest, "Uknown or bad request!"));
+      Message m = new Message(MessageType.Error, new Error(ErrorType.UknownRequest, "Unknown or bad request!"));
       SendMessage(m);
     }
 
+    /// <summary>
+    /// Sends message to player.
+    /// </summary>
+    /// <param name="m">message for player</param>
     private void SendMessage(Message m)
     {
       lock (_sendingLock)
@@ -330,17 +389,25 @@ namespace Risk.Networking.Server
       }
     }
 
+    /// <summary>
+    /// Receives message from player.
+    /// </summary>
+    /// <returns>received message</returns>
     private Message ReceiveMessage()
     {
       int lengthOfData = _connection.Receive(_buffer);
       return JsonConvert.DeserializeObject<Message>(Encoding.ASCII.GetString(_buffer, 0, lengthOfData));
     }
 
-    public void StartPlayer(IGame game)
+    /// <summary>
+    /// Asynchronously starts player and sends inicialization of game board.
+    /// </summary>
+    /// <param name="game">started game</param>
+    public async Task StartPlayer(IGame game)
     {
       _game = game;
       Message m = new Message(MessageType.InitializeGame, GameRoom.GetBoardInfo(_game.GetGamePlan()));
-      Task.Run(() =>
+      await Task.Run(() =>
       {
         SendMessage(m);
 
@@ -348,9 +415,13 @@ namespace Risk.Networking.Server
       });
     }
 
-    public void EndPlayer(bool isWinner)
+    /// <summary>
+    /// Asynchronously ends player and notifies if is winner.
+    /// </summary>
+    /// <param name="isWinner">if player is winner</param>
+    public async Task EndPlayer(bool isWinner)
     {
-      Task.Run(() =>
+      await Task.Run(() =>
       {
         Message m = new Message(MessageType.EndGame, isWinner);
         SendMessage(m);
@@ -358,9 +429,14 @@ namespace Risk.Networking.Server
       });
     }
 
-    public Task SendNewPlayerConnected(string name)
+    /// <summary>
+    /// Asynchronously sends name of new connected player.
+    /// </summary>
+    /// <param name="name">name of new connected player</param>
+    /// <returns>async task</returns>
+    public async Task SendNewPlayerConnected(string name)
     {
-      return Task.Run(() =>
+      await Task.Run(() =>
       {
         List<string> players = new List<string>();
         players.Add(name);
@@ -369,9 +445,14 @@ namespace Risk.Networking.Server
       });
     }
 
-    public Task SendPlayerLeave(string name)
+    /// <summary>
+    /// Asynchronously sends name of player that left the game room.
+    /// </summary>
+    /// <param name="name">name of player that left the game room</param>
+    /// <returns>async task</returns>
+    public async Task SendPlayerLeave(string name)
     {
-      return Task.Run(() =>
+      await Task.Run(() =>
       {
         List<string> players = new List<string>();
         players.Add(name);
@@ -380,20 +461,29 @@ namespace Risk.Networking.Server
       });
     }
 
-    public Task SendConnectedPlayers(IList<string> names)
+    /// <summary>
+    /// Asynchronously sends names of connected players.
+    /// </summary>
+    /// <param name="names">names of connected players</param>
+    /// <returns>async task</returns>
+    public async Task SendConnectedPlayers(IList<string> names)
     {
-      return Task.Run(() =>
+      await Task.Run(() =>
       {
         Message m = new Message(MessageType.UpdatePlayerListAdd, names);
         SendMessage(m);
       });
     }
 
-    public Task ListenToReadyTag()
+    /// <summary>
+    /// Asynchronously listens to ready tag or leaving notification from client.
+    /// </summary>
+    /// <returns>async task</returns>
+    public async Task ListenToReadyTag()
     {
       if (!_listenToReady)
       {
-        return Task.Run(() =>
+        await Task.Run(() =>
         {
           try
           {
@@ -421,7 +511,7 @@ namespace Risk.Networking.Server
               }
             }
           }
-          catch (SocketException e)
+          catch (SocketException)
           {
             OnLeave?.Invoke(this, new EventArgs());
             _server.LogOutPlayer(PlayerName);
@@ -429,12 +519,15 @@ namespace Risk.Networking.Server
           }
         });
       }
-      return null;
     }
 
-    public Task SartListening()
+    /// <summary>
+    /// Asynchronously listens to client's commands before connecting to game room.
+    /// </summary>
+    /// <returns>async task</returns>
+    public async Task SartListening()
     {
-      return Task.Run(() =>
+      await Task.Run(() =>
       {
         try
         {
@@ -469,7 +562,7 @@ namespace Risk.Networking.Server
 
           ManagingConnectingToRoom();
         }
-        catch (SocketException e)
+        catch (SocketException)
         {
           if (PlayerName != null)
           {
@@ -480,6 +573,9 @@ namespace Risk.Networking.Server
       });
     }
 
+    /// <summary>
+    /// Asynchronously listens to command from client before connecting to game room.
+    /// </summary>
     private async void ManagingConnectingToRoom()
     {
       await Task.Run(() =>
@@ -533,16 +629,21 @@ namespace Risk.Networking.Server
 
           SendConnectedPlayers(GameRoom.GetPlayers());
         }
-        catch (SocketException e)
+        catch (SocketException)
         {
           _server.LogOutPlayer(PlayerName);
         }
       });
     }
 
-    public Task SendUpdateGameList(IList<GameRoomInfo> roomsInfo)
+    /// <summary>
+    /// Asynchronously sends update of game room information list.
+    /// </summary>
+    /// <param name="roomsInfo">game room information list</param>
+    /// <returns>async task</returns>
+    public async Task SendUpdateGameList(IList<GameRoomInfo> roomsInfo)
     {
-      return Task.Run(() =>
+      await Task.Run(() =>
       {
         Message m = new Message(MessageType.UpdateGameList, roomsInfo);
         SendMessage(m);

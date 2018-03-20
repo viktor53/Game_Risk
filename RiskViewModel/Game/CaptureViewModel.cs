@@ -58,7 +58,7 @@ namespace Risk.ViewModel.Game
 
     private void MoveClick()
     {
-      Client.SendCaptureMove(GameBoardVM.PlayerColor, Army);
+      Client.SendCaptureMoveAsync(GameBoardVM.PlayerColor, Army);
     }
 
     private void OnMoveResult(object sender, EventArgs ev)

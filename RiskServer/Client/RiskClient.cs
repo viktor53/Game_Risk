@@ -1,25 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
-using System.Diagnostics;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Risk.Networking.Messages.Data;
 using Risk.Networking.Enums;
 using Risk.Networking.Messages;
 using Risk.Networking.Exceptions;
 using Risk.Model.GameCore.Moves;
-using Newtonsoft.Json.Linq;
-using System.Windows;
-using Risk.Model.GamePlan;
 using Risk.Model.Enums;
 
 namespace Risk.Networking.Client
 {
+  /// <summary>
+  /// Represents client side of risk player. Connets to risk server side.
+  /// </summary>
   public class RiskClient
   {
     private Socket _client;
@@ -38,66 +36,27 @@ namespace Risk.Networking.Client
 
     private Deserializer _deserializer;
 
+    private IList<GameRoomInfo> _rooms;
+
+    private IList<string> _players;
+
     private event EventHandler _onUpdate;
 
-    public event EventHandler OnUpdate
-    {
-      add
-      {
-        _onUpdate = null;
-        _onUpdate += value;
-      }
-      remove
-      {
-        _onUpdate -= value;
-      }
-    }
+    private event EventHandler _onConfirmation;
 
-    public event EventHandler OnConfirmation;
+    private event EventHandler _onInicialization;
 
-    public event EventHandler OnReadyTag;
-
-    public event EventHandler OnInicialization;
-
-    public event EventHandler OnYourTurn;
+    private event EventHandler _onYourTurn;
 
     private event EventHandler _onMoveresult;
 
-    public event EventHandler OnMoveResult
-    {
-      add
-      {
-        _onMoveresult = null;
-        _onMoveresult += value;
-      }
-      remove
-      {
-        _onMoveresult = null;
-      }
-    }
+    private event EventHandler _onFreeUnit;
 
-    public event EventHandler OnFreeUnit;
+    private event EventHandler _onArmyColor;
 
-    public event EventHandler OnArmyColor;
-
-    public event EventHandler OnUpdateCard;
+    private event EventHandler _onUpdateCard;
 
     private event EventHandler _onEndGame;
-
-    public event EventHandler OnEndGame
-    {
-      add
-      {
-        _onEndGame = null;
-        _onEndGame += value;
-      }
-      remove
-      {
-        _onEndGame -= value;
-      }
-    }
-
-    private IList<GameRoomInfo> _rooms;
 
     public IList<GameRoomInfo> Rooms
     {
@@ -112,36 +71,173 @@ namespace Risk.Networking.Client
       }
     }
 
-    private IList<string> _players;
-
     public IList<string> Players => _players;
 
-    private void AddPlayers(IList<string> names)
+    /// <summary>
+    /// OnUpdate is raised whenever update is received.
+    /// (update of game list, update of player list, update game board)
+    /// </summary>
+    public event EventHandler OnUpdate
     {
-      foreach (var name in names)
+      add
       {
-        Players.Add(name);
+        _onUpdate = null;
+        _onUpdate += value;
       }
-      _onUpdate?.Invoke(this, new EventArgs());
+      remove
+      {
+        _onUpdate -= value;
+      }
     }
 
-    private void RemovePlayer(IList<string> names)
+    /// <summary>
+    /// OnConfirmation is raised whenever confirmation is received from server.
+    /// </summary>
+    public event EventHandler OnConfirmation
     {
-      foreach (var name in names)
+      add
       {
-        Players.Remove(name);
+        _onConfirmation = null;
+        _onConfirmation += value;
       }
-      _onUpdate?.Invoke(this, new EventArgs());
+      remove
+      {
+        _onConfirmation -= value;
+      }
     }
 
+    /// <summary>
+    /// OnInicialization is raised whenever game is inicializated.
+    /// </summary>
+    public event EventHandler OnInicialization
+    {
+      add
+      {
+        _onInicialization = null;
+        _onInicialization += value;
+      }
+      remove
+      {
+        _onInicialization -= value;
+      }
+    }
+
+    /// <summary>
+    /// OnYourTurn is raised whenever player is playing now.
+    /// </summary>
+    public event EventHandler OnYourTurn
+    {
+      add
+      {
+        _onYourTurn = null;
+        _onYourTurn += value;
+      }
+      remove
+      {
+        _onYourTurn -= value;
+      }
+    }
+
+    /// <summary>
+    /// OnMoveResult is raised whenever move result is reveived from game.
+    /// </summary>
+    public event EventHandler OnMoveResult
+    {
+      add
+      {
+        _onMoveresult = null;
+        _onMoveresult += value;
+      }
+      remove
+      {
+        _onMoveresult = null;
+      }
+    }
+
+    /// <summary>
+    /// OnFreeUnit is raised whenever number of free unit is changed.
+    /// </summary>
+    public event EventHandler OnFreeUnit
+    {
+      add
+      {
+        _onFreeUnit = null;
+        _onFreeUnit += value;
+      }
+      remove
+      {
+        _onFreeUnit -= value;
+      }
+    }
+
+    /// <summary>
+    /// OnArmyColor is raised whenever player of color is changed.
+    /// </summary>
+    public event EventHandler OnArmyColor
+    {
+      add
+      {
+        _onArmyColor = null;
+        _onArmyColor += value;
+      }
+      remove
+      {
+        _onArmyColor -= value;
+      }
+    }
+
+    /// <summary>
+    /// OnUpdateCard is raised whenever number of cards is changed.
+    /// </summary>
+    public event EventHandler OnUpdateCard
+    {
+      add
+      {
+        _onUpdateCard = null;
+        _onUpdateCard += value;
+      }
+      remove
+      {
+        _onUpdateCard -= value;
+      }
+    }
+
+    /// <summary>
+    /// OnEndGame is raised whenever game is ended.
+    /// </summary>
+    public event EventHandler OnEndGame
+    {
+      add
+      {
+        _onEndGame = null;
+        _onEndGame += value;
+      }
+      remove
+      {
+        _onEndGame -= value;
+      }
+    }
+
+    /// <summary>
+    /// Default constructor that connects to localhost on port 11000.
+    /// </summary>
     public RiskClient() : this("localhost", 11000)
     {
     }
 
+    /// <summary>
+    /// Constructor can specify server address and have default port 11000.
+    /// </summary>
+    /// <param name="hostNameOrAddressServer">host name of server or its address</param>
     public RiskClient(string hostNameOrAddressServer) : this(hostNameOrAddressServer, 11000)
     {
     }
 
+    /// <summary>
+    /// Constructor with all parameters.
+    /// </summary>
+    /// <param name="hostNameOrAddressServer">host name of server or its address</param>
+    /// <param name="port">port of server</param>
     public RiskClient(string hostNameOrAddressServer, int port)
     {
       IPAddress ipAddress = Dns.GetHostEntry(hostNameOrAddressServer).AddressList[0];
@@ -157,27 +253,71 @@ namespace Risk.Networking.Client
       _listen = false;
 
       _players = new List<string>();
-
-      Debug.WriteLine("**Client inicialization: OK");
     }
 
-    public async void ConnectAsync()
+    /// <summary>
+    /// Adds players to list of players.
+    /// </summary>
+    /// <param name="names">list of new players</param>
+    private void AddPlayers(IEnumerable<string> names)
     {
-      await Task.Run(() => _client.Connect(_remoteEP));
+      foreach (var name in names)
+      {
+        Players.Add(name);
+      }
+      _onUpdate?.Invoke(this, new EventArgs());
     }
 
+    /// <summary>
+    /// Removes players from list of players.
+    /// </summary>
+    /// <param name="names"></param>
+    private void RemovePlayers(IEnumerable<string> names)
+    {
+      foreach (var name in names)
+      {
+        Players.Remove(name);
+      }
+      _onUpdate?.Invoke(this, new EventArgs());
+    }
+
+    /// <summary>
+    /// Asynchronously connects to server.
+    /// </summary>
+    /// <returns>true if connecting succeeded, otherwise false</returns>
+    public async Task<bool> ConnectAsync()
+    {
+      return await Task.Run(() =>
+      {
+        try
+        {
+          _client.Connect(_remoteEP);
+          return true;
+        }
+        catch (SocketException)
+        {
+          return false;
+        }
+      });
+    }
+
+    /// <summary>
+    /// Asynchronously sends registration request.
+    /// </summary>
+    /// <param name="name">name to be registered</param>
+    /// <returns>true if sending succeeded, otherwise false</returns>
     public async Task<bool> SendRegistrationRequestAsync(string name)
     {
       return await Task.Run(() =>
       {
-        Message mess = new Message(MessageType.Registration, name);
-        SendMessage(mess);
+        Message m = new Message(MessageType.Registration, name);
+        SendMessage(m);
 
-        mess = ReceiveMessage();
+        m = ReceiveMessage();
 
-        if (mess.MessageType == MessageType.Confirmation)
+        if (m.MessageType == MessageType.Confirmation)
         {
-          if ((bool)mess.Data)
+          if ((bool)m.Data)
           {
             _username = name;
             return true;
@@ -189,239 +329,433 @@ namespace Risk.Networking.Client
         }
         else
         {
-          ProcessError(mess);
+          ProcessError(m);
           return false;
         }
       });
     }
 
-    public async void StartListenToUpdates()
+    /// <summary>
+    /// Asynchronously listens to updates of game list and player list.
+    /// </summary>
+    /// <returns>true if listening succeeded, otherwise false</returns>
+    public async Task<bool> ListenToUpdatesAsync()
     {
-      if (!_listen)
+      return await Task.Run(() =>
       {
-        await Task.Run(() =>
+        if (!_listen)
         {
           _listen = true;
           while (_listen)
+          {
+            try
+            {
+              Message m = ReceiveMessage();
+
+              switch (m.MessageType)
+              {
+                case MessageType.UpdateGameList:
+                  Rooms = _deserializer.GetData<IList<GameRoomInfo>>((JArray)m.Data);
+                  break;
+
+                case MessageType.UpdatePlayerListAdd:
+                  AddPlayers(_deserializer.GetData<IList<string>>((JArray)m.Data));
+                  break;
+
+                case MessageType.UpdatePlayerListRemove:
+                  RemovePlayers(_deserializer.GetData<IList<string>>((JArray)m.Data));
+                  break;
+
+                case MessageType.Confirmation:
+                  _onConfirmation?.Invoke(this, new ConfirmationEventArgs((bool)m.Data));
+                  break;
+
+                case MessageType.InitializeGame:
+                  _onInicialization?.Invoke(this, new InicializationEventArgs(_deserializer.DeserializeGameBoardInfo((JObject)m.Data)));
+                  _players.Clear();
+                  _listen = false;
+                  break;
+
+                default:
+                  break;
+              }
+            }
+            catch (SocketException)
+            {
+              return false;
+            }
+          }
+        }
+        return true;
+      });
+    }
+
+    /// <summary>
+    /// Asynchronously listents to game commands. (Update state of game, player's turn, move result)
+    /// </summary>
+    /// <returns>true if listening succeeded, otherwise false</returns>
+    public async Task<bool> ListenToGameCommandsAsync()
+    {
+      return await Task.Run(() =>
+      {
+        bool end = false;
+        while (!end)
+        {
+          try
           {
             Message m = ReceiveMessage();
 
             switch (m.MessageType)
             {
-              case MessageType.UpdateGameList:
-                Rooms = _deserializer.GetData<IList<GameRoomInfo>>((JArray)m.Data);
+              case MessageType.YourTurn:
+                _onYourTurn?.Invoke(this, new ConfirmationEventArgs((bool)m.Data));
                 break;
 
-              case MessageType.UpdatePlayerListAdd:
-                AddPlayers(_deserializer.GetData<IList<string>>((JArray)m.Data));
+              case MessageType.UpdateGame:
+                _onUpdate?.Invoke(this, new UpdateGameEventArgs(_deserializer.DeserializeArea((JObject)m.Data)));
                 break;
 
-              case MessageType.UpdatePlayerListRemove:
-                RemovePlayer(_deserializer.GetData<IList<string>>((JArray)m.Data));
+              case MessageType.FreeUnit:
+                _onFreeUnit?.Invoke(this, new FreeUnitEventArgs((long)m.Data));
                 break;
 
-              case MessageType.Confirmation:
-                OnConfirmation?.Invoke(this, new ConfirmationEventArgs((bool)m.Data));
+              case MessageType.MoveResult:
+                _onMoveresult?.Invoke(this, new MoveResultEventArgs((long)m.Data));
                 break;
 
-              case MessageType.InitializeGame:
-                OnInicialization?.Invoke(this, new InicializationEventArgs(_deserializer.DeserializeGameBoardInfo((JObject)m.Data)));
-                _players.Clear();
-                _listen = false;
+              case MessageType.ArmyColor:
+                _onArmyColor?.Invoke(this, new ArmyColorEventArgs((long)m.Data));
                 break;
 
-              default:
+              case MessageType.UpdateCard:
+                _onUpdateCard?.Invoke(this, new UpdateCardEventArgs((bool)m.Data));
+                break;
+
+              case MessageType.EndGame:
+                _onEndGame?.Invoke(this, new EndGameEventArgs((bool)m.Data));
+                end = true;
                 break;
             }
           }
-        });
-      }
+          catch (SocketException)
+          {
+            return false;
+          }
+        }
+
+        return true;
+      });
     }
 
-    public async void ListenToGameCommands()
+    /// <summary>
+    /// Asynchronously sends connect to the game request.
+    /// </summary>
+    /// <param name="gameName">name of the game</param>
+    /// <returns>true if sending succeeded, otherwise false</returns>
+    public async Task<bool> SendConnectToGameRequestAsync(string gameName)
     {
-      await Task.Run(() =>
+      return await Task.Run(() =>
       {
-        bool end = false;
-        while (!end)
+        try
         {
-          Message m = ReceiveMessage();
+          Message m = new Message(MessageType.ConnectToGame, gameName);
+          SendMessage(m);
 
-          switch (m.MessageType)
-          {
-            case MessageType.YourTurn:
-              OnYourTurn?.Invoke(this, new ConfirmationEventArgs((bool)m.Data));
-              break;
-
-            case MessageType.UpdateGame:
-              _onUpdate?.Invoke(this, new UpdateGameEventArgs(_deserializer.DeserializeArea((JObject)m.Data)));
-              break;
-
-            case MessageType.FreeUnit:
-              OnFreeUnit?.Invoke(this, new FreeUnitEventArgs((long)m.Data));
-              break;
-
-            case MessageType.MoveResult:
-              _onMoveresult?.Invoke(this, new MoveResultEventArgs((long)m.Data));
-              break;
-
-            case MessageType.ArmyColor:
-              OnArmyColor?.Invoke(this, new ArmyColorEventArgs((long)m.Data));
-              break;
-
-            case MessageType.UpdateCard:
-              OnUpdateCard?.Invoke(this, new UpdateCardEventArgs((bool)m.Data));
-              break;
-
-            case MessageType.EndGame:
-              _onEndGame?.Invoke(this, new EndGameEventArgs((bool)m.Data));
-              end = true;
-              break;
-          }
+          return true;
+        }
+        catch (SocketException)
+        {
+          return false;
         }
       });
     }
 
-    public async void StopListenToUpdates()
-    {
-      await Task.Run(() =>
-      {
-        _listen = false;
-      });
-    }
-
-    public async Task<bool> SendConnectToGameRequest(string gameName)
+    /// <summary>
+    /// Asynchronously sends create game request.
+    /// </summary>
+    /// <param name="roomInfo">information about creating game</param>
+    /// <returns>true if sending succeded, otherwise false</returns>
+    public async Task<bool> SendCreateGameRequestAsync(CreateGameRoomInfo roomInfo)
     {
       return await Task.Run(() =>
       {
-        Message mess = new Message(MessageType.ConnectToGame, gameName);
+        try
+        {
+          Message m = new Message(MessageType.CreateGame, roomInfo);
+          SendMessage(m);
 
-        SendMessage(mess);
-
-        return true;
+          return true;
+        }
+        catch (SocketException)
+        {
+          return false;
+        }
       });
     }
 
-    public async Task<bool> SendCreateGameRequest(CreateGameRoomInfo roomInfo)
+    /// <summary>
+    /// Asynchronously sends leave game request.
+    /// </summary>
+    /// <returns>true if sending succeded, otherwise false</returns>
+    public async Task<bool> SendLeaveGameRequestAsync()
     {
       return await Task.Run(() =>
       {
-        Message mess = new Message(MessageType.CreateGame, roomInfo);
+        try
+        {
+          Message m = new Message(MessageType.Leave, null);
+          SendMessage(m);
 
-        SendMessage(mess);
+          _players.Clear();
 
-        return true;
+          return true;
+        }
+        catch (SocketException)
+        {
+          return false;
+        }
       });
     }
 
-    public async void SendLeaveGame()
+    /// <summary>
+    /// Asynchronously sends ready tag request.
+    /// </summary>
+    /// <returns>true if sending succeded, otherwise false</returns>
+    public async Task<bool> SendReadyTagRequestAsync()
     {
-      await Task.Run(() =>
+      return await Task.Run(() =>
       {
-        Message mess = new Message(MessageType.Leave, null);
-        SendMessage(mess);
-        _players.Clear();
+        try
+        {
+          Message m = new Message(MessageType.ReadyTag, null);
+          SendMessage(m);
+
+          return true;
+        }
+        catch (SocketException)
+        {
+          return false;
+        }
       });
     }
 
-    public async void SendReadyTag()
+    /// <summary>
+    /// Asynchronously sends logout request.
+    /// </summary>
+    /// <returns>true if sending succeded, otherwise false</returns>
+    public async Task<bool> SendLougOutRequestAsync()
     {
-      await Task.Run(() =>
+      return await Task.Run(() =>
       {
-        Message mess = new Message(MessageType.ReadyTag, null);
-        SendMessage(mess);
+        try
+        {
+          _listen = false;
+
+          Message m = new Message(MessageType.Logout, null);
+          SendMessage(m);
+
+          return true;
+        }
+        catch (SocketException)
+        {
+          return false;
+        }
       });
     }
 
-    public async void SendLougOut()
+    /// <summary>
+    /// Asynchronously sends setup move.
+    /// </summary>
+    /// <param name="idArea">id of area, where one unit will be placed</param>
+    /// <param name="playerColor">color of player</param>
+    /// <returns>true if sending succeded, otherwise false</returns>
+    public async Task<bool> SendSetUpMoveAsync(int idArea, ArmyColor playerColor)
     {
-      await Task.Run(() =>
+      return await Task.Run(() =>
       {
-        _listen = false;
-        Message mess = new Message(MessageType.Logout, null);
-        SendMessage(mess);
+        try
+        {
+          Message m = new Message(MessageType.SetUpMove, new SetUp(playerColor, idArea));
+          SendMessage(m);
+
+          return true;
+        }
+        catch (SocketException)
+        {
+          return false;
+        }
       });
     }
 
-    public async void SendSetUpMove(int idArea, ArmyColor playerColor)
+    /// <summary>
+    /// Asynchronously sends next phase.
+    /// </summary>
+    /// <returns>true if sending succeded, otherwise false</returns>
+    public async Task<bool> SendNextPhaseAsync()
     {
-      await Task.Run(() =>
+      return await Task.Run(() =>
       {
-        Message mess = new Message(MessageType.SetUpMove, new SetUp(playerColor, idArea));
-        SendMessage(mess);
+        try
+        {
+          Message m = new Message(MessageType.NextPhase, null);
+          SendMessage(m);
+
+          return true;
+        }
+        catch (SocketException)
+        {
+          return false;
+        }
       });
     }
 
-    public async void SendNextPhase()
+    /// <summary>
+    /// Asynchronously sends draft move.
+    /// </summary>
+    /// <param name="playerColor">color of player</param>
+    /// <param name="areaID">id of area, where units will be placed</param>
+    /// <param name="numberOfUnit">number of units</param>
+    /// <returns>true if sending succeded, otherwise false</returns>
+    public async Task<bool> SendDraftMoveAsync(ArmyColor playerColor, int areaID, int numberOfUnit)
     {
-      await Task.Run(() =>
+      return await Task.Run(() =>
       {
-        Message mess = new Message(MessageType.NextPhase, null);
-        SendMessage(mess);
+        try
+        {
+          Message m = new Message(MessageType.DraftMove, new Draft(playerColor, areaID, numberOfUnit));
+          SendMessage(m);
+
+          return true;
+        }
+        catch (SocketException)
+        {
+          return false;
+        }
       });
     }
 
-    public async void SendDraftMove(ArmyColor playerColor, int areaID, int numberOfUnit)
+    /// <summary>
+    /// Asynchronously sends attack move.
+    /// </summary>
+    /// <param name="playerColor">color of player</param>
+    /// <param name="attackerAreaID">id of area, where attack comes from</param>
+    /// <param name="defenderAreaID">id of area, where attack goes</param>
+    /// <param name="attackSize">size of attack</param>
+    /// <returns>true if sending succeded, otherwise false</returns>
+    public async Task<bool> SendAttackMoveAsync(ArmyColor playerColor, int attackerAreaID, int defenderAreaID, AttackSize attackSize)
     {
-      await Task.Run(() =>
+      return await Task.Run(() =>
       {
-        Message mess = new Message(MessageType.DraftMove, new Draft(playerColor, areaID, numberOfUnit));
-        SendMessage(mess);
+        try
+        {
+          Message m = new Message(MessageType.AttackMove, new Attack(playerColor, attackerAreaID, defenderAreaID, attackSize));
+          SendMessage(m);
+
+          return true;
+        }
+        catch (SocketException)
+        {
+          return false;
+        }
       });
     }
 
-    public async void SendAttackMove(ArmyColor playerColor, int attackerAreaID, int defenderAreaID, AttackSize attackSize)
+    /// <summary>
+    /// Asynchronously sends fortify move.
+    /// </summary>
+    /// <param name="playerColor">color of player</param>
+    /// <param name="fromAreaID">id of area, where army comes from</param>
+    /// <param name="toAreaID">id of area, where army goes</param>
+    /// <param name="sizeOfArmy">size of army</param>
+    /// <returns>true if sending succeded, otherwise false</returns>
+    public async Task<bool> SendFortifyMoveAsync(ArmyColor playerColor, int fromAreaID, int toAreaID, int sizeOfArmy)
     {
-      await Task.Run(() =>
+      return await Task.Run(() =>
       {
-        Message mess = new Message(MessageType.AttackMove, new Attack(playerColor, attackerAreaID, defenderAreaID, attackSize));
-        SendMessage(mess);
+        try
+        {
+          Message m = new Message(MessageType.FortifyMove, new Fortify(playerColor, fromAreaID, toAreaID, sizeOfArmy));
+          SendMessage(m);
+
+          return true;
+        }
+        catch (SocketException)
+        {
+          return false;
+        }
       });
     }
 
-    public async void SendFortifyMove(ArmyColor playerColor, int fromAreaID, int toAreaID, int sizeOfArmy)
+    /// <summary>
+    /// Asynchronously sends capture move.
+    /// </summary>
+    /// <param name="playerColor">color of player</param>
+    /// <param name="armyToMove">army to move</param>
+    /// <returns>true if sending succeded, otherwise false</returns>
+    public async Task<bool> SendCaptureMoveAsync(ArmyColor playerColor, int armyToMove)
     {
-      await Task.Run(() =>
+      return await Task.Run(() =>
       {
-        Message mess = new Message(MessageType.FortifyMove, new Fortify(playerColor, fromAreaID, toAreaID, sizeOfArmy));
-        SendMessage(mess);
+        try
+        {
+          Message m = new Message(MessageType.CaptureMove, new Capture(playerColor, armyToMove));
+          SendMessage(m);
+
+          return true;
+        }
+        catch (SocketException)
+        {
+          return false;
+        }
       });
     }
 
-    public async void SendCaptureMove(ArmyColor playerColor, int armyToMove)
+    /// <summary>
+    /// Asynchronously sends exchange card move.
+    /// </summary>
+    /// <param name="playerColor">color of player</param>
+    /// <returns>true if sending succeded, otherwise false</returns>
+    public async Task<bool> SendExchangeCardAsync(ArmyColor playerColor)
     {
-      await Task.Run(() =>
+      return await Task.Run(() =>
       {
-        Message mess = new Message(MessageType.CaptureMove, new Capture(playerColor, armyToMove));
-        SendMessage(mess);
+        try
+        {
+          Message m = new Message(MessageType.ExchangeCardsMove, playerColor);
+          SendMessage(m);
+
+          return true;
+        }
+        catch (SocketException)
+        {
+          return false;
+        }
       });
     }
 
-    public async void SendExchangeCard(ArmyColor playerColor)
+    /// <summary>
+    /// Sends the message.
+    /// </summary>
+    /// <param name="m">message</param>
+    private void SendMessage(Message m)
     {
-      await Task.Run(() =>
-      {
-        Message mess = new Message(MessageType.ExchangeCardsMove, playerColor);
-        SendMessage(mess);
-      });
+      _client.Send(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(m)));
     }
 
-    private void SendMessage(Message mess)
-    {
-      _client.Send(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(mess)));
-    }
-
+    /// <summary>
+    /// Receives message.
+    /// </summary>
+    /// <returns>received message</returns>
     private Message ReceiveMessage()
     {
       int lengtOfData = _client.Receive(_buffer);
       return JsonConvert.DeserializeObject<Message>(Encoding.ASCII.GetString(_buffer, 0, lengtOfData));
     }
 
-    private bool IsRegistred()
-    {
-      return _username != null;
-    }
-
+    /// <summary>
+    /// Processes error message or unknown message.
+    /// </summary>
+    /// <param name="message">received message</param>
     private void ProcessError(Message message)
     {
       if (message.MessageType == MessageType.Error)

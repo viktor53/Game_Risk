@@ -80,7 +80,7 @@ namespace Risk.ViewModel.Main
 
     private void CancelClick()
     {
-      _client.SendLougOut();
+      _client.SendLougOutRequestAsync();
       _mainMenu.ContentViewModel = null;
       _mainMenu.IsEnabled = true;
     }

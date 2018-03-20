@@ -37,7 +37,7 @@ namespace Risk.ViewModel.Game
 
     private void AddArmyClick()
     {
-      Client.SendDraftMove(GameBoardVM.PlayerColor, GameBoardVM.Selected1.ID, Army);
+      Client.SendDraftMoveAsync(GameBoardVM.PlayerColor, GameBoardVM.Selected1.ID, Army);
     }
 
     private void OnMoveResult(object sender, EventArgs ev)

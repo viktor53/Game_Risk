@@ -1,24 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Risk.Networking.Enums;
+﻿using Risk.Networking.Enums;
 
 namespace Risk.Networking.Messages
 {
-  sealed class Message: IMessage
+  /// <summary>
+  /// Represents a message of communication between server and client.
+  /// </summary>
+  internal sealed class Message : IMessage
   {
-    public MessageType MessageType { get; set; }
+    /// <summary>
+    /// Type of message.
+    /// </summary>
+    public MessageType MessageType { get; private set; }
 
-    public object Data { get; set; }
+    /// <summary>
+    /// Data of message.
+    /// </summary>
+    public object Data { get; private set; }
 
-    public Message()
-    {
-      MessageType = MessageType.Registration;
-      Data = null;
-    }
-
+    /// <summary>
+    /// Creates message of the type.
+    /// </summary>
+    /// <param name="messageType">type of message</param>
+    /// <param name="data">data of message</param>
     public Message(MessageType messageType, object data)
     {
       MessageType = messageType;

@@ -1,21 +1,48 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Risk.Networking.Messages.Data;
 using Risk.Networking.Enums;
 
 namespace Risk.Networking.Exceptions
 {
-  public sealed class ServerErrorException: Exception
+  /// <summary>
+  /// Exception when some error occurs on server side.
+  /// </summary>
+  public sealed class ServerErrorException : Exception
   {
-    public ServerErrorException(Error error): base($"Error type: {error.ErrorType} \n Detailed message: {error.DetailedMessage}") { }
+    /// <summary>
+    /// Creates ServerErrorException with message containing error type and detailed message.
+    /// </summary>
+    /// <param name="error">occured error</param>
+    public ServerErrorException(Error error) : base($"Error type: {error.ErrorType} \n Detailed message: {error.DetailedMessage}")
+    {
+    }
 
-    public ServerErrorException(ErrorType errorType, string message): base($"Error type: {errorType} \n Detailed message: {message}") { }
+    /// <summary>
+    /// Creates ServerErrorException with message containing error type and detailed message.
+    /// </summary>
+    /// <param name="errorType">type of error</param>
+    /// <param name="message">detailed message about the error</param>
+    public ServerErrorException(ErrorType errorType, string message) : base($"Error type: {errorType} \n Detailed message: {message}")
+    {
+    }
 
-    public ServerErrorException(Error error, Exception innerException): base($"Error type: {error.ErrorType} \n Detailed message: {error.DetailedMessage}", innerException) { }
+    /// <summary>
+    /// Creates ServerErrorException with message containing error type, detailed message and inner exception.
+    /// </summary>
+    /// <param name="error">occured error</param>
+    /// <param name="innerException">inner exception</param>
+    public ServerErrorException(Error error, Exception innerException) : base($"Error type: {error.ErrorType} \n Detailed message: {error.DetailedMessage}", innerException)
+    {
+    }
 
-    public ServerErrorException(ErrorType errorType, string message, Exception innerException): base($"Error type: {errorType} \n Detailed message: {message}", innerException) { }
+    /// <summary>
+    /// Creates ServerErrorException with message containing error type, detailed message and inner exception.
+    /// </summary>
+    /// <param name="errorType">type of error</param>
+    /// <param name="message">detailed message about error</param>
+    /// <param name="innerException">inner exception</param>
+    public ServerErrorException(ErrorType errorType, string message, Exception innerException) : base($"Error type: {errorType} \n Detailed message: {message}", innerException)
+    {
+    }
   }
 }

@@ -1,16 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Risk.Networking.Enums;
+﻿using Risk.Networking.Enums;
 
 namespace Risk.Networking.Messages
 {
+  /// <summary>
+  /// Provides contract for messages.
+  /// </summary>
   public interface IMessage
   {
-    MessageType MessageType { get; set; }
+    /// <summary>
+    /// Type of message.
+    /// </summary>
+    MessageType MessageType { get; }
 
-    object Data { get; set; }
+    /// <summary>
+    /// Data of message.
+    /// </summary>
+    object Data { get; }
   }
 }

@@ -47,7 +47,7 @@ namespace Risk.ViewModel.Game
 
     private void AttackClick()
     {
-      Client.SendAttackMove(GameBoardVM.PlayerColor, GameBoardVM.Selected1.ID, GameBoardVM.Selected2.ID, (AttackSize)Army);
+      Client.SendAttackMoveAsync(GameBoardVM.PlayerColor, GameBoardVM.Selected1.ID, GameBoardVM.Selected2.ID, (AttackSize)Army);
     }
 
     private void OnMoveResult(object sender, EventArgs ev)

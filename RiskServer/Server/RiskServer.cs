@@ -1,20 +1,19 @@
-﻿using Risk.Networking.Messages;
-using Risk.Networking.Messages.Data;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.IO;
 using log4net;
 using log4net.Config;
-using System.IO;
+using Risk.Networking.Messages.Data;
 
 namespace Risk.Networking.Server
 {
+  /// <summary>
+  /// Represents risk server. Accepts connection a creates server side players.
+  /// </summary>
   public class RiskServer
   {
     private readonly ILog _logger;
@@ -37,18 +36,37 @@ namespace Risk.Networking.Server
 
     private IDictionary<string, IGameRoom> _gameRooms;
 
-    public RiskServer() : this("localhost", 1100, 100, new FileInfo(AppDomain.CurrentDomain.BaseDirectory + "\\Config\\DefaultLogger.xml"))
+    /// <summary>
+    /// Creates default risk server listening on localhost with port 11000 and with default configuration of logger.
+    /// </summary>
+    public RiskServer() : this("localhost", 11000, 100, new FileInfo(AppDomain.CurrentDomain.BaseDirectory + "\\Config\\DefaultLogger.xml"))
     {
     }
 
+    /// <summary>
+    /// Creates risk server listening on localhost with the specific port and with default configuration of logger.
+    /// </summary>
+    /// <param name="port">port where to listen</param>
     public RiskServer(int port) : this("localhost", port, 100, new FileInfo(AppDomain.CurrentDomain.BaseDirectory + "\\Config\\DefaultLogger.xml"))
     {
     }
 
+    /// <summary>
+    /// Creates risk server listening on specific address and port and with default configuration of logger.
+    /// </summary>
+    /// <param name="hostNameOrAddress">host name or address where to listen</param>
+    /// <param name="port">port where to listen</param>
     public RiskServer(string hostNameOrAddress, int port) : this(hostNameOrAddress, port, 100, new FileInfo(AppDomain.CurrentDomain.BaseDirectory + "\\Config\\DefaultLogger.xml"))
     {
     }
 
+    /// <summary>
+    /// Constructor with all parameters of server.
+    /// </summary>
+    /// <param name="hostNameOrAddress">host name or address where to listen</param>
+    /// <param name="port">port where to listen</param>
+    /// <param name="maxLengthConQueue">maximum length of connection queue</param>
+    /// <param name="pathToConfig">path to configuration of logger containing logger with name ServerLogger</param>
     public RiskServer(string hostNameOrAddress, int port, int maxLengthConQueue, FileInfo pathToConfig)
     {
       _hostNameOrAddress = hostNameOrAddress;
@@ -69,6 +87,9 @@ namespace Risk.Networking.Server
       _logger.Info($"Server inicialization: host={_hostNameOrAddress} port={_port} maxLengthConQueue={_maxLengthConQueue}");
     }
 
+    /// <summary>
+    /// Starts accepting connections.
+    /// </summary>
     public void Start()
     {
       _logger.Info("Server is starting to listen");
@@ -98,6 +119,10 @@ namespace Risk.Networking.Server
       }
     }
 
+    /// <summary>
+    /// Accepts connections and creates server side client and starts listening.
+    /// </summary>
+    /// <param name="result">async result listener</param>
     public void AcceptCallback(IAsyncResult result)
     {
       _logger.Info("Accepting new client");
@@ -111,6 +136,12 @@ namespace Risk.Networking.Server
       client.SartListening();
     }
 
+    /// <summary>
+    /// Adds player into connected players and players in menu.
+    /// </summary>
+    /// <param name="name">name of player</param>
+    /// <param name="player">client manager</param>
+    /// <returns>true if player is added, false if player with the name already exists</returns>
     public bool AddPlayer(string name, IClientManager player)
     {
       lock (_playersLock)
@@ -128,6 +159,10 @@ namespace Risk.Networking.Server
       }
     }
 
+    /// <summary>
+    /// Logs out player.
+    /// </summary>
+    /// <param name="name">name of player</param>
     public void LogOutPlayer(string name)
     {
       lock (_playersLock)
@@ -142,6 +177,11 @@ namespace Risk.Networking.Server
       }
     }
 
+    /// <summary>
+    /// Removes the player from the game room.
+    /// </summary>
+    /// <param name="name">name of player</param>
+    /// <param name="gameName">name of game room</param>
     public void LeaveGame(string name, string gameName)
     {
       if (_gameRooms.ContainsKey(gameName))
@@ -149,7 +189,7 @@ namespace Risk.Networking.Server
         _logger.Info($"Player {name} is leaving game room {gameName}");
         lock (_gameRoomsLock)
         {
-          _gameRooms[gameName].LeaveGame(name);
+          _gameRooms[gameName].RemovePlayer(name);
           _playersInMenu.Add(_players[name]);
           if (_gameRooms[gameName].Connected == 0)
           {
@@ -164,6 +204,11 @@ namespace Risk.Networking.Server
       }
     }
 
+    /// <summary>
+    /// Method that is called when OnLeave event is raised. Removes the sender from the game room.
+    /// </summary>
+    /// <param name="sender">the player, who raised the event</param>
+    /// <param name="ev">EventArgs is not used</param>
     private void OnLeave(object sender, EventArgs ev)
     {
       IClientManager client = (IClientManager)sender;
@@ -171,6 +216,11 @@ namespace Risk.Networking.Server
       client.GameRoom = null;
     }
 
+    /// <summary>
+    /// Method that is called when OnStart event is raised. Removes started game room from game room list.
+    /// </summary>
+    /// <param name="sender">the game room, who raised the event</param>
+    /// <param name="ev">EventArgs is not used</param>
     private void OnStart(object sender, EventArgs ev)
     {
       IGameRoom room = (IGameRoom)sender;
@@ -182,6 +232,12 @@ namespace Risk.Networking.Server
       }
     }
 
+    /// <summary>
+    /// Creates game room if it does not exist yet.
+    /// </summary>
+    /// <param name="gameRoom">information about new game room</param>
+    /// <param name="playerName">name of player that want to create the game room</param>
+    /// <returns>true if the game room is created, false if the game room already exists</returns>
     public bool CreateGame(CreateGameRoomInfo gameRoom, string playerName)
     {
       bool result = false;
@@ -204,6 +260,12 @@ namespace Risk.Networking.Server
       return result;
     }
 
+    /// <summary>
+    /// Connects the player to the game room.
+    /// </summary>
+    /// <param name="playerName">name of player</param>
+    /// <param name="gameName">name of game room</param>
+    /// <returns>true if player is connected, false if game room is full</returns>
     public bool ConnectToGame(string playerName, string gameName)
     {
       if (_gameRooms.ContainsKey(gameName) && _gameRooms[gameName].AddPlayer(_players[playerName]))
@@ -218,6 +280,9 @@ namespace Risk.Networking.Server
       return false;
     }
 
+    /// <summary>
+    /// Asynchronously sends update of game room list to all players in menu.
+    /// </summary>
     private async void SendUpdateToAll()
     {
       await Task.Run(() =>
@@ -231,6 +296,10 @@ namespace Risk.Networking.Server
       });
     }
 
+    /// <summary>
+    /// Gets information about game room list.
+    /// </summary>
+    /// <returns>game room information list</returns>
     public List<GameRoomInfo> GetUpdateInfo()
     {
       List<GameRoomInfo> roomsInfo = new List<GameRoomInfo>();

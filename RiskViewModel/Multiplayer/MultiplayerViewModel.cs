@@ -81,7 +81,7 @@ namespace Risk.ViewModel.Multiplayer
       _client = client;
       _client.OnUpdate += OnUpdate;
       _client.OnConfirmation += OnConfirmation;
-      _client.StartListenToUpdates();
+      _client.ListenToUpdatesAsync();
 
       BackToMenu_Click = new Command(BackToMenuClick);
       CreateGame_Click = new Command(CreateGameClick);
@@ -92,7 +92,7 @@ namespace Risk.ViewModel.Multiplayer
 
     private void BackToMenuClick()
     {
-      _client.SendLougOut();
+      _client.SendLougOutRequestAsync();
       _widnowManager.WindowViewModel = new MainMenuViewModel(_widnowManager);
     }
 
@@ -108,7 +108,7 @@ namespace Risk.ViewModel.Multiplayer
     {
       if (Room != null)
       {
-        await _client.SendConnectToGameRequest(Room.RoomName);
+        await _client.SendConnectToGameRequestAsync(Room.RoomName);
       }
     }
 

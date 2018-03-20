@@ -222,7 +222,7 @@ namespace Risk.ViewModel.Game
       _client.OnMoveResult += OnMoveResultSetUp;
       _client.OnUpdateCard += OnUpdateCard;
       _client.OnEndGame += OnEndGame;
-      _client.ListenToGameCommands();
+      _client.ListenToGameCommandsAsync();
 
       BG = Properties.Resources.gameBg;
       CurrentPhase = Phase.SETUP;
@@ -475,7 +475,7 @@ namespace Risk.ViewModel.Game
     {
       if (CurrentPhase != Phase.SETUP)
       {
-        _client.SendNextPhase();
+        _client.SendNextPhaseAsync();
       }
     }
 
@@ -484,13 +484,13 @@ namespace Risk.ViewModel.Game
       if (CurrentPhase == Phase.DRAFT)
       {
         _client.OnMoveResult += OnMoveResultCard;
-        _client.SendExchangeCard(PlayerColor);
+        _client.SendExchangeCardAsync(PlayerColor);
       }
     }
 
     private void SetUpClick(Planet planet)
     {
-      _client.SendSetUpMove(planet.ID, PlayerColor);
+      _client.SendSetUpMoveAsync(planet.ID, PlayerColor);
     }
 
     private void DraftClick(Planet planet)

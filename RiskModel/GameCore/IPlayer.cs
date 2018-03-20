@@ -33,10 +33,10 @@ namespace Risk.Model.GameCore
     void RemoveCard(RiskCard card);
 
     /// <summary>
-    /// Starts player. Useful for setup player or getting game plan info.
+    /// Asynchronously starts player. Useful for setup player or getting game plan info.
     /// </summary>
     /// <param name="game">game where player is connected</param>
-    void StartPlayer(IGame game);
+    Task StartPlayer(IGame game);
 
     /// <summary>
     /// Plays setup phase. Only one setup move is allowed.
@@ -60,16 +60,16 @@ namespace Risk.Model.GameCore
     void PlayFortify();
 
     /// <summary>
-    /// Updates game plan.
+    /// Asynchronously updates game plan.
     /// </summary>
     /// <param name="area">changed area</param>
     /// <returns>async call</returns>
     Task UpdateGame(Area area);
 
     /// <summary>
-    /// Ends player and notifies if player is winner.
+    /// Asynchronously ends player and notifies if player is winner.
     /// </summary>
     /// <param name="isWinner">if player is winner</param>
-    void EndPlayer(bool isWinner);
+    Task EndPlayer(bool isWinner);
   }
 }

@@ -74,12 +74,12 @@ namespace Risk.ViewModel.Multiplayer
 
       IsEnabled = false;
 
-      _client.SendReadyTag();
+      _client.SendReadyTagRequestAsync();
     }
 
     private void CancelClick()
     {
-      _client.SendLeaveGame();
+      _client.SendLeaveGameRequestAsync();
 
       _client.OnUpdate -= OnUpdate;
       _client.OnInicialization -= OnInicialization;

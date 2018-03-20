@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Risk.Networking.Enums
+﻿namespace Risk.Networking.Enums
 {
+  /// <summary>
+  /// Determines type of error.
+  /// </summary>
   public enum ErrorType
   {
     UknownRequest = 0,

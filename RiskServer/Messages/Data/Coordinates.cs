@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Risk.Networking.Messages.Data
+﻿namespace Risk.Networking.Messages.Data
 {
-  public class Coordinates
+  /// <summary>
+  /// 2D coordinates
+  /// </summary>
+  public sealed class Coordinates
   {
     public int X { get; private set; }
 
