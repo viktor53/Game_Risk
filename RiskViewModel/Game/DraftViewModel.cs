@@ -32,7 +32,7 @@ namespace Risk.ViewModel.Game
     /// </summary>
     /// <param name="gameBoardVM">game board view model</param>
     /// <param name="client">player manager that is allowed to make action</param>
-    public DraftViewModel(IGameBoardViewModel gameBoardVM, RiskClient client) : base(gameBoardVM, client)
+    public DraftViewModel(IGameBoardViewModel gameBoardVM, IPlayer client) : base(gameBoardVM, client)
     {
       Client.OnMoveResult += OnMoveResult;
 

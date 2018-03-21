@@ -15,7 +15,7 @@ namespace Risk.ViewModel.Multiplayer
 
     private IWindowManager _windowManager;
 
-    private RiskClient _client;
+    private IClient _client;
 
     private string _gameName;
 
@@ -109,7 +109,7 @@ namespace Risk.ViewModel.Multiplayer
     /// </summary>
     public ObservableCollection<int> NumberOfPlayers { get; private set; }
 
-    public CreateGameDialogViewModel(IWindowManager windowManager, IMultiplayerMenuViewModel multiplayerViewModel, RiskClient client)
+    public CreateGameDialogViewModel(IWindowManager windowManager, IMultiplayerMenuViewModel multiplayerViewModel, IClient client)
     {
       _multiplayerViewModel = multiplayerViewModel;
       _windowManager = windowManager;

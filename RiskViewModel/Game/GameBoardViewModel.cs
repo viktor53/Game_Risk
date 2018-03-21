@@ -20,7 +20,7 @@ namespace Risk.ViewModel.Game
 
     private ViewModelBase _gameDialog;
 
-    private RiskClient _client;
+    private IPlayer _client;
 
     private const int _diameter = 70;
 
@@ -250,7 +250,7 @@ namespace Risk.ViewModel.Game
     /// <param name="windowManager">window manager</param>
     /// <param name="client">player manager that is allowed to make action</param>
     /// <param name="boardInfo">information about game board.</param>
-    public GameBoardViewModel(IWindowManager windowManager, RiskClient client, GameBoardInfo boardInfo)
+    public GameBoardViewModel(IWindowManager windowManager, IPlayer client, GameBoardInfo boardInfo)
     {
       _windowManager = windowManager;
       _client = client;
@@ -432,9 +432,12 @@ namespace Risk.ViewModel.Game
     /// <param name="ev">EndGameEventArgs</param>
     private void OnEndGame(object sender, EventArgs ev)
     {
-      ViewModelBase viewModel = new MultiplayerViewModel(_windowManager, _client);
-      IsEnabled = true;
-      GameDialogViewModel = new WinnerViewModel(_windowManager, viewModel, ((EndGameEventArgs)ev).Data);
+      if (_client is IClient)
+      {
+        ViewModelBase viewModel = new MultiplayerViewModel(_windowManager, (IClient)_client);
+        IsEnabled = true;
+        GameDialogViewModel = new WinnerViewModel(_windowManager, viewModel, ((EndGameEventArgs)ev).Data);
+      }
     }
 
     /// <summary>
@@ -604,7 +607,7 @@ namespace Risk.ViewModel.Game
     /// <param name="planet">planet, where player clicked<param>
     private async void SetUpClick(Planet planet)
     {
-      await _client.SendSetUpMoveAsync(planet.ID, PlayerColor);
+      await _client.SendSetUpMoveAsync(PlayerColor, planet.ID);
     }
 
     /// <summary>

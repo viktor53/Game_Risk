@@ -51,7 +51,7 @@ namespace Risk.ViewModel.Game
     /// <param name="gameBoardVM">game board view model</param>
     /// <param name="attackSize">size of attack that captured the area</param>
     /// <param name="client">player manager that is allowed to make action</param>
-    public CaptureViewModel(IGameBoardViewModel gameBoardVM, int attackSize, RiskClient client) : base(gameBoardVM, client)
+    public CaptureViewModel(IGameBoardViewModel gameBoardVM, int attackSize, IPlayer client) : base(gameBoardVM, client)
     {
       Client.OnMoveResult += OnMoveResult;
 

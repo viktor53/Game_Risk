@@ -599,7 +599,7 @@ namespace Risk.Model.GameCore
     private void SetUpPlayerInfo()
     {
       _playersInfo = new Dictionary<ArmyColor, PlayerInfo>();
-      int numberFreeUnits = GameSettings.GetStartNumberFreeUnit(_players.Count);
+      int numberFreeUnits = 1;// GameSettings.GetStartNumberFreeUnit(_players.Count);
 
       _logger.Info($"Starting number of unit {numberFreeUnits}");
 
@@ -699,10 +699,10 @@ namespace Risk.Model.GameCore
 
       foreach (var player in _players)
       {
-        player.FreeUnit = GameSettings.GetStartNumberFreeUnit(_players.Count);
+        player.FreeUnit = 1;// GameSettings.GetStartNumberFreeUnit(_players.Count);
       }
 
-      for (int i = 0; i < GameSettings.GetStartNumberFreeUnit(_players.Count); ++i)
+      for (int i = 0; i < 1 /*GameSettings.GetStartNumberFreeUnit(_players.Count)*/; ++i)
       {
         foreach (var player in _players)
         {

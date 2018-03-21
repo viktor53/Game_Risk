@@ -57,7 +57,9 @@
     <Compile Include="Client\ConfirmationEventArgs.cs" />
     <Compile Include="Client\EndGameEventArgs.cs" />
     <Compile Include="Client\FreeUnitEventArgs.cs" />
+    <Compile Include="Client\IClient.cs" />
     <Compile Include="Client\InicializationEventArgs.cs" />
+    <Compile Include="Client\IPlayer.cs" />
     <Compile Include="Client\MoveResultEventArgs.cs" />
     <Compile Include="Client\UpdateCardEventArgs.cs" />
     <Compile Include="Client\UpdateGameEventArgs.cs" />

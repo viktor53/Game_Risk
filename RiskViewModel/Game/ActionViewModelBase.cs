@@ -10,7 +10,7 @@ namespace Risk.ViewModel.Game
   {
     private IGameBoardViewModel _gameBoardVM;
 
-    private RiskClient _client;
+    private IPlayer _client;
 
     private int _army;
 
@@ -34,7 +34,7 @@ namespace Risk.ViewModel.Game
     /// <summary>
     /// Player manager that is allowed to make action.
     /// </summary>
-    protected RiskClient Client => _client;
+    protected IPlayer Client => _client;
 
     /// <summary>
     /// Number of units.
@@ -73,7 +73,7 @@ namespace Risk.ViewModel.Game
     /// </summary>
     /// <param name="gameBoardVM">game board view model</param>
     /// <param name="client">player manager that is allowed to make action</param>
-    public ActionViewModelBase(IGameBoardViewModel gameBoardVM, RiskClient client)
+    public ActionViewModelBase(IGameBoardViewModel gameBoardVM, IPlayer client)
     {
       _gameBoardVM = gameBoardVM;
       _client = client;

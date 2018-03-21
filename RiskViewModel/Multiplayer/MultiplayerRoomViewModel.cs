@@ -13,7 +13,7 @@ namespace Risk.ViewModel.Multiplayer
   {
     private IWindowManager _windowManager;
 
-    private RiskClient _client;
+    private IClient _client;
 
     private bool _isEnableb;
 
@@ -71,7 +71,7 @@ namespace Risk.ViewModel.Multiplayer
     /// </summary>
     /// <param name="windowManager">window manager</param>
     /// <param name="client">risk client connected to server and listening to updates</param>
-    public MultiplayerRoomViewModel(IWindowManager windowManager, RiskClient client)
+    public MultiplayerRoomViewModel(IWindowManager windowManager, IClient client)
     {
       _windowManager = windowManager;
       _client = client;

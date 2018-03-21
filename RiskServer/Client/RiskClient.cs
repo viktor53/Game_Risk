@@ -18,7 +18,7 @@ namespace Risk.Networking.Client
   /// <summary>
   /// Represents client side of risk player. Connets to risk server side.
   /// </summary>
-  public class RiskClient
+  public class RiskClient : IClient
   {
     private Socket _client;
 
@@ -58,6 +58,9 @@ namespace Risk.Networking.Client
 
     private event EventHandler _onEndGame;
 
+    /// <summary>
+    /// List of opened game rooms.
+    /// </summary>
     public IList<GameRoomInfo> Rooms
     {
       get
@@ -71,6 +74,9 @@ namespace Risk.Networking.Client
       }
     }
 
+    /// <summary>
+    /// List of connected players to game room.
+    /// </summary>
     public IList<string> Players => _players;
 
     /// <summary>
@@ -569,7 +575,7 @@ namespace Risk.Networking.Client
     /// <param name="idArea">id of area, where one unit will be placed</param>
     /// <param name="playerColor">color of player</param>
     /// <returns>true if sending succeded, otherwise false</returns>
-    public async Task<bool> SendSetUpMoveAsync(int idArea, ArmyColor playerColor)
+    public async Task<bool> SendSetUpMoveAsync(ArmyColor playerColor, int idArea)
     {
       return await Task.Run(() =>
       {

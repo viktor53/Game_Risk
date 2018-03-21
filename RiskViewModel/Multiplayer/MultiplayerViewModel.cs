@@ -16,7 +16,7 @@ namespace Risk.ViewModel.Multiplayer
 
     private ViewModelBase _dialogViewModel;
 
-    private RiskClient _client;
+    private IClient _client;
 
     private bool _isEnabled = true;
 
@@ -97,7 +97,7 @@ namespace Risk.ViewModel.Multiplayer
     /// </summary>
     /// <param name="windowManager">window manager</param>
     /// <param name="client">risk client connected to server</param>
-    public MultiplayerViewModel(IWindowManager windowManager, RiskClient client)
+    public MultiplayerViewModel(IWindowManager windowManager, IClient client)
     {
       _widnowManager = windowManager;
       _client = client;
