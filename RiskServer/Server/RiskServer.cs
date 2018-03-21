@@ -197,6 +197,7 @@ namespace Risk.Networking.Server
             _gameRooms.Remove(gameName);
           }
         }
+        SendUpdateToAll();
       }
       else
       {
@@ -230,6 +231,7 @@ namespace Risk.Networking.Server
 
         _gameRooms.Remove(room.RoomName);
       }
+      SendUpdateToAll();
     }
 
     /// <summary>
