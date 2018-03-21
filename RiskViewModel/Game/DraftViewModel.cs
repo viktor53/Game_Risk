@@ -1,18 +1,19 @@
-﻿using Risk.Model.Enums;
+﻿using System;
+using Risk.Model.Enums;
 using Risk.Networking.Client;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
 
 namespace Risk.ViewModel.Game
 {
+  /// <summary>
+  /// Represents draft action veiw model.
+  /// </summary>
   public class DraftViewModel : ActionViewModelBase
   {
     private int _maxSizeOfArmy;
 
+    /// <summary>
+    /// Maximum number of units to place
+    /// </summary>
     public int MaxSizeOfArmy
     {
       get
@@ -26,6 +27,11 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// Initializes draft view model.
+    /// </summary>
+    /// <param name="gameBoardVM">game board view model</param>
+    /// <param name="client">player manager that is allowed to make action</param>
     public DraftViewModel(IGameBoardViewModel gameBoardVM, RiskClient client) : base(gameBoardVM, client)
     {
       Client.OnMoveResult += OnMoveResult;
@@ -35,11 +41,19 @@ namespace Risk.ViewModel.Game
       Action_Click = new Command(AddArmyClick);
     }
 
-    private void AddArmyClick()
+    /// <summary>
+    /// Adds army to the area.
+    /// </summary>
+    private async void AddArmyClick()
     {
-      Client.SendDraftMoveAsync(GameBoardVM.PlayerColor, GameBoardVM.Selected1.ID, Army);
+      await Client.SendDraftMoveAsync(GameBoardVM.PlayerColor, GameBoardVM.Selected1.ID, Army);
     }
 
+    /// <summary>
+    /// Method is called when OnMoveResult event is raised. Processes move result.
+    /// </summary>
+    /// <param name="sender">sender who raised the event</param>
+    /// <param name="ev">MoveResultEventArgs</param>
     private void OnMoveResult(object sender, EventArgs ev)
     {
       MoveResult mr = (MoveResult)((MoveResultEventArgs)ev).Data;

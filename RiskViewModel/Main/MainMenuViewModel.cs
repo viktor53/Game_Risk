@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using System.Windows.Controls;
-using System.Windows;
+﻿using System.Windows.Input;
 
 namespace Risk.ViewModel.Main
 {
+  /// <summary>
+  /// Represents main menu view model.
+  /// </summary>
   public class MainMenuViewModel : ViewModelBase, IMainMenuViewModel
   {
     private ViewModelBase _contentViewModel;
@@ -17,12 +13,24 @@ namespace Risk.ViewModel.Main
 
     private bool _isEnabled = true;
 
+    /// <summary>
+    /// Click on Multiplayer button. Changes ContentViewModel on ConnectionViewModel.
+    /// </summary>
     public ICommand Multiplayer_Click { get; private set; }
 
+    /// <summary>
+    /// Click on Singleplayer button. Changes ContentViewModel on IntroSinglePlayerVewModel.
+    /// </summary>
     public ICommand Singleplayer_Click { get; private set; }
 
+    /// <summary>
+    /// Click on QuitGame button. Closes the application.
+    /// </summary>
     public ICommand QuitGame_Click { get; private set; }
 
+    /// <summary>
+    /// View model for content of main menu.
+    /// </summary>
     public ViewModelBase ContentViewModel
     {
       get
@@ -37,6 +45,9 @@ namespace Risk.ViewModel.Main
       }
     }
 
+    /// <summary>
+    /// If main menu is enabled.
+    /// </summary>
     public bool IsEnabled
     {
       get
@@ -50,6 +61,10 @@ namespace Risk.ViewModel.Main
       }
     }
 
+    /// <summary>
+    /// Initializes MainMenuVeiwModel.
+    /// </summary>
+    /// <param name="windowManager">window manager</param>
     public MainMenuViewModel(IWindowManager windowManager)
     {
       Multiplayer_Click = new Command(MultiplayerClick);
@@ -61,17 +76,26 @@ namespace Risk.ViewModel.Main
       _windowManager = windowManager;
     }
 
+    /// <summary>
+    /// Changes ContentViewModel on IntroSignlePLayerViewModel.
+    /// </summary>
     private void SingleplayerClick()
     {
       ContentViewModel = new IntroSinglePlayerViewModel();
     }
 
+    /// <summary>
+    /// Changes ContentViewModel on ConnectionViewModel and creates RiskClient.
+    /// </summary>
     private void MultiplayerClick()
     {
       ContentViewModel = new ConnectionViewModel(_windowManager, this, new Networking.Client.RiskClient("Enterprise"));
       IsEnabled = false;
     }
 
+    /// <summary>
+    /// Closes the application.
+    /// </summary>
     private void QuitGameClick()
     {
       _windowManager.CloseWindow();

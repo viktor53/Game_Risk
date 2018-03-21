@@ -1,14 +1,12 @@
-﻿using Risk.Model.Enums;
+﻿using System.Windows.Input;
+using Risk.Model.Enums;
 using Risk.Model.GamePlan;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
 
 namespace Risk.ViewModel.Game
 {
+  /// <summary>
+  /// Represents one planet on game board.
+  /// </summary>
   public sealed class Planet : MapItem
   {
     private bool _isEnabled;
@@ -19,10 +17,19 @@ namespace Risk.ViewModel.Game
 
     private ArmyColor _armyColor;
 
+    /// <summary>
+    /// Source of planet image.
+    /// </summary>
     public string IMG { get; set; }
 
+    /// <summary>
+    /// Click on Planet. Executes action.
+    /// </summary>
     public ICommand Planet_Click { get; private set; }
 
+    /// <summary>
+    /// If planet is enabled.
+    /// </summary>
     public bool IsEnabled
     {
       get
@@ -36,8 +43,14 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// ID of planet corresponding to area ID.
+    /// </summary>
     public int ID => _id;
 
+    /// <summary>
+    /// Number of units on planet.
+    /// </summary>
     public int SizeOfArmy
     {
       get
@@ -51,6 +64,9 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// Color of amry on planet.
+    /// </summary>
     public ArmyColor ArmyColor
     {
       get
@@ -64,6 +80,14 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// Initilizes planet with position on game board, its image and its area.
+    /// </summary>
+    /// <param name="x">X coordinate</param>
+    /// <param name="y">Y coordinate</param>
+    /// <param name="img">source of planet image</param>
+    /// <param name="area">area</param>
+    /// <param name="click">command click on planet</param>
     public Planet(int x, int y, string img, Area area, ICommand click)
     {
       X = x;

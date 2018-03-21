@@ -1,19 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Risk.ViewModel.Main;
 using System.Windows.Input;
 using Risk.Networking.Client;
 using Risk.Networking.Messages.Data;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Threading;
 
 namespace Risk.ViewModel.Multiplayer
 {
+  /// <summary>
+  /// Represents multiplayer menu with opened game rooms. Implements IMultiplayerMenuViewModel.
+  /// </summary>
   public class MultiplayerViewModel : ViewModelBase, IMultiplayerMenuViewModel
   {
     private IWindowManager _widnowManager;
@@ -26,12 +22,24 @@ namespace Risk.ViewModel.Multiplayer
 
     private GameRoomInfo _room;
 
+    /// <summary>
+    /// Click on Back to Menu button. Logs out player and returns to main menu.
+    /// </summary>
     public ICommand BackToMenu_Click { get; private set; }
 
+    /// <summary>
+    /// Click on Create Game button. Changes DialogViewModel on CreateGameDialogViewModel.
+    /// </summary>
     public ICommand CreateGame_Click { get; private set; }
 
+    /// <summary>
+    /// Click on Connect to Game button. Tries to connect to selected game room.
+    /// </summary>
     public ICommand ConnectToGame_Click { get; private set; }
 
+    /// <summary>
+    /// Dialog view model.
+    /// </summary>
     public ViewModelBase DialogViewModel
     {
       get
@@ -47,6 +55,9 @@ namespace Risk.ViewModel.Multiplayer
       }
     }
 
+    /// <summary>
+    /// If multiplayer menu is enabled.
+    /// </summary>
     public bool IsEnabled
     {
       get
@@ -60,6 +71,9 @@ namespace Risk.ViewModel.Multiplayer
       }
     }
 
+    /// <summary>
+    /// Selected game room.
+    /// </summary>
     public GameRoomInfo Room
     {
       get
@@ -73,8 +87,16 @@ namespace Risk.ViewModel.Multiplayer
       }
     }
 
+    /// <summary>
+    /// List of opened game rooms.
+    /// </summary>
     public ObservableCollection<GameRoomInfo> Rooms { get; private set; }
 
+    /// <summary>
+    /// Initializes MultiplayerViewModel and starts listen to updates.
+    /// </summary>
+    /// <param name="windowManager">window manager</param>
+    /// <param name="client">risk client connected to server</param>
     public MultiplayerViewModel(IWindowManager windowManager, RiskClient client)
     {
       _widnowManager = windowManager;
@@ -90,12 +112,18 @@ namespace Risk.ViewModel.Multiplayer
       Rooms = new ObservableCollection<GameRoomInfo>();
     }
 
-    private void BackToMenuClick()
+    /// <summary>
+    /// Logs out player and returns to main menu.
+    /// </summary>
+    private async void BackToMenuClick()
     {
-      _client.SendLougOutRequestAsync();
+      await _client.SendLougOutRequestAsync();
       _widnowManager.WindowViewModel = new MainMenuViewModel(_widnowManager);
     }
 
+    /// <summary>
+    /// Changes DialogViewModel on CreateGameDialogViewModel.
+    /// </summary>
     private void CreateGameClick()
     {
       _client.OnConfirmation -= OnConfirmation;
@@ -104,6 +132,9 @@ namespace Risk.ViewModel.Multiplayer
       IsEnabled = false;
     }
 
+    /// <summary>
+    /// Tries to connect to selected game room.
+    /// </summary>
     private async void ConnectToGameClick()
     {
       if (Room != null)
@@ -112,16 +143,27 @@ namespace Risk.ViewModel.Multiplayer
       }
     }
 
+    /// <summary>
+    /// Method that is called when OnUpdate event is raised. Updates list of game rooms.
+    /// </summary>
+    /// <param name="sender">who raised the event OnUpdate</param>
+    /// <param name="ev">EventArgs is not used</param>
     private void OnUpdate(object sender, EventArgs ev)
     {
       _widnowManager.UI.Send(x => Rooms.Clear(), null);
       foreach (var room in _client.Rooms)
       {
-        Debug.WriteLine($"{room.RoomName}, {room.Connected}, {room.Capacity}", "Client");
         _widnowManager.UI.Send(x => Rooms.Add(room), null);
       }
     }
 
+    /// <summary>
+    /// Method that is called when OnConfirmation event is raised.
+    /// If confirmation is positive, changes WindowViewModel on MultiplayerRoomViewModel,
+    /// otherwise changes DialogViewModel on ConnectToGameErrorDialogViewModel.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="ev"></param>
     private void OnConfirmation(object sender, EventArgs ev)
     {
       if (((ConfirmationEventArgs)ev).Data)

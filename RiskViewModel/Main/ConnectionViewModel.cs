@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
+﻿using System.Windows.Input;
 using Risk.ViewModel.Multiplayer;
 using Risk.Networking.Client;
 
 namespace Risk.ViewModel.Main
 {
+  /// <summary>
+  /// Represents connecting to risk server.
+  /// </summary>
   public class ConnectionViewModel : ViewModelBase
   {
     private IWindowManager _windowManager;
@@ -21,6 +19,11 @@ namespace Risk.ViewModel.Main
 
     private string _error;
 
+    private bool _isConnected;
+
+    /// <summary>
+    /// Name of player.
+    /// </summary>
     public string Name
     {
       get
@@ -34,6 +37,9 @@ namespace Risk.ViewModel.Main
       }
     }
 
+    /// <summary>
+    /// Error during connecting.
+    /// </summary>
     public string Error
     {
       get
@@ -47,8 +53,14 @@ namespace Risk.ViewModel.Main
       }
     }
 
+    /// <summary>
+    /// Click on Connect button. Tries to connect to risk server and registrates player.
+    /// </summary>
     public ICommand Connect_Click { get; private set; }
 
+    /// <summary>
+    /// Click on Cancel button. Cancels connecting and returns to main menu.
+    /// </summary>
     public ICommand Cancel_Click { get; private set; }
 
     public ConnectionViewModel(IWindowManager mainViewModel, IMainMenuViewModel mainMenu, RiskClient client)
@@ -56,31 +68,46 @@ namespace Risk.ViewModel.Main
       _windowManager = mainViewModel;
       _mainMenu = mainMenu;
       _client = client;
+      _isConnected = false;
 
       Name = "Your nickname...";
 
       Connect_Click = new Command(ConnectClick);
       Cancel_Click = new Command(CancelClick);
-
-      _client.ConnectAsync();
     }
 
+    /// <summary>
+    /// Tries to connect to risk server and registrates player.
+    /// </summary>
     private async void ConnectClick()
     {
-      bool succes = await _client.SendRegistrationRequestAsync(_name);
+      bool succes = _isConnected ? true : await _client.ConnectAsync();
       if (succes)
       {
-        _windowManager.WindowViewModel = new MultiplayerViewModel(_windowManager, _client);
+        _isConnected = true;
+
+        succes = await _client.SendRegistrationRequestAsync(_name);
+        if (succes)
+        {
+          _windowManager.WindowViewModel = new MultiplayerViewModel(_windowManager, _client);
+        }
+        else
+        {
+          Error = "The name already exists!";
+        }
       }
       else
       {
-        Error = "The name already exists!";
+        Error = "Can not connect to server!";
       }
     }
 
-    private void CancelClick()
+    /// <summary>
+    /// Cancels connecting and returns to main menu.
+    /// </summary>
+    private async void CancelClick()
     {
-      _client.SendLougOutRequestAsync();
+      await _client.SendLougOutRequestAsync();
       _mainMenu.ContentViewModel = null;
       _mainMenu.IsEnabled = true;
     }

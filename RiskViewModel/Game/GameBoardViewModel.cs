@@ -1,28 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Drawing.Imaging;
-using System.Drawing;
-using System.Windows.Media.Imaging;
 using System.Windows;
-using System.Windows.Data;
-using Risk.Model.GamePlan;
 using System.ComponentModel;
-using Risk.Networking.Server;
-using System.Windows.Controls;
 using System.Windows.Input;
-using System.Globalization;
+using Risk.Model.GamePlan;
 using Risk.Model.Enums;
 using Risk.Networking.Messages.Data;
 using Risk.Networking.Client;
-using System.Threading;
 using Risk.ViewModel.Multiplayer;
 
 namespace Risk.ViewModel.Game
 {
+  /// <summary>
+  /// Represents game board view model.
+  /// </summary>
   public class GameBoardViewModel : ViewModelBase, IGameBoardViewModel
   {
     private IWindowManager _windowManager;
@@ -61,12 +52,24 @@ namespace Risk.ViewModel.Game
 
     private bool _firstClick = true;
 
+    /// <summary>
+    /// Click on Planet button or game board. Selects or unselects planet and starts action depending on phase of game.
+    /// </summary>
     public ICommand Planet_Click { get; private set; }
 
+    /// <summary>
+    /// Click on Next button. Goes into next phase.
+    /// </summary>
     public ICommand Next_Click { get; private set; }
 
+    /// <summary>
+    /// Click on Cards button. Tries to exchange cards if player has a combination.
+    /// </summary>
     public ICommand Cards_Click { get; private set; }
 
+    /// <summary>
+    /// Game dialog view model.
+    /// </summary>
     public ViewModelBase GameDialogViewModel
     {
       get
@@ -94,6 +97,9 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// If game board is enabled.
+    /// </summary>
     public bool IsEnabled
     {
       get
@@ -107,6 +113,9 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// Current phase of game.
+    /// </summary>
     public Phase CurrentPhase
     {
       get
@@ -120,6 +129,9 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// Who plays now.
+    /// </summary>
     public Turn Turn
     {
       get
@@ -133,6 +145,9 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// Number of cards in player's hand.
+    /// </summary>
     public int NumberCards
     {
       get
@@ -146,6 +161,9 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// number of free units that can be placed on planet.
+    /// </summary>
     public int FreeArmy
     {
       get
@@ -159,6 +177,9 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// Source of image backgraund.
+    /// </summary>
     public string BG
     {
       get
@@ -172,6 +193,9 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// Color of player.
+    /// </summary>
     public ArmyColor PlayerColor
     {
       get
@@ -185,6 +209,9 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// First selected planet.
+    /// </summary>
     public Planet Selected1
     {
       get
@@ -197,6 +224,9 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// Second selected planet.
+    /// </summary>
     public Planet Selected2
     {
       get
@@ -209,8 +239,17 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// List of map items. Items on game board.
+    /// </summary>
     public BindingList<MapItem> MapItems { get; private set; }
 
+    /// <summary>
+    /// Initializes game board view model and sets game plan.
+    /// </summary>
+    /// <param name="windowManager">window manager</param>
+    /// <param name="client">player manager that is allowed to make action</param>
+    /// <param name="boardInfo">information about game board.</param>
     public GameBoardViewModel(IWindowManager windowManager, RiskClient client, GameBoardInfo boardInfo)
     {
       _windowManager = windowManager;
@@ -238,6 +277,11 @@ namespace Risk.ViewModel.Game
       LoadMap(boardInfo);
     }
 
+    /// <summary>
+    /// Method that is called when OnUpdate event is raised. Updates game board.
+    /// </summary>
+    /// <param name="sender">sender who raised the event</param>
+    /// <param name="ev">UpdateGameEventArgs</param>
     private void OnUpdate(object sender, EventArgs ev)
     {
       Area a = ((UpdateGameEventArgs)ev).Data;
@@ -245,17 +289,32 @@ namespace Risk.ViewModel.Game
       _planets[a.ID].ArmyColor = a.ArmyColor;
     }
 
+    /// <summary>
+    /// Method that is called when OnFreeUnit event is raised. Updates number of free units.
+    /// </summary>
+    /// <param name="sender">sender who raised the event</param>
+    /// <param name="ev">FreeUnitEventArgs</param>
     private void OnFreeUnit(object sender, EventArgs ev)
     {
       FreeArmy = (int)((FreeUnitEventArgs)ev).Data;
     }
 
+    /// <summary>
+    /// Method that is called when OnArmyColor event is raised. Updates color of player.
+    /// </summary>
+    /// <param name="sender">sender who raised the event</param>
+    /// <param name="ev">ArmyColorEventArgs</param>
     private void OnArmyColor(object sender, EventArgs ev)
     {
       long color = ((ArmyColorEventArgs)ev).Data;
       PlayerColor = (ArmyColor)color;
     }
 
+    /// <summary>
+    /// Method that is called when OnUpdateCard event is raised. Updates number of cards.
+    /// </summary>
+    /// <param name="sender">sender who raised the event</param>
+    /// <param name="ev">UpdateCardEventArgs</param>
     private void OnUpdateCard(object sender, EventArgs ev)
     {
       bool isAdd = ((UpdateCardEventArgs)ev).Data;
@@ -269,6 +328,11 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// Method that is called when OnYourTurn event is raised. Notifies player that he is playing now.
+    /// </summary>
+    /// <param name="sender">sender who raised the event</param>
+    /// <param name="ev">ConfirmationEventArgs</param>
     private void OnYourTurn(object sender, EventArgs ev)
     {
       bool isSetUp = ((ConfirmationEventArgs)ev).Data;
@@ -286,6 +350,11 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// Method that is called when OnMoveResult event is raised. Processes move result during SetUp phase.
+    /// </summary>
+    /// <param name="sender">sender who raised the event</param>
+    /// <param name="ev">MoveResultEventArgs</param>
     private void OnMoveResultSetUp(object sender, EventArgs ev)
     {
       MoveResult mr = (MoveResult)((MoveResultEventArgs)ev).Data;
@@ -301,6 +370,11 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// Method that is called when OnMoveResult event is raised. Processes move result of next phase command.
+    /// </summary>
+    /// <param name="sender">sender who raised the event</param>
+    /// <param name="ev">MoveResultEventArgs</param>
     private void OnMoveResultNextPhase(object sender, EventArgs ev)
     {
       MoveResult mr = (MoveResult)((MoveResultEventArgs)ev).Data;
@@ -336,6 +410,11 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// Method that is called when OnMoveResult event is raised.Processes move result during card exchanging.
+    /// </summary>
+    /// <param name="sender">sender who raised the event</param>
+    /// <param name="ev">MoveResultEventArgs</param>
     private void OnMoveResultCard(object sender, EventArgs ev)
     {
       MoveResult mr = (MoveResult)((MoveResultEventArgs)ev).Data;
@@ -346,6 +425,11 @@ namespace Risk.ViewModel.Game
       _client.OnMoveResult += OnMoveResultNextPhase;
     }
 
+    /// <summary>
+    /// Method that is called when OnEndGame event is raised. Ends the game and notifies if player won.
+    /// </summary>
+    /// <param name="sender">sender who raised the event</param>
+    /// <param name="ev">EndGameEventArgs</param>
     private void OnEndGame(object sender, EventArgs ev)
     {
       ViewModelBase viewModel = new MultiplayerViewModel(_windowManager, _client);
@@ -353,11 +437,23 @@ namespace Risk.ViewModel.Game
       GameDialogViewModel = new WinnerViewModel(_windowManager, viewModel, ((EndGameEventArgs)ev).Data);
     }
 
+    /// <summary>
+    /// Gets distance between two points.
+    /// </summary>
+    /// <param name="x1">X coordinate of point A</param>
+    /// <param name="y1">Y coordinate of point A</param>
+    /// <param name="x2">X coordinate of point B</param>
+    /// <param name="y2">Y coordinate of point B</param>
+    /// <returns>distance between two points</returns>
     private int GetDistance(int x1, int y1, int x2, int y2)
     {
       return (int)Math.Sqrt(Math.Pow(x1 - x2, 2) + Math.Pow(y1 - y2, 2));
     }
 
+    /// <summary>
+    /// Loads map. Processes game board information and creates map items.
+    /// </summary>
+    /// <param name="gbi">game board information</param>
     private void LoadMap(GameBoardInfo gbi)
     {
       _planets = new List<Planet>();
@@ -388,6 +484,11 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// Gets source of image planet depending on type of planet.
+    /// </summary>
+    /// <param name="img">type of planet</param>
+    /// <returns>source of image planet</returns>
     private string GetPlanetIMG(int img)
     {
       switch (img)
@@ -421,9 +522,12 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// Processes click on planet depending on phase of game.
+    /// </summary>
     private void PlanetClick()
     {
-      System.Windows.Point p = Mouse.GetPosition(Application.Current.MainWindow);
+      Point p = Mouse.GetPosition(Application.Current.MainWindow);
 
       Planet clicked = GetClickedPlanet((int)p.X, (int)p.Y);
 
@@ -471,28 +575,42 @@ namespace Risk.ViewModel.Game
       }
     }
 
-    private void NextClick()
+    /// <summary>
+    /// Goes into next phase of game.
+    /// </summary>
+    private async void NextClick()
     {
       if (CurrentPhase != Phase.SETUP)
       {
-        _client.SendNextPhaseAsync();
+        await _client.SendNextPhaseAsync();
       }
     }
 
-    private void CardsClick()
+    /// <summary>
+    /// Tries exchange cards.
+    /// </summary>
+    private async void CardsClick()
     {
       if (CurrentPhase == Phase.DRAFT)
       {
         _client.OnMoveResult += OnMoveResultCard;
-        _client.SendExchangeCardAsync(PlayerColor);
+        await _client.SendExchangeCardAsync(PlayerColor);
       }
     }
 
-    private void SetUpClick(Planet planet)
+    /// <summary>
+    /// Makes setup move.
+    /// </summary>
+    /// <param name="planet">planet, where player clicked<param>
+    private async void SetUpClick(Planet planet)
     {
-      _client.SendSetUpMoveAsync(planet.ID, PlayerColor);
+      await _client.SendSetUpMoveAsync(planet.ID, PlayerColor);
     }
 
+    /// <summary>
+    /// Makes draft move.
+    /// </summary>
+    /// <param name="planet">planet, where player clicked</param>
     private void DraftClick(Planet planet)
     {
       if (!IsEnemy(planet))
@@ -502,6 +620,10 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// Makes attack move and goes into settings of attack.
+    /// </summary>
+    /// <param name="planet">planet, where player clicked</param>
     private void AttackClick(Planet planet)
     {
       if (_firstClick && planet.SizeOfArmy > 1)
@@ -533,6 +655,9 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// Enables all planet that can attack.
+    /// </summary>
     private void WhoCanAttack()
     {
       EnableAllPlanet(false);
@@ -546,6 +671,10 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// Enables all planet that can be attacked from the planet.
+    /// </summary>
+    /// <param name="planet">planet, where attack goes from</param>
     private void WhoCanBeAttacked(Planet planet)
     {
       EnableAllPlanet(false);
@@ -559,11 +688,21 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// Finds out if the planet is enemy or not.
+    /// </summary>
+    /// <param name="planet">the planet</param>
+    /// <returns>if the planet is enemy</returns>
     private bool IsEnemy(Planet planet)
     {
       return planet.ArmyColor != _playerColor;
     }
 
+    /// <summary>
+    /// Finds out if the planet has enemies around.
+    /// </summary>
+    /// <param name="planet">the planet</param>
+    /// <returns>if the planet hase enemies</returns>
     private bool HasEnemy(Planet planet)
     {
       for (int i = 0; i < _connections[planet.ID].Count; ++i)
@@ -576,6 +715,10 @@ namespace Risk.ViewModel.Game
       return false;
     }
 
+    /// <summary>
+    /// Makes fortify move and goes into settings of fortification.
+    /// </summary>
+    /// <param name="planet">planet, where player clicked</param>
     private void FortifyClick(Planet planet)
     {
       if (_firstClick)
@@ -601,6 +744,12 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// Gets planet where player clicked.
+    /// </summary>
+    /// <param name="x">X coordinate of click</param>
+    /// <param name="y">Y coordinate of click</param>
+    /// <returns>the planet or null</returns>
     private Planet GetClickedPlanet(int x, int y)
     {
       foreach (var pl in _planets)
@@ -613,6 +762,10 @@ namespace Risk.ViewModel.Game
       return null;
     }
 
+    /// <summary>
+    /// Enables or disables all planet depending on parametr.
+    /// </summary>
+    /// <param name="enable">enable or disable planet</param>
     private void EnableAllPlanet(bool enable)
     {
       foreach (var pl in _planets)
@@ -621,6 +774,10 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// Enables all planets connected with the planet through friendly planets.
+    /// </summary>
+    /// <param name="planet">the planet</param>
     private void EnableConnectedPlanet(Planet planet)
     {
       Stack<Planet> toVisit = new Stack<Planet>();

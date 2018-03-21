@@ -1,16 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using Risk.ViewModel.Game;
 using Risk.Networking.Client;
-using System.Threading;
 
 namespace Risk.ViewModel.Multiplayer
 {
+  /// <summary>
+  /// Represents multiplayer room where players wait on other players.
+  /// </summary>
   public class MultiplayerRoomViewModel : ViewModelBase
   {
     private IWindowManager _windowManager;
@@ -21,12 +19,24 @@ namespace Risk.ViewModel.Multiplayer
 
     private string _text = "";
 
+    /// <summary>
+    /// Click on Ready button. Notifies that player is ready.
+    /// </summary>
     public ICommand Ready_Click { get; private set; }
 
+    /// <summary>
+    /// Click on Cancel button. Leaves game room.
+    /// </summary>
     public ICommand Cancel_Click { get; private set; }
 
+    /// <summary>
+    /// List of player names.
+    /// </summary>
     public ObservableCollection<string> Players { get; private set; }
 
+    /// <summary>
+    /// If it is enabled.
+    /// </summary>
     public bool IsEnabled
     {
       get
@@ -40,6 +50,9 @@ namespace Risk.ViewModel.Multiplayer
       }
     }
 
+    /// <summary>
+    /// Text with information about process.
+    /// </summary>
     public string Text
     {
       get
@@ -53,6 +66,11 @@ namespace Risk.ViewModel.Multiplayer
       }
     }
 
+    /// <summary>
+    /// Initializes MultiplayerRoomViewModel.
+    /// </summary>
+    /// <param name="windowManager">window manager</param>
+    /// <param name="client">risk client connected to server and listening to updates</param>
     public MultiplayerRoomViewModel(IWindowManager windowManager, RiskClient client)
     {
       _windowManager = windowManager;
@@ -68,18 +86,24 @@ namespace Risk.ViewModel.Multiplayer
       IsEnabled = false;
     }
 
-    private void ReadyClick()
+    /// <summary>
+    /// Notifies that player is ready.
+    /// </summary>
+    private async void ReadyClick()
     {
       Text = "Wainting on players...";
 
       IsEnabled = false;
 
-      _client.SendReadyTagRequestAsync();
+      await _client.SendReadyTagRequestAsync();
     }
 
-    private void CancelClick()
+    /// <summary>
+    /// Leaves game room.
+    /// </summary>
+    private async void CancelClick()
     {
-      _client.SendLeaveGameRequestAsync();
+      await _client.SendLeaveGameRequestAsync();
 
       _client.OnUpdate -= OnUpdate;
       _client.OnInicialization -= OnInicialization;
@@ -87,6 +111,11 @@ namespace Risk.ViewModel.Multiplayer
       _windowManager.WindowViewModel = new MultiplayerViewModel(_windowManager, _client);
     }
 
+    /// <summary>
+    /// Method is called when OnUpdate event is raised. Updates list of connected players.
+    /// </summary>
+    /// <param name="sender">client that raised the event</param>
+    /// <param name="e">EventArgs is not used</param>
     private void OnUpdate(object sender, EventArgs e)
     {
       IsEnabled = true;
@@ -100,6 +129,11 @@ namespace Risk.ViewModel.Multiplayer
       }
     }
 
+    /// <summary>
+    /// Method is called whe OnInicializtation event is raised. Inicializes GameBoardViewModel.
+    /// </summary>
+    /// <param name="sender">client that raised the event</param>
+    /// <param name="e">InicializationEventArgs</param>
     private void OnInicialization(object sender, EventArgs e)
     {
       _client.OnUpdate -= OnUpdate;

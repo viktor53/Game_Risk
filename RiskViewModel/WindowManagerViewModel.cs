@@ -1,20 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Risk.ViewModel.Main;
-using System.Windows;
+﻿using System.Windows;
 using System.Threading;
+using Risk.ViewModel.Main;
 
 namespace Risk.ViewModel
 {
+  /// <summary>
+  /// Represents main window manager.
+  /// </summary>
   public class WindowManagerViewModel : ViewModelBase, IWindowManager
   {
     private ViewModelBase _windowViewModel;
 
     private SynchronizationContext _ui;
 
+    /// <summary>
+    /// Veiw model for window content.
+    /// </summary>
     public ViewModelBase WindowViewModel
     {
       get
@@ -29,14 +30,23 @@ namespace Risk.ViewModel
       }
     }
 
+    /// <summary>
+    /// Synchronization context for updanting UI elements.
+    /// </summary>
     public SynchronizationContext UI => _ui;
 
+    /// <summary>
+    /// Creates window manager view model and loads main menu view model.
+    /// </summary>
     public WindowManagerViewModel()
     {
       WindowViewModel = new MainMenuViewModel(this);
       _ui = SynchronizationContext.Current;
     }
 
+    /// <summary>
+    /// Closes the window and whole application.
+    /// </summary>
     public void CloseWindow()
     {
       Application.Current.MainWindow.Close();

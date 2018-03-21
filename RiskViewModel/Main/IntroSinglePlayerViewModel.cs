@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace Risk.ViewModel.Main
 {
-  public class IntroSinglePlayerViewModel: ViewModelBase
+  /// <summary>
+  /// Represents introduction into signle player.
+  /// </summary>
+  public class IntroSinglePlayerViewModel : ViewModelBase
   {
   }
 }

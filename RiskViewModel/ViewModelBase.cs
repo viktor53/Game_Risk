@@ -1,16 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 
 namespace Risk.ViewModel
 {
-  public class ViewModelBase: INotifyPropertyChanged
+  /// <summary>
+  /// Base class for each view model.
+  /// </summary>
+  public abstract class ViewModelBase : INotifyPropertyChanged
   {
+    /// <summary>
+    /// PropertyChanged is raised whenever some propery is changed.
+    /// </summary>
     public event PropertyChangedEventHandler PropertyChanged;
 
+    /// <summary>
+    /// Raises event property changed.
+    /// </summary>
+    /// <param name="propertyName">name of changed property</param>
     protected void OnPropertyChanged(string propertyName)
     {
       PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

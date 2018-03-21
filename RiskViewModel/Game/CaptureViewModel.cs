@@ -1,19 +1,21 @@
-﻿using Risk.Model.Enums;
+﻿using System;
+using Risk.Model.Enums;
 using Risk.Networking.Client;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Risk.ViewModel.Game
 {
+  /// <summary>
+  /// Represents capture action view model.
+  /// </summary>
   public class CaptureViewModel : ActionViewModelBase
   {
     private int _maxSizeOfArmy;
 
     private int _minSizeOfArmy;
 
+    /// <summary>
+    /// Maximum number of units to move.
+    /// </summary>
     public int MaxSizeOfArmy
     {
       get
@@ -27,6 +29,9 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// Minimum number of units to move.
+    /// </summary>
     public int MinSizeOfArmy
     {
       get
@@ -40,6 +45,12 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// Initializes capture view model and max/min size of army.
+    /// </summary>
+    /// <param name="gameBoardVM">game board view model</param>
+    /// <param name="attackSize">size of attack that captured the area</param>
+    /// <param name="client">player manager that is allowed to make action</param>
     public CaptureViewModel(IGameBoardViewModel gameBoardVM, int attackSize, RiskClient client) : base(gameBoardVM, client)
     {
       Client.OnMoveResult += OnMoveResult;
@@ -56,11 +67,19 @@ namespace Risk.ViewModel.Game
       Action_Click = new Command(MoveClick);
     }
 
-    private void MoveClick()
+    /// <summary>
+    /// Moves units to captured area.
+    /// </summary>
+    private async void MoveClick()
     {
-      Client.SendCaptureMoveAsync(GameBoardVM.PlayerColor, Army);
+      await Client.SendCaptureMoveAsync(GameBoardVM.PlayerColor, Army);
     }
 
+    /// <summary>
+    /// Method that is called when OnMoveResult event is raised. Processes move result.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="ev"></param>
     private void OnMoveResult(object sender, EventArgs ev)
     {
       MoveResult mr = (MoveResult)((MoveResultEventArgs)ev).Data;

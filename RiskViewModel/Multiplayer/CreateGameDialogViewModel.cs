@@ -1,16 +1,14 @@
-﻿using Risk.Networking.Client;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using Risk.Networking.Messages.Data;
-using System.Threading;
+using Risk.Networking.Client;
 
 namespace Risk.ViewModel.Multiplayer
 {
+  /// <summary>
+  /// Represents creating new game room.
+  /// </summary>
   public class CreateGameDialogViewModel : ViewModelBase
   {
     private IMultiplayerMenuViewModel _multiplayerViewModel;
@@ -27,10 +25,19 @@ namespace Risk.ViewModel.Multiplayer
 
     private string _error;
 
+    /// <summary>
+    /// Click on Create button. Tries create new game room.
+    /// </summary>
     public ICommand Create_Click { get; private set; }
 
+    /// <summary>
+    /// Click on Cancel button. Leaves creating new game room.
+    /// </summary>
     public ICommand Cancel_Click { get; private set; }
 
+    /// <summary>
+    /// Name of new game room.
+    /// </summary>
     public string GameName
     {
       get
@@ -44,6 +51,9 @@ namespace Risk.ViewModel.Multiplayer
       }
     }
 
+    /// <summary>
+    /// Maximum capacity of players
+    /// </summary>
     public int Players
     {
       get
@@ -57,6 +67,9 @@ namespace Risk.ViewModel.Multiplayer
       }
     }
 
+    /// <summary>
+    /// Type of map. Default/Classic map or random generated map.
+    /// </summary>
     public string Map
     {
       get
@@ -70,6 +83,9 @@ namespace Risk.ViewModel.Multiplayer
       }
     }
 
+    /// <summary>
+    /// Eroor during creating new game room.
+    /// </summary>
     public string Error
     {
       get
@@ -83,8 +99,14 @@ namespace Risk.ViewModel.Multiplayer
       }
     }
 
+    /// <summary>
+    /// List of map options.
+    /// </summary>
     public ObservableCollection<string> Maps { get; private set; }
 
+    /// <summary>
+    /// Number of players options list.
+    /// </summary>
     public ObservableCollection<int> NumberOfPlayers { get; private set; }
 
     public CreateGameDialogViewModel(IWindowManager windowManager, IMultiplayerMenuViewModel multiplayerViewModel, RiskClient client)
@@ -101,17 +123,29 @@ namespace Risk.ViewModel.Multiplayer
       NumberOfPlayers = CreateNumberOfPlayers();
     }
 
+    /// <summary>
+    /// Tries create new game room.
+    /// </summary>
     private async void CreateClick()
     {
       await _client.SendCreateGameRequestAsync(new CreateGameRoomInfo(GameName, Players, Map == "Default"));
     }
 
+    /// <summary>
+    /// Leaves creating new game room.
+    /// </summary>
     private void CancelClick()
     {
       _multiplayerViewModel.DialogViewModel = null;
       _multiplayerViewModel.IsEnabled = true;
     }
 
+    /// <summary>
+    /// Method that is called when OnConfiramtion event is raised.
+    /// If confirmation is positive changes WindowViewModel on MultiplayerRoomViewModel otherwise writes error.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="ev"></param>
     private void OnConfirmation(object sender, EventArgs ev)
     {
       if (((ConfirmationEventArgs)ev).Data)
@@ -125,6 +159,10 @@ namespace Risk.ViewModel.Multiplayer
       }
     }
 
+    /// <summary>
+    /// Creates list of map options.
+    /// </summary>
+    /// <returns></returns>
     private ObservableCollection<string> CreateMaps()
     {
       var maps = new ObservableCollection<string>();
@@ -133,6 +171,10 @@ namespace Risk.ViewModel.Multiplayer
       return maps;
     }
 
+    /// <summary>
+    /// Creates number of players options list.
+    /// </summary>
+    /// <returns></returns>
     private ObservableCollection<int> CreateNumberOfPlayers()
     {
       var numberOfPlayers = new ObservableCollection<int>();

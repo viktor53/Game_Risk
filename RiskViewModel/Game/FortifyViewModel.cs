@@ -1,11 +1,6 @@
-﻿using Risk.Model.Enums;
+﻿using System;
+using Risk.Model.Enums;
 using Risk.Networking.Client;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
 
 namespace Risk.ViewModel.Game
 {
@@ -13,6 +8,9 @@ namespace Risk.ViewModel.Game
   {
     private int _maxSizeOfArmy;
 
+    /// <summary>
+    /// Maximum number of units to move.
+    /// </summary>
     public int MaxSizeOfArmy
     {
       get
@@ -26,6 +24,11 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// Initializes fortify view model and sets maximum size of army.
+    /// </summary>
+    /// <param name="gameBoardVM">game board view model</param>
+    /// <param name="client">player manager that is allowed to make action</param>
     public FortifyViewModel(IGameBoardViewModel gameBoardVM, RiskClient client) : base(gameBoardVM, client)
     {
       Client.OnMoveResult += OnMoveResult;
@@ -35,11 +38,19 @@ namespace Risk.ViewModel.Game
       Action_Click = new Command(MoveArmyClick);
     }
 
-    private void MoveArmyClick()
+    /// <summary>
+    /// Moves army to the area.
+    /// </summary>
+    private async void MoveArmyClick()
     {
-      Client.SendFortifyMoveAsync(GameBoardVM.PlayerColor, GameBoardVM.Selected1.ID, GameBoardVM.Selected2.ID, Army);
+      await Client.SendFortifyMoveAsync(GameBoardVM.PlayerColor, GameBoardVM.Selected1.ID, GameBoardVM.Selected2.ID, Army);
     }
 
+    /// <summary>
+    /// Method is called when OnMoveResult event is raised. Processes move result.
+    /// </summary>
+    /// <param name="sender">sender who raised the event</param>
+    /// <param name="ev">MoveResultEventArgs</param>
     private void OnMoveResult(object sender, EventArgs ev)
     {
       MoveResult mr = (MoveResult)((MoveResultEventArgs)ev).Data;

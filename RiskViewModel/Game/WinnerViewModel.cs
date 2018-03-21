@@ -1,15 +1,10 @@
-﻿using Risk.Networking.Client;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Risk.ViewModel.Multiplayer;
-using System.Windows.Input;
+﻿using System.Windows.Input;
 
 namespace Risk.ViewModel.Game
 {
+  /// <summary>
+  /// Represent view model with information if player won.
+  /// </summary>
   public class WinnerViewModel : ViewModelBase
   {
     private string _text;
@@ -18,8 +13,14 @@ namespace Risk.ViewModel.Game
 
     private ViewModelBase _viewModel;
 
+    /// <summary>
+    /// Click on OK button. Returns to menu.
+    /// </summary>
     public ICommand OK_Click { get; private set; }
 
+    /// <summary>
+    /// Text about winning.
+    /// </summary>
     public string Text
     {
       get
@@ -33,6 +34,12 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// Initializes WinnerViewModel with information if player won.
+    /// </summary>
+    /// <param name="windowManager">window manager</param>
+    /// <param name="menu">menu where player is returned</param>
+    /// <param name="isWinner">if player won</param>
     public WinnerViewModel(IWindowManager windowManager, ViewModelBase menu, bool isWinner)
     {
       _viewModel = menu;
@@ -50,6 +57,9 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// Returns to menu.
+    /// </summary>
     private void OKClick()
     {
       _windowManager.WindowViewModel = _viewModel;

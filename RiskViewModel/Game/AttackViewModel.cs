@@ -1,19 +1,19 @@
-﻿using Risk.Model.Enums;
+﻿using System;
+using Risk.Model.Enums;
 using Risk.Networking.Client;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Input;
 
 namespace Risk.ViewModel.Game
 {
+  /// <summary>
+  /// Represents attack action view model.
+  /// </summary>
   public class AttackViewModel : ActionViewModelBase
   {
     private int _maxSizeOfAttack;
 
+    /// <summary>
+    /// Maximum allowed size of attack.
+    /// </summary>
     public int MaxSizeOfAttack
     {
       get
@@ -27,6 +27,11 @@ namespace Risk.ViewModel.Game
       }
     }
 
+    /// <summary>
+    /// Initializes attack view model and maximum size attack.
+    /// </summary>
+    /// <param name="gameBoardVM">game board view model</param>
+    /// <param name="client">player manager that is allowed to make action</param>
     public AttackViewModel(IGameBoardViewModel gameBoardVM, RiskClient client) : base(gameBoardVM, client)
     {
       Client.OnMoveResult += OnMoveResult;
@@ -45,11 +50,19 @@ namespace Risk.ViewModel.Game
       Action_Click = new Command(AttackClick);
     }
 
-    private void AttackClick()
+    /// <summary>
+    /// Makes attack.
+    /// </summary>
+    private async void AttackClick()
     {
-      Client.SendAttackMoveAsync(GameBoardVM.PlayerColor, GameBoardVM.Selected1.ID, GameBoardVM.Selected2.ID, (AttackSize)Army);
+      await Client.SendAttackMoveAsync(GameBoardVM.PlayerColor, GameBoardVM.Selected1.ID, GameBoardVM.Selected2.ID, (AttackSize)Army);
     }
 
+    /// <summary>
+    /// Method is called when OnMoveResult event is raised. Processes move result.
+    /// </summary>
+    /// <param name="sender">sender who raised the event</param>
+    /// <param name="ev">MoveResultEventArgs</param>
     private void OnMoveResult(object sender, EventArgs ev)
     {
       MoveResult mr = (MoveResult)((MoveResultEventArgs)ev).Data;
