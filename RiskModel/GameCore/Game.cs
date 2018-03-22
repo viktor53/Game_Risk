@@ -88,6 +88,11 @@ namespace Risk.Model.GameCore
       public bool IsAlive { get; set; }
 
       /// <summary>
+      /// If player gets one card. If player captures area, he will get a card.
+      /// </summary>
+      public bool GetsCard { get; set; }
+
+      /// <summary>
       /// Creates player information.
       /// </summary>
       /// <param name="playerColor">color of player</param>
@@ -97,6 +102,7 @@ namespace Risk.Model.GameCore
         PlayerColor = playerColor;
         FreeUnits = freeUnits;
         IsAlive = true;
+        GetsCard = false;
         Cards = new List<RiskCard>();
       }
     }
@@ -393,6 +399,8 @@ namespace Risk.Model.GameCore
             UpdateAllPlayers(_gameBoard.Areas[_capturing.DefenderAreaID]);
 
             _isAreaCaptured = false;
+
+            _playersInfo[move.PlayerColor].GetsCard = true;
 
             return MoveResult.OK;
           }
@@ -733,12 +741,6 @@ namespace Risk.Model.GameCore
             _logger.Info("Draft phase");
             _logger.Info($"Player={player.PlayerColor},FreeUnit={numberFreeUnit}");
 
-            RiskCard card = _gameBoard.GetCard();
-            _playersInfo[player.PlayerColor].Cards.Add(card);
-            player.AddCard(card);
-
-            _logger.Info($"Player={player.PlayerColor},NewCard={card.TypeUnit}");
-
             _currentPhase = Phase.DRAFT;
             player.PlayDraft();
 
@@ -746,6 +748,17 @@ namespace Risk.Model.GameCore
 
             _currentPhase = Phase.ATTACK;
             player.PlayAttack();
+
+            if (_playersInfo[player.PlayerColor].GetsCard)
+            {
+              RiskCard card = _gameBoard.GetCard();
+              _playersInfo[player.PlayerColor].Cards.Add(card);
+              player.AddCard(card);
+
+              _playersInfo[player.PlayerColor].GetsCard = false;
+
+              _logger.Info($"Player={player.PlayerColor},NewCard={card.TypeUnit}");
+            }
 
             if (IsWinner()) break;
 
