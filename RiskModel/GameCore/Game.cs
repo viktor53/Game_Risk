@@ -219,7 +219,7 @@ namespace Risk.Model.GameCore
       {
         if (!_alreadySetUp)
         {
-          if (_gameBoard.Areas[move.AreaID].ArmyColor == ArmyColor.Neutral || _gameBoard.Areas[move.AreaID].ArmyColor == move.PlayerColor)
+          if (IsCorrectSetUp(move))
           {
             if (_playersInfo[move.PlayerColor].FreeUnits > 0)
             {
@@ -242,7 +242,7 @@ namespace Risk.Model.GameCore
           }
           else
           {
-            return MoveResult.NotYourArea;
+            return MoveResult.InvalidSetUp;
           }
         }
         else
@@ -482,6 +482,40 @@ namespace Risk.Model.GameCore
       if (phase == _currentPhase && playerColor == _currentPlayer.PlayerColor)
       {
         return true;
+      }
+      return false;
+    }
+
+    /// <summary>
+    /// Finds out if the set up move is correct.
+    /// </summary>
+    /// <param name="move">setup move command</param>
+    /// <returns>if it is correct</returns>
+    private bool IsCorrectSetUp(SetUp move)
+    {
+      if (_gameBoard.Areas[move.AreaID].ArmyColor == ArmyColor.Neutral)
+      {
+        return true;
+      }
+      if (_gameBoard.Areas[move.AreaID].ArmyColor == move.PlayerColor && !IsThereNeutralArea())
+      {
+        return true;
+      }
+      return false;
+    }
+
+    /// <summary>
+    /// Finds out if there is neutral area.
+    /// </summary>
+    /// <returns>if there is neutral area</returns>
+    private bool IsThereNeutralArea()
+    {
+      foreach (var area in _gameBoard.Areas)
+      {
+        if (area.ArmyColor == ArmyColor.Neutral)
+        {
+          return true;
+        }
       }
       return false;
     }

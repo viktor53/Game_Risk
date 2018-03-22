@@ -23,6 +23,7 @@
     AlreadyFortifyThisTurn,
     NotEnoughFreeUnit,
     NotYourArea,
+    InvalidSetUp,
     InvalidAttackerOrDefender,
     InvalidAttack,
     EmptyCapturedArea,

@@ -81,7 +81,14 @@ namespace Risk.ViewModel.Game
         _gameDialog = value;
         if (_gameDialog == null)
         {
-          _client.OnMoveResult += OnMoveResultNextPhase;
+          if (CurrentPhase == Phase.SETUP)
+          {
+            _client.OnMoveResult += OnMoveResultSetUp;
+          }
+          else
+          {
+            _client.OnMoveResult += OnMoveResultNextPhase;
+          }
           switch (CurrentPhase)
           {
             case Phase.ATTACK:
@@ -607,7 +614,48 @@ namespace Risk.ViewModel.Game
     /// <param name="planet">planet, where player clicked<param>
     private async void SetUpClick(Planet planet)
     {
-      await _client.SendSetUpMoveAsync(PlayerColor, planet.ID);
+      if (IsCorrectSetUp(planet))
+      {
+        await _client.SendSetUpMoveAsync(PlayerColor, planet.ID);
+      }
+      else
+      {
+        GameDialogViewModel = new ErrorViewModel(this, "Invalid SetUp move. It is not your area or there is neutral area.");
+      }
+    }
+
+    /// <summary>
+    /// Finds out if it is correct setup move.
+    /// </summary>
+    /// <param name="planet">clicked planet</param>
+    /// <returns>if it is correct</returns>
+    private bool IsCorrectSetUp(Planet planet)
+    {
+      if (planet.ArmyColor == ArmyColor.Neutral)
+      {
+        return true;
+      }
+      if (planet.ArmyColor == PlayerColor && !IsThereNeutralPlanet())
+      {
+        return true;
+      }
+      return false;
+    }
+
+    /// <summary>
+    /// Finds out if there is neutral planet.
+    /// </summary>
+    /// <returns>if there is neutral planet</returns>
+    private bool IsThereNeutralPlanet()
+    {
+      foreach (var planet in _planets)
+      {
+        if (planet.ArmyColor == ArmyColor.Neutral)
+        {
+          return true;
+        }
+      }
+      return false;
     }
 
     /// <summary>
