@@ -34,11 +34,11 @@
         </StackPanel>
       </Grid>
     </Border>
-    <DataGrid Grid.Column="1" Style="{StaticResource ListGames}" ItemsSource="{Binding Rooms}" IsEnabled="{Binding Path=IsEnabled}" SelectedValue="{Binding Room}">
+    <DataGrid Grid.Column="1" Style="{StaticResource ListGames}" ItemsSource="{Binding Rooms}" IsEnabled="{Binding Path=IsEnabled}" SelectedValue="{Binding Room}" IsManipulationEnabled="False">
       <DataGrid.Columns>
-        <DataGridTextColumn Header="RoomName" Binding="{Binding RoomName}" />
-        <DataGridTextColumn Header="Connected" Binding="{Binding Connected}" />
-        <DataGridTextColumn Header="Capacity" Binding="{Binding Capacity}" />
+        <DataGridTextColumn Header="RoomName" Binding="{Binding RoomName, Mode=OneWay}" />
+        <DataGridTextColumn Header="Connected" Binding="{Binding Connected, Mode=OneWay}" />
+        <DataGridTextColumn Header="Capacity" Binding="{Binding Capacity, Mode=OneWay}" />
       </DataGrid.Columns>
     </DataGrid>
     <ContentControl Content="{Binding DialogViewModel}" Grid.Column="1" />

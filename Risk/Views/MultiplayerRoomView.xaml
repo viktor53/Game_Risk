@@ -18,9 +18,9 @@
         <ColumnDefinition Width="2*" />
       </Grid.ColumnDefinitions>
       <Border Grid.Column="0" Padding="30,50,30,50">
-        <DataGrid Style="{StaticResource ListGames}" ItemsSource="{Binding Players}" MinHeight="200" MaxHeight="500">
+        <DataGrid Style="{StaticResource ListGames}" ItemsSource="{Binding Players, Mode=OneWay}" MinHeight="200" MaxHeight="500" IsManipulationEnabled="False" IsReadOnly="True">
           <DataGrid.Columns>
-            <DataGridTextColumn Header="Player" Binding="{Binding}" />
+            <DataGridTextColumn Header="Player" Binding="{Binding Path=.}" />
           </DataGrid.Columns>
         </DataGrid>
       </Border>
