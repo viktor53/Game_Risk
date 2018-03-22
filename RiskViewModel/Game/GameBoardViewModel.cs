@@ -592,7 +592,14 @@ namespace Risk.ViewModel.Game
     {
       if (CurrentPhase != Phase.SETUP)
       {
-        await _client.SendNextPhaseAsync();
+        if (CurrentPhase == Phase.DRAFT && NumberCards >= 5)
+        {
+          GameDialogViewModel = new ErrorViewModel(this, "You have to exchange cards! You have 5 and more cards.");
+        }
+        else
+        {
+          await _client.SendNextPhaseAsync();
+        }
       }
     }
 
