@@ -318,6 +318,24 @@ namespace Risk.Model.GameCore
             _playersInfo[move.PlayerColor].FreeUnits = units;
             _currentPlayer.FreeUnit = units;
 
+            foreach (var card in move.Combination)
+            {
+              if (card.TypeUnit != UnitType.Mix)
+              {
+                int id = ((NormalCard)card).Area;
+                if (_gameBoard.Areas[id].ArmyColor == move.PlayerColor)
+                {
+                  _gameBoard.Areas[id].SizeOfArmy += 2;
+
+                  UpdateAllPlayers(_gameBoard.Areas[id]);
+
+                  _logger.Info($"Player={move.PlayerColor},Area={id},Units=+2");
+
+                  break;
+                }
+              }
+            }
+
             _logger.Info($"Player={move.PlayerColor},ExchangeCombination=({move.Combination[0].TypeUnit},{move.Combination[1].TypeUnit},{move.Combination[2].TypeUnit}),ExchangeResult{units}");
 
             RemoveCards(move.Combination);
