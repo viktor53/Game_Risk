@@ -67,7 +67,7 @@
     <Compile Include="Enums\ErrorType.cs" />
     <Compile Include="Enums\MessageType.cs" />
     <Compile Include="Exceptions\ServerErrorException.cs" />
-    <Compile Include="Exceptions\UknownResponseException.cs" />
+    <Compile Include="Exceptions\UnknownResponseException.cs" />
     <Compile Include="Messages\Data\Coordinates.cs" />
     <Compile Include="Messages\Data\CreateGameInfo.cs" />
     <Compile Include="Messages\Data\Error.cs" />

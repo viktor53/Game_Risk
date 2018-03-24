@@ -771,7 +771,7 @@ namespace Risk.Networking.Client
       }
       else
       {
-        throw new UknownResponseException();
+        throw new UnknownResponseException();
       }
     }
   }

@@ -9,12 +9,12 @@ namespace Risk.Networking.Exceptions
   /// <summary>
   /// Exception when client received uknown response.
   /// </summary>
-  public sealed class UknownResponseException : Exception
+  public sealed class UnknownResponseException : Exception
   {
     /// <summary>
     /// Creates defualt UnknownResponseException.
     /// </summary>
-    public UknownResponseException() : base("Uknown response for the request. Try repeat it.")
+    public UnknownResponseException() : base("Uknown response for the request. Try repeat it.")
     {
     }
 
@@ -22,7 +22,7 @@ namespace Risk.Networking.Exceptions
     /// Creates UnknownResponseException with specific message.
     /// </summary>
     /// <param name="message">message of exception</param>
-    public UknownResponseException(string message) : base(message)
+    public UnknownResponseException(string message) : base(message)
     {
     }
 
@@ -31,7 +31,7 @@ namespace Risk.Networking.Exceptions
     /// </summary>
     /// <param name="message">message of exception</param>
     /// <param name="innerException">inner exception</param>
-    public UknownResponseException(string message, Exception innerException) : base(message, innerException)
+    public UnknownResponseException(string message, Exception innerException) : base(message, innerException)
     {
     }
   }
