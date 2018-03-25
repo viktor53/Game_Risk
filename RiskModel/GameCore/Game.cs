@@ -315,8 +315,8 @@ namespace Risk.Model.GameCore
           if (HasCards(move.Combination))
           {
             int units = _gameBoard.GetUnitPerCombination();
-            _playersInfo[move.PlayerColor].FreeUnits = units;
-            _currentPlayer.FreeUnit = units;
+            _playersInfo[move.PlayerColor].FreeUnits += units;
+            _currentPlayer.FreeUnit += units;
 
             foreach (var card in move.Combination)
             {
