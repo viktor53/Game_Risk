@@ -6,6 +6,7 @@ using Risk.Model.GamePlan;
 using Risk.Model.Cards;
 using Risk.Model.Factories;
 using log4net;
+using System.Threading.Tasks;
 
 namespace Risk.Model.GameCore
 {
@@ -14,7 +15,7 @@ namespace Risk.Model.GameCore
     /// <summary>
     /// Represents settings of game. (Game board, free unit on start)
     /// </summary>
-    private static class GameSettings
+    public static class GameSettings
     {
       /// <summary>
       /// Creates new game board.
@@ -65,7 +66,7 @@ namespace Risk.Model.GameCore
     /// <summary>
     /// Keeps control information about player so player can not cheat.
     /// </summary>
-    private class PlayerInfo
+    public class PlayerInfo
     {
       /// <summary>
       /// Color of player.
@@ -91,6 +92,11 @@ namespace Risk.Model.GameCore
       /// If player gets one card. If player captures area, he will get a card.
       /// </summary>
       public bool GetsCard { get; set; }
+
+      /// <summary>
+      /// Number of captured areas.
+      /// </summary>
+      public int CapturedAreas { get; set; }
 
       /// <summary>
       /// Creates player information.
@@ -143,7 +149,7 @@ namespace Risk.Model.GameCore
       _gameBoard = GameSettings.GetGameBoard(isClassic);
 
       _logger = logger;
-      _logger.Info($"New game with capacity {capacity}, classic {isClassic}");
+      _logger?.Info($"New game with capacity {capacity}, classic {isClassic}");
     }
 
     /// <summary>
@@ -168,14 +174,17 @@ namespace Risk.Model.GameCore
     public GamePlanInfo GetGamePlan()
     {
       Area[] areas = new Area[_gameBoard.Areas.Length];
-      Array.Copy(_gameBoard.Areas, areas, _gameBoard.Areas.Length);
+      for (int i = 0; i < areas.Length; ++i)
+      {
+        Area origin = _gameBoard.Areas[i];
+        Area copy = new Area(origin.ID, origin.RegionID);
+        copy.SizeOfArmy = origin.SizeOfArmy;
+        copy.ArmyColor = origin.ArmyColor;
+        areas[i] = copy;
+      }
 
       bool[][] connections = new bool[_gameBoard.Connections.Length][];
-      for (int i = 0; i < _gameBoard.Connections.Length; ++i)
-      {
-        connections[i] = new bool[_gameBoard.Connections[i].Length];
-        Array.Copy(_gameBoard.Connections[i], connections[i], _gameBoard.Connections[i].Length);
-      }
+      connections = (bool[][])_gameBoard.Connections.Clone();
 
       return new GamePlanInfo(connections, areas);
     }
@@ -187,13 +196,13 @@ namespace Risk.Model.GameCore
     {
       if (_players.Count >= 3)
       {
-        _logger.Info("Start game");
+        _logger?.Info("Start game");
 
         SetUpPlayerInfo();
 
         SetUpPlayersOrder();
 
-        StartAllPlayer();
+        StartAllPlayer().Wait();
 
         PlaySetUpPhase();
 
@@ -201,7 +210,7 @@ namespace Risk.Model.GameCore
 
         EndAllPlayer();
 
-        _logger.Info("End game");
+        _logger?.Info("End game");
       }
     }
 
@@ -225,13 +234,19 @@ namespace Risk.Model.GameCore
             {
               _alreadySetUp = true;
 
+              if (_gameBoard.Areas[move.AreaID].ArmyColor != move.PlayerColor)
+              {
+                _playersInfo[move.PlayerColor].CapturedAreas++;
+              }
+
               _gameBoard.Areas[move.AreaID].SizeOfArmy++;
               _gameBoard.Areas[move.AreaID].ArmyColor = move.PlayerColor;
               _playersInfo[move.PlayerColor].FreeUnits--;
 
-              _logger.Info($"Player={move.PlayerColor},Area={move.AreaID}");
+              _logger?.Info($"Player={move.PlayerColor},Area={move.AreaID}");
 
-              UpdateAllPlayers(_gameBoard.Areas[move.AreaID]);
+              var r = UpdateAllPlayers(_gameBoard.Areas[move.AreaID]);
+              r.Wait();
 
               return MoveResult.OK;
             }
@@ -242,6 +257,7 @@ namespace Risk.Model.GameCore
           }
           else
           {
+            Console.WriteLine($"In game {move.PlayerColor}, {_gameBoard.Areas[move.AreaID].ArmyColor}");
             return MoveResult.InvalidSetUp;
           }
         }
@@ -276,9 +292,10 @@ namespace Risk.Model.GameCore
             _playersInfo[move.PlayerColor].FreeUnits -= move.NumberOfUnit;
             _currentPlayer.FreeUnit -= move.NumberOfUnit;
 
-            UpdateAllPlayers(_gameBoard.Areas[move.AreaID]);
+            var r = UpdateAllPlayers(_gameBoard.Areas[move.AreaID]);
+            r.Wait();
 
-            _logger.Info($"Player={move.PlayerColor},Area={move.AreaID},Units=+{move.NumberOfUnit}");
+            _logger?.Info($"Player={move.PlayerColor},Area={move.AreaID},Units=+{move.NumberOfUnit}");
 
             return MoveResult.OK;
           }
@@ -327,16 +344,17 @@ namespace Risk.Model.GameCore
                 {
                   _gameBoard.Areas[id].SizeOfArmy += 2;
 
-                  UpdateAllPlayers(_gameBoard.Areas[id]);
+                  var r = UpdateAllPlayers(_gameBoard.Areas[id]);
+                  r.Wait();
 
-                  _logger.Info($"Player={move.PlayerColor},Area={id},Units=+2");
+                  _logger?.Info($"Player={move.PlayerColor},Area={id},Units=+2");
 
                   break;
                 }
               }
             }
 
-            _logger.Info($"Player={move.PlayerColor},ExchangeCombination=({move.Combination[0].TypeUnit},{move.Combination[1].TypeUnit},{move.Combination[2].TypeUnit}),ExchangeResult{units}");
+            _logger?.Info($"Player={move.PlayerColor},ExchangeCombination=({move.Combination[0].TypeUnit},{move.Combination[1].TypeUnit},{move.Combination[2].TypeUnit}),ExchangeResult{units}");
 
             RemoveCards(move.Combination);
 
@@ -411,10 +429,12 @@ namespace Risk.Model.GameCore
             _gameBoard.Areas[_capturing.AttackerAreaID].SizeOfArmy -= move.ArmyToMove;
             _gameBoard.Areas[_capturing.DefenderAreaID].SizeOfArmy += move.ArmyToMove;
 
-            _logger.Info($"Player={move.PlayerColor},AttackerArea={_capturing.AttackerAreaID},DefenderArea={_capturing.DefenderAreaID},Units={move.ArmyToMove}");
+            _logger?.Info($"Player={move.PlayerColor},AttackerArea={_capturing.AttackerAreaID},DefenderArea={_capturing.DefenderAreaID},Units={move.ArmyToMove}");
 
-            UpdateAllPlayers(_gameBoard.Areas[_capturing.AttackerAreaID]);
-            UpdateAllPlayers(_gameBoard.Areas[_capturing.DefenderAreaID]);
+            var r1 = UpdateAllPlayers(_gameBoard.Areas[_capturing.AttackerAreaID]);
+            var r2 = UpdateAllPlayers(_gameBoard.Areas[_capturing.DefenderAreaID]);
+
+            Task.WaitAll(r1, r2);
 
             _isAreaCaptured = false;
 
@@ -461,10 +481,12 @@ namespace Risk.Model.GameCore
               _gameBoard.Areas[move.FromAreaID].SizeOfArmy -= move.SizeOfArmy;
               _gameBoard.Areas[move.ToAreaID].SizeOfArmy += move.SizeOfArmy;
 
-              _logger.Info($"Player={move.PlayerColor},FromArea={move.FromAreaID},ToArea={move.ToAreaID},Units={move.SizeOfArmy}");
+              _logger?.Info($"Player={move.PlayerColor},FromArea={move.FromAreaID},ToArea={move.ToAreaID},Units={move.SizeOfArmy}");
 
-              UpdateAllPlayers(_gameBoard.Areas[move.FromAreaID]);
-              UpdateAllPlayers(_gameBoard.Areas[move.ToAreaID]);
+              var r1 = UpdateAllPlayers(_gameBoard.Areas[move.FromAreaID]);
+              var r2 = UpdateAllPlayers(_gameBoard.Areas[move.ToAreaID]);
+
+              Task.WaitAll(r1, r2);
 
               return MoveResult.OK;
             }
@@ -559,8 +581,10 @@ namespace Risk.Model.GameCore
 
       MoveResult result = FindOutResult(move);
 
-      UpdateAllPlayers(_gameBoard.Areas[move.AttackerAreaID]);
-      UpdateAllPlayers(_gameBoard.Areas[move.DefenderAreaID]);
+      var r1 = UpdateAllPlayers(_gameBoard.Areas[move.AttackerAreaID]);
+      var r2 = UpdateAllPlayers(_gameBoard.Areas[move.DefenderAreaID]);
+
+      Task.WaitAll(r1, r2);
 
       return result;
     }
@@ -578,7 +602,7 @@ namespace Risk.Model.GameCore
       int defDied = 0;
       for (int i = 0; i < Math.Min(attRoll.Length, defRoll.Length); ++i)
       {
-        if (attRoll[i] > defRoll[0])
+        if (attRoll[i] > defRoll[i])
         {
           defDied++;
         }
@@ -591,7 +615,7 @@ namespace Risk.Model.GameCore
       _gameBoard.Areas[move.AttackerAreaID].SizeOfArmy -= attDied;
       _gameBoard.Areas[move.DefenderAreaID].SizeOfArmy -= defDied;
 
-      _logger.Info($"Player={move.PlayerColor},AttackerArea={move.AttackerAreaID},DefenderArea={move.DefenderAreaID},AttLost={attDied},DefLost={defDied}");
+      _logger?.Info($"Player={move.PlayerColor},AttackerArea={move.AttackerAreaID},DefenderArea={move.DefenderAreaID},AttLost={attDied},DefLost={defDied}");
     }
 
     /// <summary>
@@ -605,11 +629,15 @@ namespace Risk.Model.GameCore
       {
         ArmyColor defColor = _gameBoard.Areas[move.DefenderAreaID].ArmyColor;
 
+        _playersInfo[move.PlayerColor].CapturedAreas++;
+        _playersInfo[defColor].CapturedAreas--;
+
         _gameBoard.Areas[move.DefenderAreaID].ArmyColor = move.PlayerColor;
         _isAreaCaptured = true;
         _capturing = move;
 
         _playersInfo[defColor].IsAlive = IsDefenderAlive(defColor);
+
         if (!_playersInfo[defColor].IsAlive)
         {
           foreach (var card in _playersInfo[defColor].Cards)
@@ -617,7 +645,7 @@ namespace Risk.Model.GameCore
             _playersInfo[move.PlayerColor].Cards.Add(card);
             _currentPlayer.AddCard(card);
 
-            _logger.Info($"Player={move.PlayerColor},NewCard={card.TypeUnit}");
+            _logger?.Info($"Player={move.PlayerColor},NewCard={card.TypeUnit}");
           }
 
           _playersInfo[defColor].Cards.Clear();
@@ -643,14 +671,7 @@ namespace Risk.Model.GameCore
     /// <returns>if defender is alive</returns>
     private bool IsDefenderAlive(ArmyColor defenderColor)
     {
-      foreach (var area in _gameBoard.Areas)
-      {
-        if (area.ArmyColor == defenderColor)
-        {
-          return true;
-        }
-      }
-      return false;
+      return _playersInfo[defenderColor].CapturedAreas != 0;
     }
 
     /// <summary>
@@ -661,7 +682,7 @@ namespace Risk.Model.GameCore
       _playersInfo = new Dictionary<ArmyColor, PlayerInfo>();
       int numberFreeUnits = GameSettings.GetStartNumberFreeUnit(_players.Count);
 
-      _logger.Info($"Starting number of unit {numberFreeUnits}");
+      _logger?.Info($"Starting number of unit {numberFreeUnits}");
 
       foreach (var player in _players)
       {
@@ -674,7 +695,7 @@ namespace Risk.Model.GameCore
     /// </summary>
     private void SetUpPlayersOrder()
     {
-      _logger.Info("SetUping players order");
+      _logger?.Info("SetUping players order");
 
       List<IPlayer> orderedPlayers = new List<IPlayer>();
       while (_players.Count != 0)
@@ -727,11 +748,11 @@ namespace Risk.Model.GameCore
     /// <summary>
     /// Starts all players.
     /// </summary>
-    private void StartAllPlayer()
+    private async Task StartAllPlayer()
     {
       foreach (var player in _players)
       {
-        player.StartPlayer(this);
+        await player.StartPlayer(this);
       }
     }
 
@@ -742,7 +763,7 @@ namespace Risk.Model.GameCore
     {
       foreach (var player in _players)
       {
-        _logger.Info($"Player={player.PlayerColor},Winner={_playersInfo[player.PlayerColor].IsAlive}");
+        _logger?.Info($"Player={player.PlayerColor},Winner={_playersInfo[player.PlayerColor].IsAlive}");
 
         player.EndPlayer(_playersInfo[player.PlayerColor].IsAlive);
       }
@@ -753,7 +774,7 @@ namespace Risk.Model.GameCore
     /// </summary>
     private void PlaySetUpPhase()
     {
-      _logger.Info("SetUp phase");
+      _logger?.Info("SetUp phase");
 
       _currentPhase = Phase.SETUP;
 
@@ -790,13 +811,13 @@ namespace Risk.Model.GameCore
             _playersInfo[player.PlayerColor].FreeUnits = numberFreeUnit;
             player.FreeUnit = numberFreeUnit;
 
-            _logger.Info("Draft phase");
-            _logger.Info($"Player={player.PlayerColor},FreeUnit={numberFreeUnit}");
+            _logger?.Info("Draft phase");
+            _logger?.Info($"Player={player.PlayerColor},FreeUnit={numberFreeUnit}");
 
             _currentPhase = Phase.DRAFT;
             player.PlayDraft();
 
-            _logger.Info("Attack phase");
+            _logger?.Info("Attack phase");
 
             _currentPhase = Phase.ATTACK;
             player.PlayAttack();
@@ -809,12 +830,12 @@ namespace Risk.Model.GameCore
 
               _playersInfo[player.PlayerColor].GetsCard = false;
 
-              _logger.Info($"Player={player.PlayerColor},NewCard={card.TypeUnit}");
+              _logger?.Info($"Player={player.PlayerColor},NewCard={card.TypeUnit}");
             }
 
             if (IsWinner()) break;
 
-            _logger.Info("Fortify phase");
+            _logger?.Info("Fortify phase");
 
             _currentPhase = Phase.FORTIFY;
             player.PlayFortify();
@@ -830,15 +851,16 @@ namespace Risk.Model.GameCore
     /// <returns>if player won</returns>
     private bool IsWinner()
     {
-      ArmyColor playerColor = _gameBoard.Areas[0].ArmyColor;
-      foreach (var area in _gameBoard.Areas)
-      {
-        if (area.ArmyColor != playerColor)
-        {
-          return false;
-        }
-      }
-      return true;
+      return _playersInfo[_currentPlayer.PlayerColor].CapturedAreas == _gameBoard.Areas.Length;
+      //ArmyColor playerColor = _gameBoard.Areas[0].ArmyColor;
+      //foreach (var area in _gameBoard.Areas)
+      //{
+      //  if (area.ArmyColor != playerColor)
+      //  {
+      //    return false;
+      //  }
+      //}
+      //return true;
     }
 
     /// <summary>
@@ -928,11 +950,11 @@ namespace Risk.Model.GameCore
     /// Updates game plan of all players.
     /// </summary>
     /// <param name="area">changed area</param>
-    private async void UpdateAllPlayers(Area area)
+    private async Task UpdateAllPlayers(Area area)
     {
       foreach (var player in _players)
       {
-        await player.UpdateGame(area);
+        await player.UpdateGame(area.ID, area.ArmyColor, area.SizeOfArmy);
       }
     }
   }

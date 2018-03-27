@@ -97,28 +97,32 @@ namespace Risk.Model.GamePlan
     /// <returns>free units</returns>
     public int GetUnitPerCombination()
     {
-      int units = _unitsPerCombination;
-      switch (_combination)
+      if (_unitsPerCombination == 50)
       {
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-          _unitsPerCombination += 2;
-          break;
+        int units = _unitsPerCombination;
+        switch (_combination)
+        {
+          case 1:
+          case 2:
+          case 3:
+          case 4:
+            _unitsPerCombination += 2;
+            break;
 
-        case 5:
-          _unitsPerCombination += 3;
-          break;
+          case 5:
+            _unitsPerCombination += 3;
+            break;
 
-        default:
-          _unitsPerCombination += 5;
-          break;
+          default:
+            _unitsPerCombination += 5;
+            break;
+        }
+
+        _combination++;
+
+        return units;
       }
-
-      _combination++;
-
-      return units;
+      return _unitsPerCombination;
     }
 
     /// <summary>
@@ -147,11 +151,16 @@ namespace Risk.Model.GamePlan
     /// <returns>if it is risk cards combination</returns>
     private bool IsComOfType(IList<RiskCard> combination, UnitType unit)
     {
+      bool isMix = false;
       foreach (var card in combination)
       {
-        if (card.TypeUnit != unit || card.TypeUnit != UnitType.Mix)
+        if (card.TypeUnit != unit && ((isMix && card.TypeUnit == UnitType.Mix) || card.TypeUnit != UnitType.Mix))
         {
           return false;
+        }
+        if (card.TypeUnit == UnitType.Mix)
+        {
+          isMix = true;
         }
       }
       return true;

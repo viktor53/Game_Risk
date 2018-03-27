@@ -11,7 +11,7 @@ namespace Risk.Model.Factories
   /// </summary>
   public sealed class RandomGameBoardFactory : IGameBoardFactory
   {
-    private const int _numberOfAreas = 42;
+    private const int _numberOfAreas = 18;
 
     /// <summary>
     /// Creates random game board.
@@ -21,7 +21,13 @@ namespace Risk.Model.Factories
     {
       Random ran = new Random();
 
-      int numberOfRegion = ran.Next(3, 9);
+      int maxRegion = _numberOfAreas / 3;
+      if (maxRegion > 9)
+      {
+        maxRegion = 9;
+      }
+
+      int numberOfRegion = ran.Next(3, maxRegion);
 
       int[] numberOfAreasInRegion = DistributeAreasIntoRegion(numberOfRegion);
 
@@ -53,14 +59,15 @@ namespace Risk.Model.Factories
       Random ran = new Random();
       int numberOfOneType = numberNormalCards / 3;
       int[] numberUnits = new int[] { numberOfOneType, numberOfOneType, numberOfOneType };
-      for (int i = 0; i < numberNormalCards; ++i)
+      for (int i = 0, j = 0; i < numberNormalCards; ++i, ++j)
       {
+        j = j % _numberOfAreas;
         int unitType = ran.Next(3);
         while (numberUnits[unitType] == 0)
         {
           unitType = ran.Next(3);
         }
-        package.Add(new NormalCard((UnitType)unitType, i));
+        package.Add(new NormalCard((UnitType)unitType, j));
       }
 
       return package;
@@ -175,8 +182,12 @@ namespace Risk.Model.Factories
         for (int j = 0; j < numberOfCon; ++j)
         {
           int fromArea = ran.Next(0, borders[i].Count);
-          int toArea = ran.Next(0, borders[(i + j + 1) % borders.Count].Count);
-          MakeEdge(gb.Connections, borders[i][fromArea], borders[(i + j + 1) % borders.Count][toArea]);
+          int region = (i + j + 1) % borders.Count;
+          if(region != i)
+          {
+            int toArea = ran.Next(0, borders[(i + j + 1) % borders.Count].Count);
+            MakeEdge(gb.Connections, borders[i][fromArea], borders[(i + j + 1) % borders.Count][toArea]);
+          }
         }
       }
     }

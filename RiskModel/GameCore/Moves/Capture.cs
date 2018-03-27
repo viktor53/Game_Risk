@@ -5,8 +5,13 @@ namespace Risk.Model.GameCore.Moves
   /// <summary>
   /// Represents game move capture.
   /// </summary>
-  public sealed class Capture : Move
+  public struct Capture
   {
+    /// <summary>
+    /// Color of player, who makes move.
+    /// </summary>
+    public ArmyColor PlayerColor { get; private set; }
+
     /// <summary>
     /// Number of unit to moving.
     /// </summary>
@@ -17,8 +22,9 @@ namespace Risk.Model.GameCore.Moves
     /// </summary>
     /// <param name="armyColor">color of player who capture</param>
     /// <param name="armyToMove">number of unit</param>
-    public Capture(ArmyColor armyColor, int armyToMove) : base(armyColor)
+    public Capture(ArmyColor armyColor, int armyToMove)
     {
+      PlayerColor = armyColor;
       ArmyToMove = armyToMove;
     }
   }

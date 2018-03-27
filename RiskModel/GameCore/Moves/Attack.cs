@@ -5,8 +5,13 @@ namespace Risk.Model.GameCore.Moves
   /// <summary>
   /// Represents game move attack.
   /// </summary>
-  public sealed class Attack : Move
+  public struct Attack
   {
+    /// <summary>
+    /// Color of player, who makes move.
+    /// </summary>
+    public ArmyColor PlayerColor { get; private set; }
+
     /// <summary>
     /// Area of attacker, where attack comes from.
     /// </summary>
@@ -29,8 +34,9 @@ namespace Risk.Model.GameCore.Moves
     /// <param name="attackerAreaID">area of attacker</param>
     /// <param name="defenderAreaID">area of defender</param>
     /// <param name="attackSize">size of attack</param>
-    public Attack(ArmyColor armyColor, int attackerAreaID, int defenderAreaID, AttackSize attackSize) : base(armyColor)
+    public Attack(ArmyColor armyColor, int attackerAreaID, int defenderAreaID, AttackSize attackSize)
     {
+      PlayerColor = armyColor;
       AttackerAreaID = attackerAreaID;
       DefenderAreaID = defenderAreaID;
       AttackSize = attackSize;

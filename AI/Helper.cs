@@ -50,7 +50,7 @@ namespace Risk.AI
       return canAttack;
     }
 
-    private static bool CanAttack(Area area, GamePlanInfo gamePlan, ArmyColor aiColor)
+    public static bool CanAttack(Area area, GamePlanInfo gamePlan, ArmyColor aiColor)
     {
       if (area.SizeOfArmy > 1)
       {
@@ -58,7 +58,7 @@ namespace Risk.AI
         {
           if (gamePlan.Connections[area.ID][i] && gamePlan.Areas[i].ArmyColor != aiColor)
           {
-            return false;
+            return true;
           }
         }
       }
@@ -131,9 +131,9 @@ namespace Risk.AI
         where.Add(a);
         for (int i = 0; i < gamePlan.Connections[a.ID].Length; ++i)
         {
-          if (gamePlan.Connections[a.ID][i] && gamePlan.Areas[i].ArmyColor == aiColor && !visited.Contains(a))
+          if (gamePlan.Connections[a.ID][i] && gamePlan.Areas[i].ArmyColor == aiColor && !visited.Contains(gamePlan.Areas[i]))
           {
-            toVisit.Enqueue(a);
+            toVisit.Enqueue(gamePlan.Areas[i]);
           }
         }
       }
@@ -237,7 +237,7 @@ namespace Risk.AI
         {
           combination.Add(card);
         }
-        if (card.TypeUnit == UnitType.Mix)
+        if (card.TypeUnit == UnitType.Mix && !isMix)
         {
           combination.Add(card);
           isMix = true;
