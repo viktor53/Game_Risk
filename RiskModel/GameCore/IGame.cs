@@ -1,6 +1,7 @@
 ﻿using Risk.Model.Enums;
 using Risk.Model.GameCore.Moves;
 using Risk.Model.GamePlan;
+using System.Collections.Generic;
 
 namespace Risk.Model.GameCore
 {
@@ -21,6 +22,30 @@ namespace Risk.Model.GameCore
     /// </summary>
     /// <returns>game plan (areas, connections)</returns>
     GamePlanInfo GetGamePlan();
+
+    /// <summary>
+    /// Gets current state of game board with cards in package, dice and game plan.
+    /// </summary>
+    /// <returns>current state of game board</returns>
+    GameBoard GetCurrentStateOfGameBoard();
+
+    /// <summary>
+    /// Get information about players.
+    /// </summary>
+    /// <returns>information about players</returns>
+    IDictionary<ArmyColor, Game.PlayerInfo> GetPlayersInfo();
+
+    /// <summary>
+    /// Gets order of players.
+    /// </summary>
+    /// <returns>order of players</returns>
+    IList<ArmyColor> GetOrderOfPlayers();
+
+    /// <summary>
+    /// Gets position of current player. If player plays first, second, third...
+    /// </summary>
+    /// <returns>position of current player</returns>
+    int GetCurrentPlayer();
 
     /// <summary>
     /// Starts game and plays until the end.

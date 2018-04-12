@@ -36,14 +36,14 @@ namespace Risk.AI
       _currentPhase = Phase.SETUP;
     }
 
-    public GameSimulation(GameBoard board, IList<IPlayer> players, IDictionary<ArmyColor, Game.PlayerInfo> playersInfo, Phase currentPhase, IPlayer currentPlayer)
+    public GameSimulation(GameBoard board, IList<IPlayer> players, IDictionary<ArmyColor, Game.PlayerInfo> playersInfo, Phase currentPhase, int currentPlayer)
     {
       _gameBoard = board;
       _players = players;
       _playersInfo = playersInfo;
-      _isFromStart = true;
       _currentPhase = currentPhase;
-      _currentPlayer = currentPlayer;
+      _currentPlayer = _players[currentPlayer];
+      _isFromStart = false;
     }
 
     public bool AddPlayer(IPlayer player)
@@ -125,21 +125,25 @@ namespace Risk.AI
     /// </summary>
     private void PlaySetUpPhaseFromThePoint()
     {
-      int index = _players.IndexOf(_currentPlayer);
-
-      for (int i = index; i < _players.Count; ++i)
-      {
-        _players[i].PlaySetUp();
-      }
-
       IPlayer last = _players[_players.Count - 1];
 
-      while (_playersInfo[last.PlayerColor].FreeUnits > 0)
+      if (_playersInfo[last.PlayerColor].FreeUnits > 0)
       {
-        foreach (var player in _players)
+        int index = _players.IndexOf(_currentPlayer);
+
+        for (int i = index + 1; i < _players.Count; ++i)
         {
-          _currentPlayer = player;
-          player.PlaySetUp();
+          _currentPlayer = _players[i];
+          _currentPlayer.PlaySetUp();
+        }
+
+        while (_playersInfo[last.PlayerColor].FreeUnits > 0)
+        {
+          foreach (var player in _players)
+          {
+            _currentPlayer = player;
+            _currentPlayer.PlaySetUp();
+          }
         }
       }
     }
@@ -149,7 +153,7 @@ namespace Risk.AI
     /// </summary>
     private void PlayToTheEnd()
     {
-      while (!IsWinner())
+      while (!GameBoardHelper.IsWinner(_currentPlayer.PlayerColor, _gameBoard, _playersInfo))
       {
         foreach (var player in _players)
         {
@@ -157,25 +161,20 @@ namespace Risk.AI
           {
             _currentPlayer = player;
 
-            int numberFreeUnit = GetNumberFreeUnit(player.PlayerColor);
-            _playersInfo[player.PlayerColor].FreeUnits = numberFreeUnit;
-            player.FreeUnit = numberFreeUnit;
+            SetNumberFreeUnit(player);
 
+            _currentPhase = Phase.DRAFT;
             player.PlayDraft();
 
+            _currentPhase = Phase.ATTACK;
             player.PlayAttack();
 
-            if (_playersInfo[player.PlayerColor].GetsCard)
+            if (GameBoardHelper.IsWinner(_currentPlayer.PlayerColor, _gameBoard, _playersInfo))
             {
-              RiskCard card = _gameBoard.GetCard();
-              _playersInfo[player.PlayerColor].Cards.Add(card);
-              player.AddCard(card);
-
-              _playersInfo[player.PlayerColor].GetsCard = false;
+              break;
             }
 
-            if (IsWinner()) break;
-
+            _currentPhase = Phase.FORTIFY;
             player.PlayFortify();
           }
         }
@@ -189,52 +188,54 @@ namespace Risk.AI
     {
       int index = _players.IndexOf(_currentPlayer);
 
-      int phase = (int)_currentPhase;
-      while (phase % 4 != 0 && !IsWinner())
-      {
-        switch ((Phase)phase)
-        {
-          case Phase.DRAFT:
-            _currentPlayer.PlayDraft();
-            break;
+      //int p = (int)_currentPhase;
+      //while (p % 4 != 0)
+      //{
+      //  switch ((Phase)p)
+      //  {
+      //    case Phase.DRAFT:
+      //      _currentPhase = Phase.DRAFT;
+      //      _players[index].PlayDraft();
+      //      break;
 
-          case Phase.ATTACK:
-            _currentPlayer.PlayAttack();
+      //    case Phase.ATTACK:
+      //      _currentPhase = Phase.ATTACK;
+      //      _players[index].PlayAttack();
 
-            if (_playersInfo[_currentPlayer.PlayerColor].GetsCard)
-            {
-              RiskCard card = _gameBoard.GetCard();
-              _playersInfo[_currentPlayer.PlayerColor].Cards.Add(card);
-              _currentPlayer.AddCard(card);
+      //      if (IsWinner())
+      //      {
+      //        return;
+      //      }
+      //      break;
 
-              _playersInfo[_currentPlayer.PlayerColor].GetsCard = false;
-            }
-            break;
+      //    case Phase.FORTIFY:
+      //      _currentPhase = Phase.FORTIFY;
+      //      _players[index].PlayFortify();
+      //      break;
+      //  }
 
-          case Phase.FORTIFY:
-            _currentPlayer.PlayFortify();
-            break;
-
-          default:
-            break;
-        }
-
-        phase++;
-      }
+      //  p++;
+      //}
 
       for (int i = index + 1; i < _players.Count; ++i)
       {
         if (_playersInfo[_players[i].PlayerColor].IsAlive)
         {
+          _currentPlayer = _players[i];
+          SetNumberFreeUnit(_players[i]);
+
+          _currentPhase = Phase.DRAFT;
           _players[i].PlayDraft();
 
+          _currentPhase = Phase.ATTACK;
           _players[i].PlayAttack();
 
-          if (IsWinner())
+          if (GameBoardHelper.IsWinner(_currentPlayer.PlayerColor, _gameBoard, _playersInfo))
           {
             return;
           }
 
+          _currentPhase = Phase.FORTIFY;
           _players[i].PlayFortify();
         }
       }
@@ -243,55 +244,14 @@ namespace Risk.AI
     }
 
     /// <summary>
-    /// Counts number of free units for the player.
+    /// Sets number of free units on start draft phase.
     /// </summary>
-    /// <param name="playerColor">color of player</param>
-    /// <returns>number of free units</returns>
-    private int GetNumberFreeUnit(ArmyColor playerColor)
+    /// <param name="player">player</param>
+    public void SetNumberFreeUnit(IPlayer player)
     {
-      int occupiedAreas = 0;
-      foreach (var area in _gameBoard.Areas)
-      {
-        if (area.ArmyColor == playerColor)
-        {
-          occupiedAreas++;
-        }
-      }
-
-      int numberFreeUnits = occupiedAreas / 3;
-
-      if (numberFreeUnits < 3)
-      {
-        numberFreeUnits = 3;
-      }
-
-      for (int i = 0; i < _gameBoard.ArmyForRegion.Length; ++i)
-      {
-        if (IsControlingRegion(i, playerColor))
-        {
-          numberFreeUnits += _gameBoard.ArmyForRegion[i];
-        }
-      }
-
-      return numberFreeUnits;
-    }
-
-    /// <summary>
-    /// Finds out if the player controls the region.
-    /// </summary>
-    /// <param name="regionID">id of region</param>
-    /// <param name="playerColor">color of player</param>
-    /// <returns>if the player controls the region</returns>
-    private bool IsControlingRegion(int regionID, ArmyColor playerColor)
-    {
-      foreach (var area in _gameBoard.Areas)
-      {
-        if (area.RegionID == regionID && area.ArmyColor != playerColor)
-        {
-          return false;
-        }
-      }
-      return true;
+      int numberFreeUnit = GameBoardHelper.GetNumberFreeUnit(player.PlayerColor, _gameBoard);
+      _playersInfo[player.PlayerColor].FreeUnits = numberFreeUnit;
+      player.FreeUnit = numberFreeUnit;
     }
 
     /// <summary>
@@ -303,7 +263,7 @@ namespace Risk.AI
       {
         SetUpPlayerInfo();
 
-        SetUpPlayersOrder();
+        _players = GameBoardHelper.SetUpPlayersOrder(_players, _gameBoard);
       }
       else
       {
@@ -329,59 +289,6 @@ namespace Risk.AI
       foreach (var player in _players)
       {
         _playersInfo.Add(player.PlayerColor, new Game.PlayerInfo(player.PlayerColor, numberFreeUnits));
-      }
-    }
-
-    /// <summary>
-    /// Randomly sets up players order.
-    /// </summary>
-    private void SetUpPlayersOrder()
-    {
-      List<IPlayer> orderedPlayers = new List<IPlayer>();
-      while (_players.Count != 0)
-      {
-        Dictionary<IPlayer, int> playersRoll = new Dictionary<IPlayer, int>();
-        foreach (var player in _players)
-        {
-          playersRoll.Add(player, _gameBoard.Dice.RollDice(1)[0]);
-        }
-        IPlayer max = GetMax(playersRoll);
-        if (max != null)
-        {
-          orderedPlayers.Add(max);
-          _players.Remove(max);
-        }
-      }
-      _players = orderedPlayers;
-    }
-
-    /// <summary>
-    /// Gets player with maximum roll.
-    /// </summary>
-    /// <param name="playersRoll">players and their rolls</param>
-    /// <returns>player with maximum roll or null if does not exist</returns>
-    private IPlayer GetMax(Dictionary<IPlayer, int> playersRoll)
-    {
-      int max = 0;
-      IPlayer p = null;
-      foreach (var pr in playersRoll)
-      {
-        if (max < pr.Value)
-        {
-          max = pr.Value;
-          p = pr.Key;
-        }
-      }
-
-      playersRoll.Remove(p);
-
-      if (!playersRoll.ContainsValue(max))
-      {
-        return p;
-      }
-      else
-      {
-        return null;
       }
     }
 
@@ -430,6 +337,8 @@ namespace Risk.AI
     /// </returns>
     public MoveResult MakeMove(Draft move)
     {
+      _playersInfo[move.PlayerColor].GetsCard = false;
+
       _gameBoard.Areas[move.AreaID].SizeOfArmy += move.NumberOfUnit;
       _playersInfo[move.PlayerColor].FreeUnits -= move.NumberOfUnit;
       _currentPlayer.FreeUnit -= move.NumberOfUnit;
@@ -450,20 +359,6 @@ namespace Risk.AI
       int units = _gameBoard.GetUnitPerCombination();
       _playersInfo[move.PlayerColor].FreeUnits += units;
       _currentPlayer.FreeUnit += units;
-
-      //foreach (var card in move.Combination)
-      //{
-      //  if (card.TypeUnit != UnitType.Mix)
-      //  {
-      //    int id = ((NormalCard)card).Area;
-      //    if (_gameBoard.Areas[id].ArmyColor == move.PlayerColor)
-      //    {
-      //      _gameBoard.Areas[id].SizeOfArmy += 2;
-
-      //      break;
-      //    }
-      //  }
-      //}
 
       RemoveCards(move.Combination);
 
@@ -498,7 +393,14 @@ namespace Risk.AI
       _gameBoard.Areas[_capturing.AttackerAreaID].SizeOfArmy -= move.ArmyToMove;
       _gameBoard.Areas[_capturing.DefenderAreaID].SizeOfArmy += move.ArmyToMove;
 
-      _playersInfo[move.PlayerColor].GetsCard = true;
+      if (!_playersInfo[_currentPlayer.PlayerColor].GetsCard)
+      {
+        RiskCard card = _gameBoard.GetCard();
+        _playersInfo[_currentPlayer.PlayerColor].Cards.Add(card);
+        _currentPlayer.AddCard(card);
+
+        _playersInfo[_currentPlayer.PlayerColor].GetsCard = true;
+      }
 
       return MoveResult.OK;
     }
@@ -542,6 +444,9 @@ namespace Risk.AI
         }
       }
 
+      bool a = _gameBoard.Areas[move.AttackerAreaID].SizeOfArmy <= 0;
+      bool d = _gameBoard.Areas[move.DefenderAreaID].SizeOfArmy < 0;
+
       _gameBoard.Areas[move.AttackerAreaID].SizeOfArmy -= attDied;
       _gameBoard.Areas[move.DefenderAreaID].SizeOfArmy -= defDied;
     }
@@ -563,7 +468,7 @@ namespace Risk.AI
         _gameBoard.Areas[move.DefenderAreaID].ArmyColor = move.PlayerColor;
         _capturing = move;
 
-        _playersInfo[defColor].IsAlive = IsDefenderAlive(defColor);
+        _playersInfo[defColor].IsAlive = GameBoardHelper.IsDefenderAlive(defColor, _playersInfo);
 
         if (!_playersInfo[defColor].IsAlive)
         {
@@ -576,7 +481,7 @@ namespace Risk.AI
           _playersInfo[defColor].Cards.Clear();
         }
 
-        if (IsWinner())
+        if (GameBoardHelper.IsWinner(move.PlayerColor, _gameBoard, _playersInfo))
         {
           return MoveResult.Winner;
         }
@@ -587,39 +492,6 @@ namespace Risk.AI
       }
 
       return MoveResult.OK;
-    }
-
-    /// <summary>
-    /// Checks if defender is alive.
-    /// </summary>
-    /// <param name="defenderColor">color of defender</param>
-    /// <returns>if defender is alive</returns>
-    private bool IsDefenderAlive(ArmyColor defenderColor)
-    {
-      foreach (var area in _gameBoard.Areas)
-      {
-        if (area.ArmyColor == defenderColor)
-        {
-          return true;
-        }
-      }
-      return false;
-    }
-
-    /// <summary>
-    /// Checks if player won.
-    /// </summary>
-    /// <returns>if player won</returns>
-    private bool IsWinner()
-    {
-      if (_playersInfo[_currentPlayer.PlayerColor].CapturedAreas == _gameBoard.Areas.Length)
-      {
-        return true;
-      }
-      else
-      {
-        return false;
-      }
     }
 
     /// <summary>
@@ -643,8 +515,38 @@ namespace Risk.AI
     {
       foreach (var player in _players)
       {
-        player.EndPlayer(_playersInfo[player.PlayerColor].IsAlive);
+        player.EndPlayer(_playersInfo[player.PlayerColor].IsAlive).Wait();
       }
+    }
+
+    public GameBoard GetCurrentStateOfGameBoard()
+    {
+      return (GameBoard)_gameBoard.Clone();
+    }
+
+    public IDictionary<ArmyColor, Game.PlayerInfo> GetPlayersInfo()
+    {
+      Dictionary<ArmyColor, Game.PlayerInfo> playersInfo = new Dictionary<ArmyColor, Game.PlayerInfo>();
+      foreach (var info in _playersInfo)
+      {
+        playersInfo.Add(info.Key, (Game.PlayerInfo)info.Value.Clone());
+      }
+      return playersInfo;
+    }
+
+    public IList<ArmyColor> GetOrderOfPlayers()
+    {
+      List<ArmyColor> orderOfPlayers = new List<ArmyColor>();
+      foreach (var player in _players)
+      {
+        orderOfPlayers.Add(player.PlayerColor);
+      }
+      return orderOfPlayers;
+    }
+
+    public int GetCurrentPlayer()
+    {
+      return _players.IndexOf(_currentPlayer);
     }
   }
 }

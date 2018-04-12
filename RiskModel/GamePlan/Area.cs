@@ -1,11 +1,12 @@
 ﻿using Risk.Model.Enums;
+using System;
 
 namespace Risk.Model.GamePlan
 {
   /// <summary>
   /// Represents an area on game board.
   /// </summary>
-  public sealed class Area
+  public sealed class Area : ICloneable
   {
     /// <summary>
     /// ID of area.
@@ -28,6 +29,18 @@ namespace Risk.Model.GamePlan
     public int SizeOfArmy { get; set; }
 
     /// <summary>
+    /// Copy contructor.
+    /// </summary>
+    /// <param name="area">original area</param>
+    private Area(Area area)
+    {
+      ID = area.ID;
+      RegionID = area.RegionID;
+      ArmyColor = area.ArmyColor;
+      SizeOfArmy = area.SizeOfArmy;
+    }
+
+    /// <summary>
     /// Creates neutral area with no army.
     /// </summary>
     /// <param name="id">ID of area</param>
@@ -38,6 +51,11 @@ namespace Risk.Model.GamePlan
       RegionID = regionID;
       ArmyColor = ArmyColor.Neutral;
       SizeOfArmy = 0;
+    }
+
+    public object Clone()
+    {
+      return new Area(this);
     }
   }
 }

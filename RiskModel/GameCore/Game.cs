@@ -66,7 +66,7 @@ namespace Risk.Model.GameCore
     /// <summary>
     /// Keeps control information about player so player can not cheat.
     /// </summary>
-    public class PlayerInfo
+    public class PlayerInfo : ICloneable
     {
       /// <summary>
       /// Color of player.
@@ -110,6 +110,20 @@ namespace Risk.Model.GameCore
         IsAlive = true;
         GetsCard = false;
         Cards = new List<RiskCard>();
+      }
+
+      public object Clone()
+      {
+        PlayerInfo infoCopy = new PlayerInfo(PlayerColor, FreeUnits);
+        infoCopy.IsAlive = IsAlive;
+        infoCopy.GetsCard = GetsCard;
+        infoCopy.CapturedAreas = CapturedAreas;
+        foreach (var card in Cards)
+        {
+          infoCopy.Cards.Add(card);
+        }
+
+        return infoCopy;
       }
     }
 
@@ -189,6 +203,36 @@ namespace Risk.Model.GameCore
       return new GamePlanInfo(connections, areas);
     }
 
+    public GameBoard GetCurrentStateOfGameBoard()
+    {
+      return (GameBoard)_gameBoard.Clone();
+    }
+
+    public IDictionary<ArmyColor, Game.PlayerInfo> GetPlayersInfo()
+    {
+      Dictionary<ArmyColor, Game.PlayerInfo> playersInfo = new Dictionary<ArmyColor, Game.PlayerInfo>();
+      foreach (var info in _playersInfo)
+      {
+        playersInfo.Add(info.Key, (Game.PlayerInfo)info.Value.Clone());
+      }
+      return playersInfo;
+    }
+
+    public IList<ArmyColor> GetOrderOfPlayers()
+    {
+      List<ArmyColor> orderOfPlayers = new List<ArmyColor>();
+      foreach (var player in _players)
+      {
+        orderOfPlayers.Add(player.PlayerColor);
+      }
+      return orderOfPlayers;
+    }
+
+    public int GetCurrentPlayer()
+    {
+      return _players.IndexOf(_currentPlayer);
+    }
+
     /// <summary>
     /// Starts game and plays until the end.
     /// </summary>
@@ -200,7 +244,7 @@ namespace Risk.Model.GameCore
 
         SetUpPlayerInfo();
 
-        SetUpPlayersOrder();
+        _players = GameBoardHelper.SetUpPlayersOrder(_players, _gameBoard);
 
         StartAllPlayer().Wait();
 
@@ -327,7 +371,7 @@ namespace Risk.Model.GameCore
     {
       if (IsCorrectMove(Phase.DRAFT, move.PlayerColor))
       {
-        if (_gameBoard.IsCorrectCombination(move.Combination))
+        if (GameBoardHelper.IsCorrectCombination(move.Combination))
         {
           if (HasCards(move.Combination))
           {
@@ -472,7 +516,7 @@ namespace Risk.Model.GameCore
       {
         if (!_alreadyFortify)
         {
-          if (_gameBoard.IsConnected(move.FromAreaID, move.ToAreaID))
+          if (GameBoardHelper.IsConnected(move.FromAreaID, move.ToAreaID, _gameBoard))
           {
             if (_gameBoard.Areas[move.FromAreaID].SizeOfArmy > move.SizeOfArmy)
             {
@@ -537,25 +581,9 @@ namespace Risk.Model.GameCore
       {
         return true;
       }
-      if (_gameBoard.Areas[move.AreaID].ArmyColor == move.PlayerColor && !IsThereNeutralArea())
+      if (_gameBoard.Areas[move.AreaID].ArmyColor == move.PlayerColor && !GameBoardHelper.IsThereNeutralArea(_gameBoard, _playersInfo))
       {
         return true;
-      }
-      return false;
-    }
-
-    /// <summary>
-    /// Finds out if there is neutral area.
-    /// </summary>
-    /// <returns>if there is neutral area</returns>
-    private bool IsThereNeutralArea()
-    {
-      foreach (var area in _gameBoard.Areas)
-      {
-        if (area.ArmyColor == ArmyColor.Neutral)
-        {
-          return true;
-        }
       }
       return false;
     }
@@ -636,7 +664,7 @@ namespace Risk.Model.GameCore
         _isAreaCaptured = true;
         _capturing = move;
 
-        _playersInfo[defColor].IsAlive = IsDefenderAlive(defColor);
+        _playersInfo[defColor].IsAlive = GameBoardHelper.IsDefenderAlive(defColor, _playersInfo);
 
         if (!_playersInfo[defColor].IsAlive)
         {
@@ -651,7 +679,7 @@ namespace Risk.Model.GameCore
           _playersInfo[defColor].Cards.Clear();
         }
 
-        if (IsWinner())
+        if (GameBoardHelper.IsWinner(move.PlayerColor, _gameBoard, _playersInfo))
         {
           return MoveResult.Winner;
         }
@@ -662,16 +690,6 @@ namespace Risk.Model.GameCore
       }
 
       return MoveResult.OK;
-    }
-
-    /// <summary>
-    /// Checks if defender is alive.
-    /// </summary>
-    /// <param name="defenderColor">color of defender</param>
-    /// <returns>if defender is alive</returns>
-    private bool IsDefenderAlive(ArmyColor defenderColor)
-    {
-      return _playersInfo[defenderColor].CapturedAreas != 0;
     }
 
     /// <summary>
@@ -687,61 +705,6 @@ namespace Risk.Model.GameCore
       foreach (var player in _players)
       {
         _playersInfo.Add(player.PlayerColor, new PlayerInfo(player.PlayerColor, numberFreeUnits));
-      }
-    }
-
-    /// <summary>
-    /// Randomly sets up players order.
-    /// </summary>
-    private void SetUpPlayersOrder()
-    {
-      _logger?.Info("SetUping players order");
-
-      List<IPlayer> orderedPlayers = new List<IPlayer>();
-      while (_players.Count != 0)
-      {
-        Dictionary<IPlayer, int> playersRoll = new Dictionary<IPlayer, int>();
-        foreach (var player in _players)
-        {
-          playersRoll.Add(player, _gameBoard.Dice.RollDice(1)[0]);
-        }
-        IPlayer max = GetMax(playersRoll);
-        if (max != null)
-        {
-          orderedPlayers.Add(max);
-          _players.Remove(max);
-        }
-      }
-      _players = orderedPlayers;
-    }
-
-    /// <summary>
-    /// Gets player with maximum roll.
-    /// </summary>
-    /// <param name="playersRoll">players and their rolls</param>
-    /// <returns>player with maximum roll or null if does not exist</returns>
-    private IPlayer GetMax(Dictionary<IPlayer, int> playersRoll)
-    {
-      int max = 0;
-      IPlayer p = null;
-      foreach (var pr in playersRoll)
-      {
-        if (max < pr.Value)
-        {
-          max = pr.Value;
-          p = pr.Key;
-        }
-      }
-
-      playersRoll.Remove(p);
-
-      if (!playersRoll.ContainsValue(max))
-      {
-        return p;
-      }
-      else
-      {
-        return null;
       }
     }
 
@@ -799,7 +762,7 @@ namespace Risk.Model.GameCore
     /// </summary>
     private void PlayToTheEnd()
     {
-      while (!IsWinner())
+      while (!GameBoardHelper.IsWinner(_currentPlayer.PlayerColor, _gameBoard, _playersInfo))
       {
         foreach (var player in _players)
         {
@@ -807,7 +770,7 @@ namespace Risk.Model.GameCore
           {
             _currentPlayer = player;
 
-            int numberFreeUnit = GetNumberFreeUnit(player.PlayerColor);
+            int numberFreeUnit = GameBoardHelper.GetNumberFreeUnit(player.PlayerColor, _gameBoard);
             _playersInfo[player.PlayerColor].FreeUnits = numberFreeUnit;
             player.FreeUnit = numberFreeUnit;
 
@@ -833,7 +796,7 @@ namespace Risk.Model.GameCore
               _logger?.Info($"Player={player.PlayerColor},NewCard={card.TypeUnit}");
             }
 
-            if (IsWinner()) break;
+            if (GameBoardHelper.IsWinner(player.PlayerColor, _gameBoard, _playersInfo)) break;
 
             _logger?.Info("Fortify phase");
 
@@ -843,76 +806,6 @@ namespace Risk.Model.GameCore
           }
         }
       }
-    }
-
-    /// <summary>
-    /// Checks if player won.
-    /// </summary>
-    /// <returns>if player won</returns>
-    private bool IsWinner()
-    {
-      return _playersInfo[_currentPlayer.PlayerColor].CapturedAreas == _gameBoard.Areas.Length;
-      //ArmyColor playerColor = _gameBoard.Areas[0].ArmyColor;
-      //foreach (var area in _gameBoard.Areas)
-      //{
-      //  if (area.ArmyColor != playerColor)
-      //  {
-      //    return false;
-      //  }
-      //}
-      //return true;
-    }
-
-    /// <summary>
-    /// Counts number of free units for the player.
-    /// </summary>
-    /// <param name="playerColor">color of player</param>
-    /// <returns>number of free units</returns>
-    private int GetNumberFreeUnit(ArmyColor playerColor)
-    {
-      int occupiedAreas = 0;
-      foreach (var area in _gameBoard.Areas)
-      {
-        if (area.ArmyColor == playerColor)
-        {
-          occupiedAreas++;
-        }
-      }
-
-      int numberFreeUnits = occupiedAreas / 3;
-
-      if (numberFreeUnits < 3)
-      {
-        numberFreeUnits = 3;
-      }
-
-      for (int i = 0; i < _gameBoard.ArmyForRegion.Length; ++i)
-      {
-        if (IsControlingRegion(i, playerColor))
-        {
-          numberFreeUnits += _gameBoard.ArmyForRegion[i];
-        }
-      }
-
-      return numberFreeUnits;
-    }
-
-    /// <summary>
-    /// Finds out if the player controls the region.
-    /// </summary>
-    /// <param name="regionID">id of region</param>
-    /// <param name="playerColor">color of player</param>
-    /// <returns>if the player controls the region</returns>
-    private bool IsControlingRegion(int regionID, ArmyColor playerColor)
-    {
-      foreach (var area in _gameBoard.Areas)
-      {
-        if (area.RegionID == regionID && area.ArmyColor != playerColor)
-        {
-          return false;
-        }
-      }
-      return true;
     }
 
     /// <summary>

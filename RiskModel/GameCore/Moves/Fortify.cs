@@ -5,13 +5,8 @@ namespace Risk.Model.GameCore.Moves
   /// <summary>
   /// Represents game move fortify.
   /// </summary>
-  public struct Fortify
+  public sealed class Fortify : Move
   {
-    /// <summary>
-    /// Color of player, who makes move.
-    /// </summary>
-    public ArmyColor PlayerColor { get; private set; }
-
     /// <summary>
     /// Area of player, where units will be taken.
     /// </summary>
@@ -34,9 +29,8 @@ namespace Risk.Model.GameCore.Moves
     /// <param name="fromAreaID">area of player, where units will be taken</param>
     /// <param name="toAreaID">area of player, where units will be moved</param>
     /// <param name="sizeOfArmy">number of unit to moving</param>
-    public Fortify(ArmyColor armyColor, int fromAreaID, int toAreaID, int sizeOfArmy)
+    public Fortify(ArmyColor armyColor, int fromAreaID, int toAreaID, int sizeOfArmy) : base(armyColor)
     {
-      PlayerColor = armyColor;
       FromAreaID = fromAreaID;
       ToAreaID = toAreaID;
       SizeOfArmy = sizeOfArmy;

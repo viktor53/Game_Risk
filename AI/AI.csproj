@@ -47,7 +47,16 @@
     <Compile Include="BattleOfAI.cs" />
     <Compile Include="GameSimulation.cs" />
     <Compile Include="Helper.cs" />
+    <Compile Include="HeuristicHelper.cs" />
     <Compile Include="IAI.cs" />
+    <Compile Include="MCTS\MCTSAI.cs" />
+    <Compile Include="MCTS\MonteCarloTreeSearch.cs" />
+    <Compile Include="MoveManager.cs" />
+    <Compile Include="MCTS\Moves.cs" />
+    <Compile Include="MCTS\Node.cs" />
+    <Compile Include="MCTS\State.cs" />
+    <Compile Include="MCTS\StatusOfGame.cs" />
+    <Compile Include="MCTS\UCT.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RandomPlayer.cs" />
   </ItemGroup>
@@ -60,6 +69,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

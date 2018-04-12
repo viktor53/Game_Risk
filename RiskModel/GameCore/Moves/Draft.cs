@@ -5,13 +5,8 @@ namespace Risk.Model.GameCore.Moves
   /// <summary>
   /// Represents game move draft.
   /// </summary>
-  public struct Draft
+  public sealed class Draft : Move
   {
-    /// <summary>
-    /// Color of player, who makes move.
-    /// </summary>
-    public ArmyColor PlayerColor { get; private set; }
-
     /// <summary>
     /// Area of player, where units will be placed.
     /// </summary>
@@ -28,9 +23,8 @@ namespace Risk.Model.GameCore.Moves
     /// <param name="armyColor">color of player, who makes draft</param>
     /// <param name="areaID">area of player</param>
     /// <param name="numberOfUnit">number of unit</param>
-    public Draft(ArmyColor armyColor, int areaID, int numberOfUnit)
+    public Draft(ArmyColor armyColor, int areaID, int numberOfUnit) : base(armyColor)
     {
-      PlayerColor = armyColor;
       AreaID = areaID;
       NumberOfUnit = numberOfUnit;
     }

@@ -84,7 +84,8 @@ namespace Risk.AI
       _aiColor = playerColor;
       _ran = new Random();
       _gamePlanLock = new object();
-      Probibility = 12;
+      Probibility = 13;
+      _cardsInHand = new List<RiskCard>();
     }
 
     public async Task StartPlayer(IGame game)
@@ -93,19 +94,18 @@ namespace Risk.AI
       {
         _game = game;
         _gamePlan = game.GetGamePlan();
-        _cardsInHand = new List<RiskCard>();
       });
     }
 
     public void PlayAttack()
     {
-      IList<Area> canAttack = Helper.WhoCanAttack(_gamePlan, _aiColor);
+      IList<Area> canAttack = Helper.WhoCanAttack(_gamePlan.Areas, _gamePlan.Connections, _aiColor);
 
       int probibility = _ran.Next(100);
       while (probibility >= Probibility && canAttack.Count > 0)
       {
         int attacker = _ran.Next(canAttack.Count);
-        IList<Area> canBeAttacked = Helper.WhoCanBeAttacked(canAttack[attacker], _gamePlan, _aiColor);
+        IList<Area> canBeAttacked = Helper.WhoCanBeAttacked(canAttack[attacker], _gamePlan.Areas, _gamePlan.Connections, _aiColor);
 
         int defender = _ran.Next(canBeAttacked.Count);
         int attackSize = _ran.Next(1, Helper.GetMaxSizeOfAttack(canAttack[attacker]) + 1);
@@ -120,7 +120,7 @@ namespace Risk.AI
           {
             if (_gamePlan.Connections[canBeAttacked[defender].ID][i] && _gamePlan.Areas[i].ArmyColor == _aiColor)
             {
-              if (canAttack.Contains(_gamePlan.Areas[i]) && !Helper.CanAttack(_gamePlan.Areas[i], _gamePlan, _aiColor))
+              if (canAttack.Contains(_gamePlan.Areas[i]) && !Helper.CanAttack(_gamePlan.Areas[i], _gamePlan.Areas, _gamePlan.Connections, _aiColor))
               {
                 canAttack.Remove(_gamePlan.Areas[i]);
               }
@@ -181,11 +181,11 @@ namespace Risk.AI
       int probibility = _ran.Next(100);
       if (probibility >= 50)
       {
-        IList<Area> canFortify = Helper.WhoCanFortify(_gamePlan, _aiColor);
+        IList<Area> canFortify = Helper.WhoCanFortify(_gamePlan.Areas, _gamePlan.Connections, _aiColor);
         if (canFortify.Count > 0)
         {
           int from = _ran.Next(canFortify.Count);
-          IList<Area> where = Helper.WhereCanFortify(canFortify[from], _gamePlan, _aiColor);
+          IList<Area> where = Helper.WhereCanFortify(canFortify[from], _gamePlan.Areas, _gamePlan.Connections, _aiColor);
 
           int to = _ran.Next(where.Count);
           int sizeOfArmy = _ran.Next(1, canFortify[from].SizeOfArmy);
@@ -220,6 +220,7 @@ namespace Risk.AI
       await Task.Run(() =>
       {
         _isWinner = isWinner;
+        _cardsInHand.Clear();
       });
     }
 

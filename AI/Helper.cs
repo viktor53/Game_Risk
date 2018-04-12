@@ -37,12 +37,12 @@ namespace Risk.AI
       return myAreas;
     }
 
-    public static IList<Area> WhoCanAttack(GamePlanInfo gamePlan, ArmyColor aiColor)
+    public static IList<Area> WhoCanAttack(IList<Area> areas, IList<IList<bool>> connections, ArmyColor aiColor)
     {
       List<Area> canAttack = new List<Area>();
-      foreach (var area in gamePlan.Areas)
+      foreach (var area in areas)
       {
-        if (area.ArmyColor == aiColor && CanAttack(area, gamePlan, aiColor))
+        if (area.ArmyColor == aiColor && CanAttack(area, areas, connections, aiColor))
         {
           canAttack.Add(area);
         }
@@ -50,13 +50,13 @@ namespace Risk.AI
       return canAttack;
     }
 
-    public static bool CanAttack(Area area, GamePlanInfo gamePlan, ArmyColor aiColor)
+    public static bool CanAttack(Area area, IList<Area> areas, IList<IList<bool>> connections, ArmyColor aiColor)
     {
       if (area.SizeOfArmy > 1)
       {
-        for (int i = 0; i < gamePlan.Connections[area.ID].Length; ++i)
+        for (int i = 0; i < connections[area.ID].Count; ++i)
         {
-          if (gamePlan.Connections[area.ID][i] && gamePlan.Areas[i].ArmyColor != aiColor)
+          if (connections[area.ID][i] && areas[i].ArmyColor != aiColor)
           {
             return true;
           }
@@ -65,14 +65,14 @@ namespace Risk.AI
       return false;
     }
 
-    public static IList<Area> WhoCanBeAttacked(Area area, GamePlanInfo gamePlan, ArmyColor aiColor)
+    public static IList<Area> WhoCanBeAttacked(Area area, IList<Area> areas, IList<IList<bool>> connections, ArmyColor aiColor)
     {
       List<Area> canBeAttacked = new List<Area>();
-      for (int i = 0; i < gamePlan.Connections[area.ID].Length; ++i)
+      for (int i = 0; i < connections[area.ID].Count; ++i)
       {
-        if (gamePlan.Connections[area.ID][i] && gamePlan.Areas[i].ArmyColor != aiColor)
+        if (connections[area.ID][i] && areas[i].ArmyColor != aiColor)
         {
-          canBeAttacked.Add(gamePlan.Areas[i]);
+          canBeAttacked.Add(areas[i]);
         }
       }
       return canBeAttacked;
@@ -93,12 +93,12 @@ namespace Risk.AI
       return 3;
     }
 
-    public static IList<Area> WhoCanFortify(GamePlanInfo gamePlan, ArmyColor aiColor)
+    public static IList<Area> WhoCanFortify(IList<Area> areas, IList<IList<bool>> connections, ArmyColor aiColor)
     {
       List<Area> canFortify = new List<Area>();
-      foreach (var area in gamePlan.Areas)
+      foreach (var area in areas)
       {
-        if (area.ArmyColor == aiColor && area.SizeOfArmy > 1 && HasFriendlyNeighbors(area, gamePlan, aiColor))
+        if (area.ArmyColor == aiColor && area.SizeOfArmy > 1 && HasFriendlyNeighbors(area, areas, connections, aiColor))
         {
           canFortify.Add(area);
         }
@@ -106,11 +106,11 @@ namespace Risk.AI
       return canFortify;
     }
 
-    private static bool HasFriendlyNeighbors(Area area, GamePlanInfo gamePlan, ArmyColor aiColor)
+    private static bool HasFriendlyNeighbors(Area area, IList<Area> areas, IList<IList<bool>> connections, ArmyColor aiColor)
     {
-      for (int i = 0; i < gamePlan.Connections[area.ID].Length; ++i)
+      for (int i = 0; i < connections[area.ID].Count; ++i)
       {
-        if (gamePlan.Connections[area.ID][i] && gamePlan.Areas[i].ArmyColor == aiColor)
+        if (connections[area.ID][i] && areas[i].ArmyColor == aiColor)
         {
           return true;
         }
@@ -118,7 +118,7 @@ namespace Risk.AI
       return false;
     }
 
-    public static IList<Area> WhereCanFortify(Area area, GamePlanInfo gamePlan, ArmyColor aiColor)
+    public static IList<Area> WhereCanFortify(Area area, IList<Area> areas, IList<IList<bool>> connections, ArmyColor aiColor)
     {
       List<Area> where = new List<Area>();
       HashSet<Area> visited = new HashSet<Area>();
@@ -129,11 +129,11 @@ namespace Risk.AI
         Area a = toVisit.Dequeue();
         visited.Add(a);
         where.Add(a);
-        for (int i = 0; i < gamePlan.Connections[a.ID].Length; ++i)
+        for (int i = 0; i < connections[a.ID].Count; ++i)
         {
-          if (gamePlan.Connections[a.ID][i] && gamePlan.Areas[i].ArmyColor == aiColor && !visited.Contains(gamePlan.Areas[i]))
+          if (connections[a.ID][i] && areas[i].ArmyColor == aiColor && !visited.Contains(areas[i]))
           {
-            toVisit.Enqueue(gamePlan.Areas[i]);
+            toVisit.Enqueue(areas[i]);
           }
         }
       }

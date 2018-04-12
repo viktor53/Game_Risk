@@ -48,6 +48,7 @@ namespace Risk.AI
       _time = 0;
       for (int i = 0; i < _numberOfGames; ++i)
       {
+        //Game game = new Game(false, 3, null);
         GameSimulation game = new GameSimulation(_isClassic);
         foreach (var ai in _ais)
         {

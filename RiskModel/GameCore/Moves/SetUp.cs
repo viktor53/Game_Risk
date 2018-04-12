@@ -5,13 +5,8 @@ namespace Risk.Model.GameCore.Moves
   /// <summary>
   /// Represents game move setup.
   /// </summary>
-  public struct SetUp
+  public sealed class SetUp : Move
   {
-    /// <summary>
-    /// Color of player, who makes move.
-    /// </summary>
-    public ArmyColor PlayerColor { get; private set; }
-
     /// <summary>
     /// Area of player or neutral area, where one unit will be placed.
     /// </summary>
@@ -22,9 +17,8 @@ namespace Risk.Model.GameCore.Moves
     /// </summary>
     /// <param name="armyColor">color of player, who makes setup</param>
     /// <param name="areaID">area of player or neutral area</param>
-    public SetUp(ArmyColor armyColor, int areaID)
+    public SetUp(ArmyColor armyColor, int areaID) : base(armyColor)
     {
-      PlayerColor = armyColor;
       AreaID = areaID;
     }
   }

@@ -183,7 +183,7 @@ namespace Risk.Model.Factories
         {
           int fromArea = ran.Next(0, borders[i].Count);
           int region = (i + j + 1) % borders.Count;
-          if(region != i)
+          if (region != i)
           {
             int toArea = ran.Next(0, borders[(i + j + 1) % borders.Count].Count);
             MakeEdge(gb.Connections, borders[i][fromArea], borders[(i + j + 1) % borders.Count][toArea]);
