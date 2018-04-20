@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Risk.Model.Enums;
 using Risk.Model.GameCore.Moves;
 using Risk.Model.Cards;
+using System.Diagnostics;
 
 namespace Risk.AI
 {
@@ -36,6 +37,15 @@ namespace Risk.AI
       _currentPhase = Phase.SETUP;
     }
 
+    public GameSimulation(int numberOfAreas)
+    {
+      _players = new List<IPlayer>();
+      _playersInfo = new Dictionary<ArmyColor, Game.PlayerInfo>();
+      _gameBoard = Game.GameSettings.GetGameBoard(numberOfAreas);
+      _isFromStart = true;
+      _currentPhase = Phase.SETUP;
+    }
+
     public GameSimulation(GameBoard board, IList<IPlayer> players, IDictionary<ArmyColor, Game.PlayerInfo> playersInfo, Phase currentPhase, int currentPlayer)
     {
       _gameBoard = board;
@@ -59,6 +69,46 @@ namespace Risk.AI
     public GamePlanInfo GetGamePlan()
     {
       return new GamePlanInfo(_gameBoard.Connections, _gameBoard.Areas);
+    }
+
+    public GameBoard GetCurrentStateOfGameBoard()
+    {
+      return (GameBoard)_gameBoard.Clone();
+    }
+
+    public IDictionary<ArmyColor, Game.PlayerInfo> GetPlayersInfo()
+    {
+      Dictionary<ArmyColor, Game.PlayerInfo> playersInfo = new Dictionary<ArmyColor, Game.PlayerInfo>();
+      foreach (var info in _playersInfo)
+      {
+        playersInfo.Add(info.Key, (Game.PlayerInfo)info.Value.Clone());
+      }
+      return playersInfo;
+    }
+
+    public IList<ArmyColor> GetOrderOfPlayers()
+    {
+      List<ArmyColor> orderOfPlayers = new List<ArmyColor>();
+      foreach (var player in _players)
+      {
+        orderOfPlayers.Add(player.PlayerColor);
+      }
+      return orderOfPlayers;
+    }
+
+    public int GetCurrentPlayer()
+    {
+      return _players.IndexOf(_currentPlayer);
+    }
+
+    public int GetNumberOfCombination()
+    {
+      return _gameBoard.Combination;
+    }
+
+    public int[] GetBonusForRegions()
+    {
+      return (int[])_gameBoard.ArmyForRegion.Clone();
     }
 
     public void StartGame()
@@ -148,6 +198,8 @@ namespace Risk.AI
       }
     }
 
+    private Stopwatch sw = new Stopwatch();
+
     /// <summary>
     /// Plays while nobody won.
     /// </summary>
@@ -155,6 +207,7 @@ namespace Risk.AI
     {
       while (!GameBoardHelper.IsWinner(_currentPlayer.PlayerColor, _gameBoard, _playersInfo))
       {
+        sw.Start();
         foreach (var player in _players)
         {
           if (_playersInfo[player.PlayerColor].IsAlive)
@@ -177,6 +230,12 @@ namespace Risk.AI
             _currentPhase = Phase.FORTIFY;
             player.PlayFortify();
           }
+        }
+
+        sw.Stop();
+        if (sw.Elapsed.TotalSeconds > 1)
+        {
+          return;
         }
       }
     }
@@ -517,36 +576,6 @@ namespace Risk.AI
       {
         player.EndPlayer(_playersInfo[player.PlayerColor].IsAlive).Wait();
       }
-    }
-
-    public GameBoard GetCurrentStateOfGameBoard()
-    {
-      return (GameBoard)_gameBoard.Clone();
-    }
-
-    public IDictionary<ArmyColor, Game.PlayerInfo> GetPlayersInfo()
-    {
-      Dictionary<ArmyColor, Game.PlayerInfo> playersInfo = new Dictionary<ArmyColor, Game.PlayerInfo>();
-      foreach (var info in _playersInfo)
-      {
-        playersInfo.Add(info.Key, (Game.PlayerInfo)info.Value.Clone());
-      }
-      return playersInfo;
-    }
-
-    public IList<ArmyColor> GetOrderOfPlayers()
-    {
-      List<ArmyColor> orderOfPlayers = new List<ArmyColor>();
-      foreach (var player in _players)
-      {
-        orderOfPlayers.Add(player.PlayerColor);
-      }
-      return orderOfPlayers;
-    }
-
-    public int GetCurrentPlayer()
-    {
-      return _players.IndexOf(_currentPlayer);
     }
   }
 }

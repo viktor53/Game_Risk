@@ -11,6 +11,7 @@
     <AssemblyName>AI</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -30,6 +31,21 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Accord">
+      <HintPath>..\Risk\packages\Accord.3.8.0\lib\net45\Accord.dll</HintPath>
+    </Reference>
+    <Reference Include="Accord.Genetic">
+      <HintPath>..\Risk\packages\Accord.Genetic.3.8.0\lib\net45\Accord.Genetic.dll</HintPath>
+    </Reference>
+    <Reference Include="Accord.Math">
+      <HintPath>..\Risk\packages\Accord.Math.3.8.0\lib\net45\Accord.Math.dll</HintPath>
+    </Reference>
+    <Reference Include="Accord.Neuro">
+      <HintPath>..\Risk\packages\Accord.Neuro.3.8.0\lib\net45\Accord.Neuro.dll</HintPath>
+    </Reference>
+    <Reference Include="Accord.Statistics">
+      <HintPath>..\Risk\packages\Accord.Statistics.3.8.0\lib\net45\Accord.Statistics.dll</HintPath>
+    </Reference>
     <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <HintPath>..\Risk\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
       <Private>True</Private>
@@ -57,6 +73,13 @@
     <Compile Include="MCTS\State.cs" />
     <Compile Include="MCTS\StatusOfGame.cs" />
     <Compile Include="MCTS\UCT.cs" />
+    <Compile Include="NeuralNetwork\Evolution\Learning.cs" />
+    <Compile Include="NeuralNetwork\Evolution\NNFitnessFuction.cs" />
+    <Compile Include="NeuralNetwork\NeuralNetworkFactory.cs" />
+    <Compile Include="NeuralNetwork\NeuroAI.cs" />
+    <Compile Include="NeuralNetwork\NeuroHelper.cs" />
+    <Compile Include="NeuralNetwork\RegionInformation.cs" />
+    <Compile Include="NeuralNetwork\SurroudingsInformation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RandomPlayer.cs" />
   </ItemGroup>

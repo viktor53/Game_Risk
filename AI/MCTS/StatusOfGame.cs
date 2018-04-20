@@ -8,6 +8,7 @@ namespace Risk.AI.MCTS
 {
   internal enum StatusOfGame
   {
+    ROOT = -2,
     INPROGRESS = -1,
     WINNER1 = 0,
     WINNER2 = 1,

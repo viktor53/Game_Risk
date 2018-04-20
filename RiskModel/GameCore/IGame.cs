@@ -48,6 +48,18 @@ namespace Risk.Model.GameCore
     int GetCurrentPlayer();
 
     /// <summary>
+    /// Gets number of combinations, that have already made.
+    /// </summary>
+    /// <returns>number of combinations</returns>
+    int GetNumberOfCombination();
+
+    /// <summary>
+    /// Gets a bonus for regions.
+    /// </summary>
+    /// <returns>a bonus for regions</returns>
+    int[] GetBonusForRegions();
+
+    /// <summary>
     /// Starts game and plays until the end.
     /// </summary>
     void StartGame();

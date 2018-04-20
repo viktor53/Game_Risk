@@ -63,19 +63,28 @@ namespace Risk.AI.MCTS
 
     public List<State> GetAllPosibilities()
     {
+      List<State> states = null;
       if (_currentPhase == Phase.SETUP && !IsEndOfSetUp())
       {
-        return GetAllSetUpPos();
+        states = GetAllSetUpPos();
       }
       else
       {
-        var gameBoardCopy = (GameBoard)_gameBoard.Clone();
-        var playersInfoCopy = GetPlayersInfoClone(_playersInfo);
-        ArmyColor playerColor = _players[_currentPlayer].PlayerColor;
-        playersInfoCopy[playerColor].FreeUnits = GameBoardHelper.GetNumberFreeUnit(playerColor, gameBoardCopy);
+        if (_gameBoard != null)
+        {
+          var gameBoardCopy = (GameBoard)_gameBoard.Clone();
+          var playersInfoCopy = GetPlayersInfoClone(_playersInfo);
+          ArmyColor playerColor = _players[_currentPlayer].PlayerColor;
+          playersInfoCopy[playerColor].FreeUnits = GameBoardHelper.GetNumberFreeUnit(playerColor, gameBoardCopy);
 
-        return GetAllPosOfTurn(gameBoardCopy, playersInfoCopy);
+          states = GetAllPosOfTurn(gameBoardCopy, playersInfoCopy);
+        }
       }
+
+      _gameBoard = null;
+      _playersInfo = null;
+
+      return states;
     }
 
     /// <summary>
@@ -235,35 +244,35 @@ namespace Risk.AI.MCTS
 
           while (maxAttack > 0)
           {
-            Attack move1 = new Attack(playerColor, attacker.ID, canBeAttack[i].ID, (AttackSize)maxAttack);
+            int defID = canBeAttack[i].ID;
+
+            Attack move1 = new Attack(playerColor, attacker.ID, defID, (AttackSize)maxAttack);
             movesCopy.AttackMoves.Add(move1);
 
             MoveResult result = MoveManager.MakeMove(move1, gameBoardCopy, playersInfoCopy);
 
             if (result == MoveResult.AreaCaptured)
             {
-              //for (int k = maxAttack + 1; k < attacker.SizeOfArmy; ++k)
-              //{
-              //  var gameBoardCopy2 = (GameBoard)gameBoardCopy.Clone();
-              //  var playersInfoCopy2 = GetPlayersInfoClone(playersInfoCopy);
-              //  var movesCopy2 = new Moves(movesCopy);
-
-              //  Capture cap1 = new Capture(playerColor, k);
-              //  MoveManager.MakeMove(cap1, move1, gameBoardCopy2, playersInfoCopy2);
-              //  movesCopy2.CaptureMoves.Add(cap1);
-
-              //  canAttack[index] = gameBoardCopy2.Areas[attacker.ID];
-              //  posibilities.AddRange(GetAttackMove(canAttack, index + 1, gameBoardCopy2, playersInfoCopy2, movesCopy2));
-              //  canAttack[index] = attacker;
-              //}
-
               Capture cap2 = new Capture(playerColor, gameBoardCopy.Areas[attacker.ID].SizeOfArmy - 1);
               MoveManager.MakeMove(cap2, move1, gameBoardCopy, playersInfoCopy);
               movesCopy.CaptureMoves.Add(cap2);
 
+              if (gameBoardCopy.Areas[canBeAttack[i].ID].SizeOfArmy > 1)
+              {
+                for (int j = 0; j < gameBoardCopy.Connections[defID].Length; ++j)
+                {
+                  if (gameBoardCopy.Connections[defID][j] && HeuristicHelper.IsGoodAttack(gameBoardCopy.Areas[defID], gameBoardCopy.Areas[j]))
+                  {
+                    canAttack.Add(gameBoardCopy.Areas[defID]);
+                    break;
+                  }
+                }
+              }
+
               canAttack[index] = gameBoardCopy.Areas[attacker.ID];
               posibilities.AddRange(GetAttackMove(canAttack, index + 1, gameBoardCopy, playersInfoCopy, movesCopy));
               canAttack[index] = attacker;
+              canAttack.Remove(gameBoardCopy.Areas[defID]);
 
               break;
             }
@@ -305,74 +314,57 @@ namespace Risk.AI.MCTS
 
       int nextPlayer = GetNextPlayer(playersInfo);
 
-      StatusOfGame status = IsWinner(gameBoard);
+      //StatusOfGame status = IsWinner(gameBoard);
 
-      if (status == StatusOfGame.INPROGRESS)
+      ArmyColor playerColor = _players[_currentPlayer].PlayerColor;
+
+      for (int i = 0; i < canFortify.Count; ++i)
       {
-        ArmyColor playerColor = _players[_currentPlayer].PlayerColor;
-
-        for (int i = 0; i < canFortify.Count; ++i)
+        Area from = canFortify[i];
+        IList<Area> where = HeuristicHelper.WhereCanFortify(from, gameBoard.Areas, gameBoard.Connections);
+        for (int j = 0; j < where.Count; ++j)
         {
-          Area from = canFortify[i];
-          IList<Area> where = HeuristicHelper.WhereCanFortify(from, gameBoard.Areas, gameBoard.Connections);
-          for (int j = 0; j < where.Count; ++j)
-          {
-            var gameBoardCopy = (GameBoard)gameBoard.Clone();
-            var playersInfoCopy = GetPlayersInfoClone(playersInfo);
-            var movesCopy = new Moves(moves);
+          var gameBoardCopy = (GameBoard)gameBoard.Clone();
+          var playersInfoCopy = GetPlayersInfoClone(playersInfo);
+          var movesCopy = new Moves(moves);
 
-            Fortify move = new Fortify(playerColor, from.ID, where[j].ID, from.SizeOfArmy - 1);
-            MoveManager.MakeMove(move, gameBoardCopy);
-            movesCopy.FortifyMove = move;
+          Fortify move = new Fortify(playerColor, from.ID, where[j].ID, from.SizeOfArmy - 1);
+          MoveManager.MakeMove(move, gameBoardCopy);
+          movesCopy.FortifyMove = move;
 
-            State state1 = new State(gameBoardCopy, _players, playersInfoCopy, nextPlayer, Phase.DRAFT);
-            state1.Moves = movesCopy;
-            posibilities.Add(state1);
-          }
+          State state1 = new State(gameBoardCopy, _players, playersInfoCopy, nextPlayer, Phase.DRAFT);
+          state1.Moves = movesCopy;
+          posibilities.Add(state1);
         }
+      }
 
-        State state = new State(gameBoard, _players, playersInfo, nextPlayer, Phase.DRAFT);
-        state.Moves = moves;
-        posibilities.Add(state);
-      }
-      else
-      {
-        State state = new State(gameBoard, _players, playersInfo, nextPlayer, Phase.DRAFT);
-        state.Moves = moves;
-        state.Status = status;
-        posibilities.Add(state);
-      }
+      State state = new State(gameBoard, _players, playersInfo, nextPlayer, Phase.DRAFT);
+      state.Moves = moves;
+      posibilities.Add(state);
+
+      //if (status == StatusOfGame.INPROGRESS)
+      //{
+      //}
+      //else
+      //{
+      //  State state = new State(gameBoard, _players, playersInfo, nextPlayer, Phase.DRAFT);
+      //  state.Moves = moves;
+      //  state.Status = status;
+      //  posibilities.Add(state);
+      //}
 
       return posibilities;
     }
 
     public int Simulate()
     {
-      //Dictionary<ArmyColor, int> areas = new Dictionary<ArmyColor, int>();
-      //areas.Add(ArmyColor.Blue, 0);
-      //areas.Add(ArmyColor.Green, 0);
-      //areas.Add(ArmyColor.Red, 0);
-      //areas.Add(ArmyColor.Neutral, 0);
-      //for (int i = 0; i < _gameBoard.Areas.Length; ++i)
-      //{
-      //  areas[_gameBoard.Areas[i].ArmyColor]++;
-      //}
-      //bool stop = areas[ArmyColor.Neutral] == 0 &&
-      //  ((areas[ArmyColor.Blue] == 0 && (areas[ArmyColor.Green] == 1 || areas[ArmyColor.Red] == 1)) ||
-      //  (areas[ArmyColor.Green] == 0 && (areas[ArmyColor.Blue] == 1 || areas[ArmyColor.Red] == 1)) ||
-      //  (areas[ArmyColor.Red] == 0 && (areas[ArmyColor.Green] == 1 || areas[ArmyColor.Blue] == 1)));
-      var game = new GameSimulation(_gameBoard, _players, _playersInfo, _currentPhase, _currentPlayer);
+      var game = new GameSimulation((GameBoard)_gameBoard.Clone(), _players, GetPlayersInfoClone(_playersInfo), _currentPhase, _currentPlayer);
       game.StartGame();
       for (int i = 0; i < _players.Count; ++i)
       {
         if (((IAI)_players[i]).IsWinner)
         {
           _status = (StatusOfGame)i;
-
-          // "deleting" objects
-          _gameBoard = null;
-          _players = null;
-          _playersInfo = null;
 
           return i;
         }
@@ -390,11 +382,6 @@ namespace Risk.AI.MCTS
         }
       }
       return true;
-    }
-
-    private bool IsEndOfDraft()
-    {
-      return _playersInfo[_players[_currentPlayer].PlayerColor].FreeUnits == 0;
     }
 
     private StatusOfGame IsWinner(GameBoard gameBoard)

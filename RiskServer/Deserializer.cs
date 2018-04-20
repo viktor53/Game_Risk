@@ -30,7 +30,7 @@ namespace Risk.Networking
     /// <returns>deserialized area</returns>
     public Area DeserializeArea(JToken data)
     {
-      Area a = new Area((int)GetData<long>(data["ID"]), (int)GetData<long>(data["RegionID"]));
+      Area a = new Area((byte)GetData<long>(data["ID"]), (byte)GetData<long>(data["RegionID"]));
       a.ArmyColor = (ArmyColor)GetData<long>(data["ArmyColor"]);
       a.SizeOfArmy = (int)GetData<long>(data["SizeOfArmy"]);
       return a;

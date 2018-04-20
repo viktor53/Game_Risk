@@ -126,6 +126,12 @@ namespace Risk.AI
               }
             }
           }
+
+          if (Helper.CanAttack(canBeAttacked[defender], _gamePlan.Areas, _gamePlan.Connections, _aiColor))
+          {
+            canAttack.Add(canBeAttacked[defender]);
+          }
+
           canBeAttacked.Remove(canBeAttacked[defender]);
         }
         else
@@ -224,7 +230,7 @@ namespace Risk.AI
       });
     }
 
-    public async Task UpdateGame(int areaID, ArmyColor armyColor, int sizeOfArmy)
+    public async Task UpdateGame(byte areaID, ArmyColor armyColor, int sizeOfArmy)
     {
       await Task.Run(() =>
       {

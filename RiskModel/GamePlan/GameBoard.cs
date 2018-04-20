@@ -39,6 +39,11 @@ namespace Risk.Model.GamePlan
     public int[] ArmyForRegion { get; private set; }
 
     /// <summary>
+    /// Number of combinations, that have already made.
+    /// </summary>
+    public int Combination => _combination;
+
+    /// <summary>
     /// Copy constructor
     /// </summary>
     /// <param name="gameBoard">original game board</param>
@@ -53,7 +58,7 @@ namespace Risk.Model.GamePlan
         Areas[i] = (Area)gameBoard.Areas[i].Clone();
       }
 
-      Dice = new Dice();
+      Dice = gameBoard.Dice;
       ArmyForRegion = gameBoard.ArmyForRegion;
 
       // copy combination information

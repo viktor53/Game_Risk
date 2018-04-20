@@ -338,11 +338,11 @@ namespace Risk.Networking.Server
     /// </summary>
     /// <param name="area">changed area</param>
     /// <returns></returns>
-    public async Task UpdateGame(int areaID, ArmyColor armyColor, int sizeOfArmy)
+    public async Task UpdateGame(byte areaID, ArmyColor armyColor, int sizeOfArmy)
     {
       await Task.Run(() =>
       {
-        Area updated = new Area(areaID, -1);
+        Area updated = new Area(areaID, 0);
         updated.ArmyColor = armyColor;
         updated.SizeOfArmy = sizeOfArmy;
         Message m = new Message(MessageType.UpdateGame, updated);

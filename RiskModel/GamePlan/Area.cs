@@ -11,12 +11,12 @@ namespace Risk.Model.GamePlan
     /// <summary>
     /// ID of area.
     /// </summary>
-    public int ID { get; private set; }
+    public byte ID { get; private set; }
 
     /// <summary>
     /// ID of region where area is.
     /// </summary>
-    public int RegionID { get; private set; }
+    public byte RegionID { get; private set; }
 
     /// <summary>
     /// Color of player who occupied the area.
@@ -45,7 +45,7 @@ namespace Risk.Model.GamePlan
     /// </summary>
     /// <param name="id">ID of area</param>
     /// <param name="regionID">ID of region</param>
-    public Area(int id, int regionID)
+    public Area(byte id, byte regionID)
     {
       ID = id;
       RegionID = regionID;

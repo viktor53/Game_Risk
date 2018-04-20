@@ -11,7 +11,7 @@ namespace Risk.Model.Factories
   /// </summary>
   public sealed class RandomGameBoardFactory : IGameBoardFactory
   {
-    private const int _numberOfAreas = 18;
+    private int _numberOfAreas = 42;
 
     /// <summary>
     /// Creates random game board.
@@ -38,6 +38,22 @@ namespace Risk.Model.Factories
       GenereteConnections(gb, numberOfAreasInRegion);
 
       return gb;
+    }
+
+    /// <summary>
+    /// Creates new game board.
+    /// </summary>
+    /// <param name="numberOfAreas">number of areas on game board</param>
+    /// <returns>new game board</returns>
+    public GameBoard CreateGameBoard(int numberOfAreas)
+    {
+      _numberOfAreas = numberOfAreas;
+
+      var gameBoard = CreateGameBoard();
+
+      _numberOfAreas = 42;
+
+      return gameBoard;
     }
 
     /// <summary>
@@ -126,7 +142,7 @@ namespace Risk.Model.Factories
       {
         for (int j = 0; j < numberOfAreasInRegion[i]; ++j)
         {
-          gb.Areas[offset + j] = new Area(offset + j, i);
+          gb.Areas[offset + j] = new Area((byte)(offset + j), (byte)i);
         }
         offset += numberOfAreasInRegion[i];
       }

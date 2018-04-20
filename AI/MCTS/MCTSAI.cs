@@ -107,7 +107,7 @@ namespace Risk.AI.MCTS
       });
     }
 
-    public async Task UpdateGame(int areaID, ArmyColor armyColor, int sizeOfArmy)
+    public async Task UpdateGame(byte areaID, ArmyColor armyColor, int sizeOfArmy)
     {
       await Task.Run(() =>
       {

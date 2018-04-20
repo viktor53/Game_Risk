@@ -37,6 +37,16 @@ namespace Risk.Model.GameCore
       }
 
       /// <summary>
+      /// Creates new random game board with the number of areas.
+      /// </summary>
+      /// <param name="numberOfAreas">number of areas</param>
+      /// <returns>new random game board</returns>
+      public static GameBoard GetGameBoard(int numberOfAreas)
+      {
+        return new RandomGameBoardFactory().CreateGameBoard(numberOfAreas);
+      }
+
+      /// <summary>
       /// Gets number of free units on the start of game depending on number of players.
       /// </summary>
       /// <param name="numberPlayers">number of players</param>
@@ -166,6 +176,17 @@ namespace Risk.Model.GameCore
       _logger?.Info($"New game with capacity {capacity}, classic {isClassic}");
     }
 
+    public Game(int numberOfAreas, int capacity, ILog logger)
+    {
+      _capacity = capacity < 3 ? 3 : capacity;
+
+      _players = new List<IPlayer>();
+      _gameBoard = GameSettings.GetGameBoard(numberOfAreas);
+
+      _logger = logger;
+      _logger?.Info($"New game with capacity {capacity}, classic {false}");
+    }
+
     /// <summary>
     /// Adds new player into the game.
     /// </summary>
@@ -231,6 +252,16 @@ namespace Risk.Model.GameCore
     public int GetCurrentPlayer()
     {
       return _players.IndexOf(_currentPlayer);
+    }
+
+    public int GetNumberOfCombination()
+    {
+      return _gameBoard.Combination;
+    }
+
+    public int[] GetBonusForRegions()
+    {
+      return (int[])_gameBoard.ArmyForRegion.Clone();
     }
 
     /// <summary>
