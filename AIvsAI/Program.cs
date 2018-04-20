@@ -67,7 +67,7 @@ namespace AIvsAI
         switch (choice)
         {
           case 1:
-            LearnFromStart();
+            LearnFromStartSettings();
             break;
 
           case 2:
@@ -85,16 +85,96 @@ namespace AIvsAI
       }
     }
 
+    private static void LearnFromStartSettings()
+    {
+      Console.Clear();
+      Console.WriteLine("**** Learn Settings ****");
+
+      bool isComplex = false;
+      int numberOfEpoch = 0;
+
+      Console.Write("NN with complex topology (1 - ano, 0 - ne): ");
+
+      int choice = -1;
+      if (int.TryParse(Console.ReadLine(), out choice))
+      {
+        if (choice == 1)
+        {
+          isComplex = true;
+        }
+        else
+        {
+          isComplex = false;
+        }
+      }
+      else
+      {
+        Console.WriteLine("Not a number!");
+        return;
+      }
+
+      Console.Write("Number of epoch: ");
+
+      choice = 0;
+      if (int.TryParse(Console.ReadLine(), out choice))
+      {
+        numberOfEpoch = choice;
+      }
+      else
+      {
+        Console.WriteLine("Not a number!");
+        return;
+      }
+
+      LearnFromStart(isComplex, numberOfEpoch);
+    }
+
     private static void LearnSettings()
     {
       Console.Clear();
       Console.WriteLine("**** Learn Settings ****");
-      Console.Write("Number of NN generation to load: ");
 
+      bool isComplex = false;
+      int numberOfEpoch = 0;
       int gen = 0;
       int nextGen = 0;
 
-      int choice = 0;
+      Console.Write("NN with complex topology (1 - ano, 0 - ne): ");
+
+      int choice = -1;
+      if (int.TryParse(Console.ReadLine(), out choice))
+      {
+        if (choice == 1)
+        {
+          isComplex = true;
+        }
+        else
+        {
+          isComplex = false;
+        }
+      }
+      else
+      {
+        Console.WriteLine("Not a number!");
+        return;
+      }
+
+      Console.Write("Number of epoch: ");
+
+      choice = 0;
+      if (int.TryParse(Console.ReadLine(), out choice))
+      {
+        numberOfEpoch = choice;
+      }
+      else
+      {
+        Console.WriteLine("Not a number!");
+        return;
+      }
+
+      Console.Write("Number of NN generation to load: ");
+
+      choice = 0;
       if (int.TryParse(Console.ReadLine(), out choice))
       {
         gen = choice;
@@ -117,7 +197,7 @@ namespace AIvsAI
         return;
       }
 
-      Learn(gen, nextGen);
+      Learn(isComplex, numberOfEpoch, gen, nextGen);
     }
 
     private static void BattleMenu()
@@ -170,9 +250,39 @@ namespace AIvsAI
 
     private static void Battle(IList<IAI> agents, string firstName, string secondName, string thirdName)
     {
+      BattleOfAI battle = null;
+
+      Console.Write("Classic game (1 - ano, 0 - ne): ");
+
+      int choice = -1;
+      if (int.TryParse(Console.ReadLine(), out choice))
+      {
+        if (choice == 1)
+        {
+          battle = new BattleOfAI(true, 200);
+        }
+        else
+        {
+          Console.Write("Number of areas (9 - 42): ");
+
+          if (int.TryParse(Console.ReadLine(), out choice))
+          {
+            battle = new BattleOfAI(choice, 200);
+          }
+          else
+          {
+            throw new ArgumentException("Not a number!");
+          }
+        }
+      }
+      else
+      {
+        throw new ArgumentException("Not a number!");
+      }
+
       Console.Clear();
 
-      BattleOfAI battle = new BattleOfAI(false, 200);
+      battle = new BattleOfAI(21, 200);
 
       var result = battle.PlaySimulationDiagnostic(agents, Console.Out);
 
@@ -248,58 +358,132 @@ namespace AIvsAI
 
     private static IAI LoadNN(ArmyColor agentColor)
     {
-      Console.Write("Number of NN generation to load: ");
+      Console.Write("NN with complex topology (1 - ano, 0 - ne): ");
 
+      bool isComplex = false;
       int generation = 0;
 
-      int choice = 0;
+      int choice = -1;
       if (int.TryParse(Console.ReadLine(), out choice))
       {
-        generation = choice;
-
-        if (generation == -1)
+        if (choice == 1)
         {
-          return new NeuroAI(agentColor, NeuralNetworkFactory.CreateSetUpNetwork(), NeuralNetworkFactory.CreateDraftNetwork(),
-        NeuralNetworkFactory.CreateExchangeNetwork(), NeuralNetworkFactory.CreateAttackNetwork(), NeuralNetworkFactory.CreateFortifyNetwork());
+          isComplex = true;
         }
         else
         {
-          ActivationNetwork setUpNetwork = NeuralNetworkFactory.LoadNetwork($"setUpNetwork{generation}.ai");
-          ActivationNetwork draftNetwork = NeuralNetworkFactory.LoadNetwork($"draftNetwork{generation}.ai");
-          ActivationNetwork exchangeNetwork = NeuralNetworkFactory.LoadNetwork($"exchangeCardNetwork{generation}.ai");
-          ActivationNetwork attackNetwork = NeuralNetworkFactory.LoadNetwork($"attackNetwork{generation}.ai");
-          ActivationNetwork fortifyNetwork = NeuralNetworkFactory.LoadNetwork($"fortifyNetwork{generation}.ai");
-
-          return new NeuroAI(ArmyColor.Green, setUpNetwork, draftNetwork, exchangeNetwork, attackNetwork, fortifyNetwork);
+          isComplex = false;
         }
       }
       else
       {
         throw new ArgumentException("Not a number!");
       }
+
+      Console.Write("Number of NN generation to load: ");
+
+      choice = 0;
+      if (int.TryParse(Console.ReadLine(), out choice))
+      {
+        generation = choice;
+      }
+      else
+      {
+        throw new ArgumentException("Not a number!");
+      }
+
+      ActivationNetwork setUpNetwork;
+      ActivationNetwork draftNetwork;
+      ActivationNetwork exchangeNetwork;
+      ActivationNetwork attackNetwork;
+      ActivationNetwork fortifyNetwork;
+
+      if (isComplex)
+      {
+        if (generation == -1)
+        {
+          setUpNetwork = NeuralNetworkFactory.CreateSetUpNetworkComplexTopology();
+          draftNetwork = NeuralNetworkFactory.CreateDraftNetworkComplexTopology();
+          exchangeNetwork = NeuralNetworkFactory.CreateExchangeNetworkComplexTopology();
+          attackNetwork = NeuralNetworkFactory.CreateAttackNetworkComplexTopology();
+          fortifyNetwork = NeuralNetworkFactory.CreateFortifyNetworkComplexTopology();
+        }
+        else
+        {
+          setUpNetwork = NeuralNetworkFactory.LoadNetwork($"setUpNetworkComplex{generation}.ai");
+          draftNetwork = NeuralNetworkFactory.LoadNetwork($"draftNetworkComplex{generation}.ai");
+          exchangeNetwork = NeuralNetworkFactory.LoadNetwork($"exchangeCardNetworkComplex{generation}.ai");
+          attackNetwork = NeuralNetworkFactory.LoadNetwork($"attackNetworkComplex{generation}.ai");
+          fortifyNetwork = NeuralNetworkFactory.LoadNetwork($"fortifyNetworkComplex{generation}.ai");
+        }
+      }
+      else
+      {
+        if (generation == -1)
+        {
+          setUpNetwork = NeuralNetworkFactory.CreateSetUpNetwork();
+          draftNetwork = NeuralNetworkFactory.CreateDraftNetwork();
+          exchangeNetwork = NeuralNetworkFactory.CreateExchangeNetwork();
+          attackNetwork = NeuralNetworkFactory.CreateAttackNetwork();
+          fortifyNetwork = NeuralNetworkFactory.CreateFortifyNetwork();
+        }
+        else
+        {
+          setUpNetwork = NeuralNetworkFactory.LoadNetwork($"setUpNetwork{generation}.ai");
+          draftNetwork = NeuralNetworkFactory.LoadNetwork($"draftNetwork{generation}.ai");
+          exchangeNetwork = NeuralNetworkFactory.LoadNetwork($"exchangeCardNetwork{generation}.ai");
+          attackNetwork = NeuralNetworkFactory.LoadNetwork($"attackNetwork{generation}.ai");
+          fortifyNetwork = NeuralNetworkFactory.LoadNetwork($"fortifyNetwork{generation}.ai");
+        }
+      }
+
+      return new NeuroAI(agentColor, setUpNetwork, draftNetwork, exchangeNetwork, attackNetwork, fortifyNetwork);
     }
 
-    private static void LearnFromStart()
+    private static void LearnFromStart(bool isComplex, int numberOfEpoch)
     {
-      IAI enemy1 = new NeuroAI(ArmyColor.Red, NeuralNetworkFactory.CreateSetUpNetwork(), NeuralNetworkFactory.CreateDraftNetwork(),
-        NeuralNetworkFactory.CreateExchangeNetwork(), NeuralNetworkFactory.CreateAttackNetwork(), NeuralNetworkFactory.CreateFortifyNetwork());
-      IAI enemy2 = new NeuroAI(ArmyColor.Blue, NeuralNetworkFactory.CreateSetUpNetwork(), NeuralNetworkFactory.CreateDraftNetwork(),
-        NeuralNetworkFactory.CreateExchangeNetwork(), NeuralNetworkFactory.CreateAttackNetwork(), NeuralNetworkFactory.CreateFortifyNetwork());
+      ActivationNetwork setUpNetwork;
+      ActivationNetwork draftNetwork;
+      ActivationNetwork exchangeNetwork;
+      ActivationNetwork attackNetwork;
+      ActivationNetwork fortifyNetwork;
 
-      NNFitnessFuction fitnessFunc = new NNFitnessFuction(enemy1, enemy2, false, 200);
+      int numberOfWeights = 0;
+
+      if (isComplex)
+      {
+        setUpNetwork = NeuralNetworkFactory.CreateSetUpNetworkComplexTopology();
+        draftNetwork = NeuralNetworkFactory.CreateDraftNetworkComplexTopology();
+        exchangeNetwork = NeuralNetworkFactory.CreateExchangeNetworkComplexTopology();
+        attackNetwork = NeuralNetworkFactory.CreateAttackNetworkComplexTopology();
+        fortifyNetwork = NeuralNetworkFactory.CreateFortifyNetworkComplexTopology();
+
+        numberOfWeights = 1944;
+      }
+      else
+      {
+        setUpNetwork = NeuralNetworkFactory.CreateSetUpNetwork();
+        draftNetwork = NeuralNetworkFactory.CreateDraftNetwork();
+        exchangeNetwork = NeuralNetworkFactory.CreateExchangeNetwork();
+        attackNetwork = NeuralNetworkFactory.CreateAttackNetwork();
+        fortifyNetwork = NeuralNetworkFactory.CreateFortifyNetwork();
+
+        numberOfWeights = 1146;
+      }
+
+      IAI enemy1 = new NeuroAI(ArmyColor.Red, setUpNetwork, draftNetwork,
+        exchangeNetwork, attackNetwork, fortifyNetwork);
+      IAI enemy2 = new NeuroAI(ArmyColor.Blue, setUpNetwork, draftNetwork,
+        exchangeNetwork, attackNetwork, fortifyNetwork);
+
+      NNFitnessFuction fitnessFunc = new NNFitnessFuction(enemy1, enemy2, isComplex, 21, 200);
 
       Console.Clear();
       Console.WriteLine("**** Learn starts ****");
 
-      double[] best = Learning.Learn(100, 60, fitnessFunc, 0.5, 0.01, Console.Out);
+      double[] best = Learning.Learn(100, numberOfEpoch, fitnessFunc, 0.5, 0.01, numberOfWeights, Console.Out);
 
       Console.WriteLine("**** Learn ends ****");
-
-      ActivationNetwork setUpNetwork = NeuralNetworkFactory.CreateSetUpNetwork();
-      ActivationNetwork draftNetwork = NeuralNetworkFactory.CreateDraftNetwork();
-      ActivationNetwork exchangeNetwork = NeuralNetworkFactory.CreateExchangeNetwork();
-      ActivationNetwork attackNetwork = NeuralNetworkFactory.CreateAttackNetwork();
-      ActivationNetwork fortifyNetwork = NeuralNetworkFactory.CreateFortifyNetwork();
 
       int index = 0;
       index = Learning.SetWeights(setUpNetwork, index, best);
@@ -309,29 +493,63 @@ namespace AIvsAI
       Learning.SetWeights(fortifyNetwork, index, best);
 
       string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-      setUpNetwork.Save(baseDir + "\\AI\\setUpNetwork0.ai");
-      draftNetwork.Save(baseDir + "\\AI\\draftnetwork0.ai");
-      exchangeNetwork.Save(baseDir + "\\AI\\exchangeCardNetwork0.ai");
-      attackNetwork.Save(baseDir + "\\AI\\attackNetwork0.ai");
-      fortifyNetwork.Save(baseDir + "\\AI\\fortifyNetwork0.ai");
+      if (isComplex)
+      {
+        setUpNetwork.Save(baseDir + "\\AI\\setUpNetworkComplex0.ai");
+        draftNetwork.Save(baseDir + "\\AI\\draftnetworkComplex0.ai");
+        exchangeNetwork.Save(baseDir + "\\AI\\exchangeCardNetworkComplex0.ai");
+        attackNetwork.Save(baseDir + "\\AI\\attackNetworkComplex0.ai");
+        fortifyNetwork.Save(baseDir + "\\AI\\fortifyNetworkComplex0.ai");
+      }
+      else
+      {
+        setUpNetwork.Save(baseDir + "\\AI\\setUpNetwork0.ai");
+        draftNetwork.Save(baseDir + "\\AI\\draftnetwork0.ai");
+        exchangeNetwork.Save(baseDir + "\\AI\\exchangeCardNetwork0.ai");
+        attackNetwork.Save(baseDir + "\\AI\\attackNetwork0.ai");
+        fortifyNetwork.Save(baseDir + "\\AI\\fortifyNetwork0.ai");
+      }
     }
 
-    private static void Learn(int generation, int nextGeneration)
+    private static void Learn(bool isComplex, int numberOfEpoch, int generation, int nextGeneration)
     {
-      ActivationNetwork setUpNetwork = NeuralNetworkFactory.LoadNetwork($"setUpNetwork{generation}.ai");
-      ActivationNetwork draftNetwork = NeuralNetworkFactory.LoadNetwork($"draftNetwork{generation}.ai");
-      ActivationNetwork exchangeNetwork = NeuralNetworkFactory.LoadNetwork($"exchangeCardNetwork{generation}.ai");
-      ActivationNetwork attackNetwork = NeuralNetworkFactory.LoadNetwork($"attackNetwork{generation}.ai");
-      ActivationNetwork fortifyNetwork = NeuralNetworkFactory.LoadNetwork($"fortifyNetwork{generation}.ai");
+      ActivationNetwork setUpNetwork;
+      ActivationNetwork draftNetwork;
+      ActivationNetwork exchangeNetwork;
+      ActivationNetwork attackNetwork;
+      ActivationNetwork fortifyNetwork;
+
+      int numberOfWeights = 0;
+
+      if (isComplex)
+      {
+        setUpNetwork = NeuralNetworkFactory.LoadNetwork($"setUpNetworkComplex{generation}.ai");
+        draftNetwork = NeuralNetworkFactory.LoadNetwork($"draftNetworkComplex{generation}.ai");
+        exchangeNetwork = NeuralNetworkFactory.LoadNetwork($"exchangeCardNetworkComplex{generation}.ai");
+        attackNetwork = NeuralNetworkFactory.LoadNetwork($"attackNetworkComplex{generation}.ai");
+        fortifyNetwork = NeuralNetworkFactory.LoadNetwork($"fortifyNetworkComplex{generation}.ai");
+
+        numberOfWeights = 1944;
+      }
+      else
+      {
+        setUpNetwork = NeuralNetworkFactory.LoadNetwork($"setUpNetwork{generation}.ai");
+        draftNetwork = NeuralNetworkFactory.LoadNetwork($"draftNetwork{generation}.ai");
+        exchangeNetwork = NeuralNetworkFactory.LoadNetwork($"exchangeCardNetwork{generation}.ai");
+        attackNetwork = NeuralNetworkFactory.LoadNetwork($"attackNetwork{generation}.ai");
+        fortifyNetwork = NeuralNetworkFactory.LoadNetwork($"fortifyNetwork{generation}.ai");
+
+        numberOfWeights = 1146;
+      }
 
       IAI enemy1 = new NeuroAI(ArmyColor.Red, setUpNetwork, draftNetwork,
         exchangeNetwork, attackNetwork, fortifyNetwork);
       IAI enemy2 = new NeuroAI(ArmyColor.Blue, setUpNetwork, draftNetwork,
         exchangeNetwork, attackNetwork, fortifyNetwork);
 
-      NNFitnessFuction fitnessFunc = new NNFitnessFuction(enemy1, enemy2, false, 200);
+      NNFitnessFuction fitnessFunc = new NNFitnessFuction(enemy1, enemy2, isComplex, 21, 200);
 
-      double[] weights = new double[1146];
+      double[] weights = new double[numberOfWeights];
 
       int index = 0;
       index = Learning.GetWeights(setUpNetwork, index, weights);
@@ -343,15 +561,9 @@ namespace AIvsAI
       Console.Clear();
       Console.WriteLine("**** Learn starts ****");
 
-      double[] best = Learning.Learn(100, 60, fitnessFunc, 0.5, 0.01, weights, Console.Out);
+      double[] best = Learning.Learn(100, numberOfEpoch, fitnessFunc, 0.5, 0.01, weights, Console.Out);
 
       Console.WriteLine("**** Learn ends ****");
-
-      setUpNetwork = NeuralNetworkFactory.CreateSetUpNetwork();
-      draftNetwork = NeuralNetworkFactory.CreateDraftNetwork();
-      exchangeNetwork = NeuralNetworkFactory.CreateExchangeNetwork();
-      attackNetwork = NeuralNetworkFactory.CreateAttackNetwork();
-      fortifyNetwork = NeuralNetworkFactory.CreateFortifyNetwork();
 
       index = 0;
       index = Learning.SetWeights(setUpNetwork, index, best);
@@ -361,11 +573,22 @@ namespace AIvsAI
       Learning.SetWeights(fortifyNetwork, index, best);
 
       string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-      setUpNetwork.Save(baseDir + $"\\AI\\setUpNetwork{nextGeneration}.ai");
-      draftNetwork.Save(baseDir + $"\\AI\\draftnetwork{nextGeneration}.ai");
-      exchangeNetwork.Save(baseDir + $"\\AI\\exchangeCardNetwork{nextGeneration}.ai");
-      attackNetwork.Save(baseDir + $"\\AI\\attackNetwork{nextGeneration}.ai");
-      fortifyNetwork.Save(baseDir + $"\\AI\\fortifyNetwork{nextGeneration}.ai");
+      if (isComplex)
+      {
+        setUpNetwork.Save(baseDir + $"\\AI\\setUpNetworkComplex{nextGeneration}.ai");
+        draftNetwork.Save(baseDir + $"\\AI\\draftnetworkComplex{nextGeneration}.ai");
+        exchangeNetwork.Save(baseDir + $"\\AI\\exchangeCardNetworkComplex{nextGeneration}.ai");
+        attackNetwork.Save(baseDir + $"\\AI\\attackNetworkComplex{nextGeneration}.ai");
+        fortifyNetwork.Save(baseDir + $"\\AI\\fortifyNetworkComplex{nextGeneration}.ai");
+      }
+      else
+      {
+        setUpNetwork.Save(baseDir + $"\\AI\\setUpNetwork{nextGeneration}.ai");
+        draftNetwork.Save(baseDir + $"\\AI\\draftnetwork{nextGeneration}.ai");
+        exchangeNetwork.Save(baseDir + $"\\AI\\exchangeCardNetwork{nextGeneration}.ai");
+        attackNetwork.Save(baseDir + $"\\AI\\attackNetwork{nextGeneration}.ai");
+        fortifyNetwork.Save(baseDir + $"\\AI\\fortifyNetwork{nextGeneration}.ai");
+      }
     }
   }
 }

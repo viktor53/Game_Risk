@@ -57,10 +57,10 @@ namespace Risk.AI.NeuralNetwork.Evolution
     }
 
     public static double[] Learn(int populationSize, int numberOfEpoch, IFitnessFunction fitnessFunc,
-      double crossoverRate, double mutationRate, TextWriter output)
+      double crossoverRate, double mutationRate, int numberOfWeights, TextWriter output)
     {
       ZigguratUniformOneGenerator ran = new ZigguratUniformOneGenerator();
-      DoubleArrayChromosome chromosome = new DoubleArrayChromosome(ran, ran, ran, 1146);
+      DoubleArrayChromosome chromosome = new DoubleArrayChromosome(ran, ran, ran, numberOfWeights);
 
       return Learn(populationSize, numberOfEpoch, fitnessFunc, crossoverRate, mutationRate, chromosome, output);
     }

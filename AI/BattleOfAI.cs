@@ -17,6 +17,8 @@ namespace Risk.AI
 
     private int _numberOfGames;
 
+    private int _numberOfAreas;
+
     private Stopwatch _sw;
 
     private double _time = 0;
@@ -25,6 +27,15 @@ namespace Risk.AI
     {
       _isClassic = isClassic;
       _numberOfGames = numberOfGames;
+      _numberOfAreas = 42;
+      _sw = new Stopwatch();
+    }
+
+    public BattleOfAI(int numberOfAreas, int numberOfGames)
+    {
+      _isClassic = false;
+      _numberOfGames = numberOfGames;
+      _numberOfAreas = numberOfAreas;
       _sw = new Stopwatch();
     }
 
@@ -41,7 +52,16 @@ namespace Risk.AI
 
       for (int i = 0; i < _numberOfGames; ++i)
       {
-        GameSimulation game = new GameSimulation(_isClassic);
+        GameSimulation game;
+        if (_isClassic)
+        {
+          game = new GameSimulation(_isClassic);
+        }
+        else
+        {
+          game = new GameSimulation(_numberOfAreas);
+        }
+
         foreach (var ai in ais)
         {
           game.AddPlayer(ai);
@@ -84,7 +104,15 @@ namespace Risk.AI
 
       for (int i = 0; i < _numberOfGames; ++i)
       {
-        GameSimulation game = new GameSimulation(_isClassic);
+        GameSimulation game;
+        if (_isClassic)
+        {
+          game = new GameSimulation(_isClassic);
+        }
+        else
+        {
+          game = new GameSimulation(_numberOfAreas);
+        }
 
         foreach (var ai in ais)
         {
@@ -125,7 +153,15 @@ namespace Risk.AI
 
       for (int i = 0; i < _numberOfGames; ++i)
       {
-        Game game = new Game(false, 3, null);
+        Game game;
+        if (_isClassic)
+        {
+          game = new Game(_isClassic, 3, null);
+        }
+        else
+        {
+          game = new Game(_numberOfAreas, 3, null);
+        }
 
         foreach (var ai in ais)
         {
@@ -159,7 +195,15 @@ namespace Risk.AI
 
       for (int i = 0; i < _numberOfGames; ++i)
       {
-        Game game = new Game(false, 3, null);
+        Game game;
+        if (_isClassic)
+        {
+          game = new Game(_isClassic, 3, null);
+        }
+        else
+        {
+          game = new Game(_numberOfAreas, 3, null);
+        }
 
         foreach (var ai in ais)
         {

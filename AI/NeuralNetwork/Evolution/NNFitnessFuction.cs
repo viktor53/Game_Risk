@@ -27,20 +27,40 @@ namespace Risk.AI.NeuralNetwork.Evolution
 
     private List<IAI> _players;
 
-    public NNFitnessFuction(IAI enemy1, IAI enemy2, bool isClassic, int numberOfGames)
+    private NNFitnessFuction(IAI enemy1, IAI enemy2, bool isComplexTopology, int numberOfGames)
     {
       _players = new List<IAI>();
       _players.Add(enemy1);
       _players.Add(enemy2);
 
-      _setUpNetwork = NeuralNetworkFactory.CreateSetUpNetwork();
-      _draftNetwork = NeuralNetworkFactory.CreateDraftNetwork();
-      _exchangeNetwork = NeuralNetworkFactory.CreateExchangeNetwork();
-      _attackNetwork = NeuralNetworkFactory.CreateAttackNetwork();
-      _fortifyNetwork = NeuralNetworkFactory.CreateFortifyNetwork();
+      if (isComplexTopology)
+      {
+        _setUpNetwork = NeuralNetworkFactory.CreateSetUpNetworkComplexTopology();
+        _draftNetwork = NeuralNetworkFactory.CreateDraftNetworkComplexTopology();
+        _exchangeNetwork = NeuralNetworkFactory.CreateExchangeNetworkComplexTopology();
+        _attackNetwork = NeuralNetworkFactory.CreateAttackNetworkComplexTopology();
+        _fortifyNetwork = NeuralNetworkFactory.CreateFortifyNetworkComplexTopology();
+      }
+      else
+      {
+        _setUpNetwork = NeuralNetworkFactory.CreateSetUpNetwork();
+        _draftNetwork = NeuralNetworkFactory.CreateDraftNetwork();
+        _exchangeNetwork = NeuralNetworkFactory.CreateExchangeNetwork();
+        _attackNetwork = NeuralNetworkFactory.CreateAttackNetwork();
+        _fortifyNetwork = NeuralNetworkFactory.CreateFortifyNetwork();
+      }
 
-      _battle = new BattleOfAI(isClassic, numberOfGames);
       _numberOfGames = numberOfGames;
+    }
+
+    public NNFitnessFuction(IAI enemy1, IAI enemy2, bool isComplexTopology, bool isClassic, int numberOfGames) : this(enemy1, enemy2, isComplexTopology, numberOfGames)
+    {
+      _battle = new BattleOfAI(isClassic, numberOfGames);
+    }
+
+    public NNFitnessFuction(IAI enemy1, IAI enemy2, bool isComplexTopology, int numberOfAreas, int numberOfGames) : this(enemy1, enemy2, isComplexTopology, numberOfGames)
+    {
+      _battle = new BattleOfAI(numberOfAreas, numberOfGames);
     }
 
     public double Evaluate(IChromosome chromosome)
