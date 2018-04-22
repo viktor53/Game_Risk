@@ -86,14 +86,12 @@ namespace Risk.AI.NeuralNetwork.Evolution
 
       for (int i = 0; i < numberOfEpoch; ++i)
       {
-        //if ((i + 1) % 5 == 0)
-        //{
-        //  output.WriteLine($"Generation: {i + 1}, Avarage Fitness: {population.FitnessAvg}");
-        //}
-
         population.RunEpoch();
 
-        output.WriteLine($"Generation: {i + 1}, Average Fitness: {population.FitnessAvg}");
+        output.WriteLine();
+        output.WriteLine();
+
+        Console.WriteLine($"Generation: {i + 1}, Average Fitness: {population.FitnessAvg}");
       }
 
       return ((DoubleArrayChromosome)population.BestChromosome).Value;

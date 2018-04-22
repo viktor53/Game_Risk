@@ -9,6 +9,7 @@ using Risk.AI.MCTS;
 using Risk.AI.NeuralNetwork;
 using Risk.AI.NeuralNetwork.Evolution;
 using Accord.Neuro;
+using System.IO;
 
 namespace AIvsAI
 {
@@ -126,7 +127,9 @@ namespace AIvsAI
         return;
       }
 
-      LearnFromStart(isComplex, numberOfEpoch);
+      Console.Write("name of file with evolution logs: ");
+
+      LearnFromStart(isComplex, numberOfEpoch, Console.ReadLine());
     }
 
     private static void LearnSettings()
@@ -197,7 +200,9 @@ namespace AIvsAI
         return;
       }
 
-      Learn(isComplex, numberOfEpoch, gen, nextGen);
+      Console.Write("name of file with evolution logs: ");
+
+      Learn(isComplex, numberOfEpoch, gen, nextGen, Console.ReadLine());
     }
 
     private static void BattleMenu()
@@ -440,7 +445,7 @@ namespace AIvsAI
       return new NeuroAI(agentColor, setUpNetwork, draftNetwork, exchangeNetwork, attackNetwork, fortifyNetwork);
     }
 
-    private static void LearnFromStart(bool isComplex, int numberOfEpoch)
+    private static void LearnFromStart(bool isComplex, int numberOfEpoch, string nameOfEvolutionLog)
     {
       ActivationNetwork setUpNetwork;
       ActivationNetwork draftNetwork;
@@ -476,42 +481,45 @@ namespace AIvsAI
       IAI enemy2 = new NeuroAI(ArmyColor.Blue, setUpNetwork, draftNetwork,
         exchangeNetwork, attackNetwork, fortifyNetwork);
 
-      NNFitnessFuction fitnessFunc = new NNFitnessFuction(enemy1, enemy2, isComplex, 21, 200);
-
-      Console.Clear();
-      Console.WriteLine("**** Learn starts ****");
-
-      double[] best = Learning.Learn(100, numberOfEpoch, fitnessFunc, 0.5, 0.01, numberOfWeights, Console.Out);
-
-      Console.WriteLine("**** Learn ends ****");
-
-      int index = 0;
-      index = Learning.SetWeights(setUpNetwork, index, best);
-      index = Learning.SetWeights(draftNetwork, index, best);
-      index = Learning.SetWeights(exchangeNetwork, index, best);
-      index = Learning.SetWeights(attackNetwork, index, best);
-      Learning.SetWeights(fortifyNetwork, index, best);
-
-      string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-      if (isComplex)
+      using (TextWriter output = new StreamWriter(AppDomain.CurrentDomain.BaseDirectory + "\\AI\\" + nameOfEvolutionLog))
       {
-        setUpNetwork.Save(baseDir + "\\AI\\setUpNetworkComplex0.ai");
-        draftNetwork.Save(baseDir + "\\AI\\draftnetworkComplex0.ai");
-        exchangeNetwork.Save(baseDir + "\\AI\\exchangeCardNetworkComplex0.ai");
-        attackNetwork.Save(baseDir + "\\AI\\attackNetworkComplex0.ai");
-        fortifyNetwork.Save(baseDir + "\\AI\\fortifyNetworkComplex0.ai");
-      }
-      else
-      {
-        setUpNetwork.Save(baseDir + "\\AI\\setUpNetwork0.ai");
-        draftNetwork.Save(baseDir + "\\AI\\draftnetwork0.ai");
-        exchangeNetwork.Save(baseDir + "\\AI\\exchangeCardNetwork0.ai");
-        attackNetwork.Save(baseDir + "\\AI\\attackNetwork0.ai");
-        fortifyNetwork.Save(baseDir + "\\AI\\fortifyNetwork0.ai");
+        NNFitnessFuction fitnessFunc = new NNFitnessFuction(enemy1, enemy2, isComplex, 21, 200, output);
+
+        Console.Clear();
+        Console.WriteLine("**** Learn starts ****");
+
+        double[] best = Learning.Learn(100, numberOfEpoch, fitnessFunc, 0.5, 0.01, numberOfWeights, output);
+
+        Console.WriteLine("**** Learn ends ****");
+
+        int index = 0;
+        index = Learning.SetWeights(setUpNetwork, index, best);
+        index = Learning.SetWeights(draftNetwork, index, best);
+        index = Learning.SetWeights(exchangeNetwork, index, best);
+        index = Learning.SetWeights(attackNetwork, index, best);
+        Learning.SetWeights(fortifyNetwork, index, best);
+
+        string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+        if (isComplex)
+        {
+          setUpNetwork.Save(baseDir + "\\AI\\setUpNetworkComplex0.ai");
+          draftNetwork.Save(baseDir + "\\AI\\draftnetworkComplex0.ai");
+          exchangeNetwork.Save(baseDir + "\\AI\\exchangeCardNetworkComplex0.ai");
+          attackNetwork.Save(baseDir + "\\AI\\attackNetworkComplex0.ai");
+          fortifyNetwork.Save(baseDir + "\\AI\\fortifyNetworkComplex0.ai");
+        }
+        else
+        {
+          setUpNetwork.Save(baseDir + "\\AI\\setUpNetwork0.ai");
+          draftNetwork.Save(baseDir + "\\AI\\draftnetwork0.ai");
+          exchangeNetwork.Save(baseDir + "\\AI\\exchangeCardNetwork0.ai");
+          attackNetwork.Save(baseDir + "\\AI\\attackNetwork0.ai");
+          fortifyNetwork.Save(baseDir + "\\AI\\fortifyNetwork0.ai");
+        }
       }
     }
 
-    private static void Learn(bool isComplex, int numberOfEpoch, int generation, int nextGeneration)
+    private static void Learn(bool isComplex, int numberOfEpoch, int generation, int nextGeneration, string nameOfEvolutionLog)
     {
       ActivationNetwork setUpNetwork;
       ActivationNetwork draftNetwork;
@@ -547,8 +555,6 @@ namespace AIvsAI
       IAI enemy2 = new NeuroAI(ArmyColor.Blue, setUpNetwork, draftNetwork,
         exchangeNetwork, attackNetwork, fortifyNetwork);
 
-      NNFitnessFuction fitnessFunc = new NNFitnessFuction(enemy1, enemy2, isComplex, 21, 200);
-
       double[] weights = new double[numberOfWeights];
 
       int index = 0;
@@ -558,36 +564,41 @@ namespace AIvsAI
       index = Learning.GetWeights(attackNetwork, index, weights);
       Learning.GetWeights(fortifyNetwork, index, weights);
 
-      Console.Clear();
-      Console.WriteLine("**** Learn starts ****");
-
-      double[] best = Learning.Learn(100, numberOfEpoch, fitnessFunc, 0.5, 0.01, weights, Console.Out);
-
-      Console.WriteLine("**** Learn ends ****");
-
-      index = 0;
-      index = Learning.SetWeights(setUpNetwork, index, best);
-      index = Learning.SetWeights(draftNetwork, index, best);
-      index = Learning.SetWeights(exchangeNetwork, index, best);
-      index = Learning.SetWeights(attackNetwork, index, best);
-      Learning.SetWeights(fortifyNetwork, index, best);
-
-      string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-      if (isComplex)
+      using (TextWriter output = new StreamWriter(AppDomain.CurrentDomain.BaseDirectory + "\\AI\\" + nameOfEvolutionLog))
       {
-        setUpNetwork.Save(baseDir + $"\\AI\\setUpNetworkComplex{nextGeneration}.ai");
-        draftNetwork.Save(baseDir + $"\\AI\\draftnetworkComplex{nextGeneration}.ai");
-        exchangeNetwork.Save(baseDir + $"\\AI\\exchangeCardNetworkComplex{nextGeneration}.ai");
-        attackNetwork.Save(baseDir + $"\\AI\\attackNetworkComplex{nextGeneration}.ai");
-        fortifyNetwork.Save(baseDir + $"\\AI\\fortifyNetworkComplex{nextGeneration}.ai");
-      }
-      else
-      {
-        setUpNetwork.Save(baseDir + $"\\AI\\setUpNetwork{nextGeneration}.ai");
-        draftNetwork.Save(baseDir + $"\\AI\\draftnetwork{nextGeneration}.ai");
-        exchangeNetwork.Save(baseDir + $"\\AI\\exchangeCardNetwork{nextGeneration}.ai");
-        attackNetwork.Save(baseDir + $"\\AI\\attackNetwork{nextGeneration}.ai");
-        fortifyNetwork.Save(baseDir + $"\\AI\\fortifyNetwork{nextGeneration}.ai");
+        NNFitnessFuction fitnessFunc = new NNFitnessFuction(enemy1, enemy2, isComplex, 21, 200, output);
+
+        Console.Clear();
+        Console.WriteLine("**** Learn starts ****");
+
+        double[] best = Learning.Learn(100, numberOfEpoch, fitnessFunc, 0.5, 0.01, weights, output);
+
+        Console.WriteLine("**** Learn ends ****");
+
+        index = 0;
+        index = Learning.SetWeights(setUpNetwork, index, best);
+        index = Learning.SetWeights(draftNetwork, index, best);
+        index = Learning.SetWeights(exchangeNetwork, index, best);
+        index = Learning.SetWeights(attackNetwork, index, best);
+        Learning.SetWeights(fortifyNetwork, index, best);
+
+        string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+        if (isComplex)
+        {
+          setUpNetwork.Save(baseDir + $"\\AI\\setUpNetworkComplex{nextGeneration}.ai");
+          draftNetwork.Save(baseDir + $"\\AI\\draftnetworkComplex{nextGeneration}.ai");
+          exchangeNetwork.Save(baseDir + $"\\AI\\exchangeCardNetworkComplex{nextGeneration}.ai");
+          attackNetwork.Save(baseDir + $"\\AI\\attackNetworkComplex{nextGeneration}.ai");
+          fortifyNetwork.Save(baseDir + $"\\AI\\fortifyNetworkComplex{nextGeneration}.ai");
+        }
+        else
+        {
+          setUpNetwork.Save(baseDir + $"\\AI\\setUpNetwork{nextGeneration}.ai");
+          draftNetwork.Save(baseDir + $"\\AI\\draftnetwork{nextGeneration}.ai");
+          exchangeNetwork.Save(baseDir + $"\\AI\\exchangeCardNetwork{nextGeneration}.ai");
+          attackNetwork.Save(baseDir + $"\\AI\\attackNetwork{nextGeneration}.ai");
+          fortifyNetwork.Save(baseDir + $"\\AI\\fortifyNetwork{nextGeneration}.ai");
+        }
       }
     }
   }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Accord.Genetic;
 using Accord.Neuro;
 using Risk.Model.Enums;
+using System.IO;
 
 namespace Risk.AI.NeuralNetwork.Evolution
 {
@@ -27,11 +28,14 @@ namespace Risk.AI.NeuralNetwork.Evolution
 
     private List<IAI> _players;
 
-    private NNFitnessFuction(IAI enemy1, IAI enemy2, bool isComplexTopology, int numberOfGames)
+    private TextWriter _output;
+
+    private NNFitnessFuction(IAI enemy1, IAI enemy2, bool isComplexTopology, int numberOfGames, TextWriter output)
     {
       _players = new List<IAI>();
       _players.Add(enemy1);
       _players.Add(enemy2);
+      _output = output;
 
       if (isComplexTopology)
       {
@@ -53,12 +57,12 @@ namespace Risk.AI.NeuralNetwork.Evolution
       _numberOfGames = numberOfGames;
     }
 
-    public NNFitnessFuction(IAI enemy1, IAI enemy2, bool isComplexTopology, bool isClassic, int numberOfGames) : this(enemy1, enemy2, isComplexTopology, numberOfGames)
+    public NNFitnessFuction(IAI enemy1, IAI enemy2, bool isComplexTopology, bool isClassic, int numberOfGames, TextWriter output) : this(enemy1, enemy2, isComplexTopology, numberOfGames, output)
     {
       _battle = new BattleOfAI(isClassic, numberOfGames);
     }
 
-    public NNFitnessFuction(IAI enemy1, IAI enemy2, bool isComplexTopology, int numberOfAreas, int numberOfGames) : this(enemy1, enemy2, isComplexTopology, numberOfGames)
+    public NNFitnessFuction(IAI enemy1, IAI enemy2, bool isComplexTopology, int numberOfAreas, int numberOfGames, TextWriter output) : this(enemy1, enemy2, isComplexTopology, numberOfGames, output)
     {
       _battle = new BattleOfAI(numberOfAreas, numberOfGames);
     }
@@ -76,15 +80,19 @@ namespace Risk.AI.NeuralNetwork.Evolution
         index = Learning.SetWeights(_attackNetwork, index, value);
         Learning.SetWeights(_fortifyNetwork, index, value);
 
-        _players.Add(new NeuroAI(ArmyColor.Green, _setUpNetwork, _draftNetwork, _exchangeNetwork, _attackNetwork, _fortifyNetwork));
+        NeuroAI ai = new NeuroAI(ArmyColor.Green, _setUpNetwork, _draftNetwork, _exchangeNetwork, _attackNetwork, _fortifyNetwork);
+
+        _players.Add(ai);
 
         IDictionary<ArmyColor, double> result = _battle.PlaySimulation(_players);
 
-        _players.RemoveAt(2);
+        _players.Remove(ai);
 
-        Console.WriteLine($"Fitness: {result[ArmyColor.Green] / (double)_numberOfGames}");
+        _output.Write($"{result[ai.PlayerColor] / (double)_numberOfGames} ");
 
-        return result[ArmyColor.Green] / (double)_numberOfGames;
+        Console.WriteLine($"Fitness: {result[ai.PlayerColor] / (double)_numberOfGames}");
+
+        return result[ai.PlayerColor] / (double)_numberOfGames;
       }
       else
       {
