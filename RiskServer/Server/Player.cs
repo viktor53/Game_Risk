@@ -162,7 +162,7 @@ namespace Risk.Networking.Server
             break;
 
           case MessageType.ExchangeCardsMove:
-            SendMoveResult(_game.MakeMove(new ExchangeCard((ArmyColor)(long)m.Data, GetCombination())));
+            SendMoveResult(_game.MakeMove(new ExchangeCard((ArmyColor)(long)m.Data, CombinationPicker.GetCombination(_cards))));
             break;
 
           case MessageType.NextPhase:
@@ -175,109 +175,6 @@ namespace Risk.Networking.Server
             break;
         }
       }
-    }
-
-    /// <summary>
-    /// Gets risk cards combination if it exists.
-    /// </summary>
-    /// <returns>risk cards combination or empty combination</returns>
-    private IList<RiskCard> GetCombination()
-    {
-      IList<RiskCard> combination;
-
-      combination = GetMixCombination();
-
-      if (combination.Count == 3) return combination;
-
-      combination = GetSameCombination();
-
-      return combination;
-    }
-
-    /// <summary>
-    /// Gets mix risk cards combination.
-    /// </summary>
-    /// <returns>mix risk cards combination or not full combination</returns>
-    private IList<RiskCard> GetMixCombination()
-    {
-      IList<RiskCard> combination = new List<RiskCard>();
-
-      bool isInfatry = false;
-      bool isCavalery = false;
-      bool isCannon = false;
-      bool isMix = false;
-      foreach (var card in _cards)
-      {
-        if (combination.Count < 3)
-        {
-          switch (card.TypeUnit)
-          {
-            case UnitType.Infantry:
-              if (!isInfatry)
-              {
-                combination.Add(card);
-                isInfatry = true;
-              }
-              break;
-
-            case UnitType.Cavalary:
-              if (!isCavalery)
-              {
-                combination.Add(card);
-                isCavalery = true;
-              }
-              break;
-
-            case UnitType.Cannon:
-              if (!isCannon)
-              {
-                combination.Add(card);
-                isCavalery = true;
-              }
-              break;
-
-            case UnitType.Mix:
-              if (!isMix)
-              {
-                combination.Add(card);
-                isMix = true;
-              }
-              break;
-          }
-        }
-      }
-
-      return combination;
-    }
-
-    /// <summary>
-    /// Gets same risk cards combination.
-    /// </summary>
-    /// <returns>same risk cards combination or empty combination</returns>
-    private IList<RiskCard> GetSameCombination()
-    {
-      for (int i = 0; i < 4; ++i)
-      {
-        IList<RiskCard> combination = new List<RiskCard>();
-
-        bool isMix = false;
-        foreach (var card in _cards)
-        {
-          if (card.TypeUnit == (UnitType)i)
-          {
-            combination.Add(card);
-          }
-          else if (card.TypeUnit == UnitType.Mix && !isMix)
-          {
-            combination.Add(card);
-            isMix = true;
-          }
-        }
-
-        if (combination.Count == 3) return combination;
-      }
-
-      return new List<RiskCard>();
     }
 
     /// <summary>

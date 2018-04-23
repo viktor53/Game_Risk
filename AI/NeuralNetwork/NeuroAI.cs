@@ -97,6 +97,55 @@ namespace Risk.AI.NeuralNetwork
       _cardsInHand = new List<RiskCard>();
     }
 
+    public NeuroAI(ArmyColor aiColor, bool isComplex, int generation)
+    {
+      _aiColor = aiColor;
+      LoadNeuralNetwork(isComplex, generation);
+      _cardsInHand = new List<RiskCard>();
+    }
+
+    private void LoadNeuralNetwork(bool isComplex, int generation)
+    {
+      if (isComplex)
+      {
+        if (generation == -1)
+        {
+          _setUpNetwork = NeuralNetworkFactory.CreateSetUpNetworkComplexTopology();
+          _draftNetwork = NeuralNetworkFactory.CreateDraftNetworkComplexTopology();
+          _exchangeCardNetwork = NeuralNetworkFactory.CreateExchangeNetworkComplexTopology();
+          _attackNetwork = NeuralNetworkFactory.CreateAttackNetworkComplexTopology();
+          _fortifyNetwork = NeuralNetworkFactory.CreateFortifyNetworkComplexTopology();
+        }
+        else
+        {
+          _setUpNetwork = NeuralNetworkFactory.LoadNetwork($"setUpNetworkComplex{generation}.ai");
+          _draftNetwork = NeuralNetworkFactory.LoadNetwork($"draftNetworkComplex{generation}.ai");
+          _exchangeCardNetwork = NeuralNetworkFactory.LoadNetwork($"exchangeCardNetworkComplex{generation}.ai");
+          _attackNetwork = NeuralNetworkFactory.LoadNetwork($"attackNetworkComplex{generation}.ai");
+          _fortifyNetwork = NeuralNetworkFactory.LoadNetwork($"fortifyNetworkComplex{generation}.ai");
+        }
+      }
+      else
+      {
+        if (generation == -1)
+        {
+          _setUpNetwork = NeuralNetworkFactory.CreateSetUpNetwork();
+          _draftNetwork = NeuralNetworkFactory.CreateDraftNetwork();
+          _exchangeCardNetwork = NeuralNetworkFactory.CreateExchangeNetwork();
+          _attackNetwork = NeuralNetworkFactory.CreateAttackNetwork();
+          _fortifyNetwork = NeuralNetworkFactory.CreateFortifyNetwork();
+        }
+        else
+        {
+          _setUpNetwork = NeuralNetworkFactory.LoadNetwork($"setUpNetwork{generation}.ai");
+          _draftNetwork = NeuralNetworkFactory.LoadNetwork($"draftNetwork{generation}.ai");
+          _exchangeCardNetwork = NeuralNetworkFactory.LoadNetwork($"exchangeCardNetwork{generation}.ai");
+          _attackNetwork = NeuralNetworkFactory.LoadNetwork($"attackNetwork{generation}.ai");
+          _fortifyNetwork = NeuralNetworkFactory.LoadNetwork($"fortifyNetwork{generation}.ai");
+        }
+      }
+    }
+
     public async Task StartPlayer(IGame game)
     {
       await Task.Run(() =>

@@ -128,14 +128,11 @@ namespace Risk.Networking.Server
     /// <returns>game board information</returns>
     public GameBoardInfo GetBoardInfo(GamePlanInfo gamePlan)
     {
-      if (_gameInfo != null)
+      if (_gameInfo == null)
       {
-        return _gameInfo;
+        _gameInfo = CreateBoardInfo(gamePlan);
       }
-      else
-      {
-        return CreateBoardInfo(gamePlan);
-      }
+      return _gameInfo;
     }
 
     /// <summary>
@@ -143,7 +140,7 @@ namespace Risk.Networking.Server
     /// </summary>
     /// <param name="gamePlan">game plan information</param>
     /// <returns>game board information from game plan information</returns>
-    private GameBoardInfo CreateBoardInfo(GamePlanInfo gamePlan)
+    public static GameBoardInfo CreateBoardInfo(GamePlanInfo gamePlan)
     {
       // size of area where points will be placed
       const int width = 1920;
@@ -205,8 +202,7 @@ namespace Risk.Networking.Server
         areasInfo.Add(new AreaInfo(c, gamePlan.Areas[i], ran.Next(1, 9)));
       }
 
-      _gameInfo = new GameBoardInfo(gamePlan.Connections, areasInfo);
-      return _gameInfo;
+      return new GameBoardInfo(gamePlan.Connections, areasInfo);
     }
 
     /// <summary>
@@ -214,7 +210,7 @@ namespace Risk.Networking.Server
     /// </summary>
     /// <param name="gamePlan">game plan inforamtion</param>
     /// <returns>number of regions</returns>
-    private int GetNumberOfRegions(GamePlanInfo gamePlan)
+    private static int GetNumberOfRegions(GamePlanInfo gamePlan)
     {
       int count = 0;
       int prev = -1;
@@ -237,7 +233,7 @@ namespace Risk.Networking.Server
     /// <param name="x2">X coordinate of point B</param>
     /// <param name="y2">Y coordinate of point B</param>
     /// <returns>distance between two points</returns>
-    private int GetDistance(int x1, int y1, int x2, int y2)
+    private static int GetDistance(int x1, int y1, int x2, int y2)
     {
       return (int)Math.Sqrt(Math.Pow(x1 - x2, 2) + Math.Pow(y1 - y2, 2));
     }
@@ -249,7 +245,7 @@ namespace Risk.Networking.Server
     /// <param name="y">Y coordinate of point</param>
     /// <param name="coords">coordinates of already placed points</param>
     /// <returns>if point is correct</returns>
-    private bool IsCorrect(int x, int y, List<Coordinates> coords)
+    private static bool IsCorrect(int x, int y, List<Coordinates> coords)
     {
       foreach (var co in coords)
       {

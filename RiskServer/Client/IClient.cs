@@ -11,14 +11,14 @@ namespace Risk.Networking.Client
   public interface IClient : IPlayer
   {
     /// <summary>
-    /// OnConfirmation is raised whenever confirmation is received from server.
-    /// </summary>
-    event EventHandler OnConfirmation;
-
-    /// <summary>
     /// OnInicialization is raised whenever game is inicializated.
     /// </summary>
     event EventHandler OnInicialization;
+
+    /// <summary>
+    /// OnConfirmation is raised whenever confirmation is received from server.
+    /// </summary>
+    event EventHandler OnConfirmation;
 
     /// <summary>
     /// List of opened game rooms.

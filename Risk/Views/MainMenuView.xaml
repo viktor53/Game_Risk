@@ -11,8 +11,8 @@
     <DataTemplate x:Name="connectionView" DataType="{x:Type mainViewModels:ConnectionViewModel}">
       <local:ConnectionView />
     </DataTemplate>
-    <DataTemplate x:Name="introSingleplaeyrView" DataType="{x:Type mainViewModels:IntroSinglePlayerViewModel}">
-      <local:IntroSingleplayerView />
+    <DataTemplate x:Name="createSingleplaeyrView" DataType="{x:Type mainViewModels:CreateSinglePlayerViewModel}">
+      <local:CreateSinglePlayerView />
     </DataTemplate>
   </UserControl.Resources>
   <Grid>

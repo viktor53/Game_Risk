@@ -72,6 +72,9 @@
     <Compile Include="Views\CreateGameDialogView.xaml.cs">
       <DependentUpon>CreateGameDialogView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\CreateSinglePlayerView.xaml.cs">
+      <DependentUpon>CreateSinglePlayerView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\DraftView.xaml.cs">
       <DependentUpon>DraftView.xaml</DependentUpon>
     </Compile>
@@ -83,9 +86,6 @@
     </Compile>
     <Compile Include="Views\GameBoardView.xaml.cs">
       <DependentUpon>GameBoardView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\IntroSingleplayerView.xaml.cs">
-      <DependentUpon>IntroSingleplayerView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\MainMenuView.xaml.cs">
       <DependentUpon>MainMenuView.xaml</DependentUpon>
@@ -135,6 +135,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\CreateSinglePlayerView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\DraftView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -148,10 +152,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\GameBoardView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\IntroSingleplayerView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

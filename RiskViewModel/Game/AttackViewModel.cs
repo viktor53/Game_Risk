@@ -78,6 +78,10 @@ namespace Risk.ViewModel.Game
           GameBoardVM.GameDialogViewModel = new CaptureViewModel(GameBoardVM, Army, Client);
           break;
 
+        case MoveResult.Winner:
+          Client.OnMoveResult -= OnMoveResult;
+          break;
+
         default:
           ErrorText = $"Move ends with error {mr}";
           break;

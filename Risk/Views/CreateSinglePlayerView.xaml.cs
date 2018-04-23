@@ -16,11 +16,11 @@ using System.Windows.Shapes;
 namespace Risk.Views
 {
   /// <summary>
-  /// Interaction logic for IntroSingleplayerView.xaml
+  /// Interaction logic for CreateSinglePlayerView.xaml
   /// </summary>
-  public partial class IntroSingleplayerView : UserControl
+  public partial class CreateSinglePlayerView : UserControl
   {
-    public IntroSingleplayerView()
+    public CreateSinglePlayerView()
     {
       InitializeComponent();
     }

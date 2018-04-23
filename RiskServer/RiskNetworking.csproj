@@ -61,6 +61,7 @@
     <Compile Include="Client\InicializationEventArgs.cs" />
     <Compile Include="Client\IPlayer.cs" />
     <Compile Include="Client\MoveResultEventArgs.cs" />
+    <Compile Include="Client\RiskOfflineClient.cs" />
     <Compile Include="Client\UpdateCardEventArgs.cs" />
     <Compile Include="Client\UpdateGameEventArgs.cs" />
     <Compile Include="Deserializer.cs" />
@@ -76,6 +77,7 @@
     <Compile Include="Client\RiskClient.cs" />
     <Compile Include="Messages\Data\AreaInfo.cs" />
     <Compile Include="Messages\Data\GameBoardInfo.cs" />
+    <Compile Include="Server\CombinationPicker.cs" />
     <Compile Include="Server\GameRoom.cs" />
     <Compile Include="Messages\Data\GameRoomInfo.cs" />
     <Compile Include="Server\IClientManager.cs" />
@@ -88,6 +90,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\AI\AI.csproj">
+      <Project>{54ecbee7-6e81-4339-be7a-f1dd26472772}</Project>
+      <Name>AI</Name>
+    </ProjectReference>
     <ProjectReference Include="..\RiskModel\RiskModel.csproj">
       <Project>{d6d0c096-efe2-43a5-a8be-9098dbf7e792}</Project>
       <Name>RiskModel</Name>

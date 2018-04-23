@@ -81,7 +81,7 @@ namespace Risk.ViewModel.Main
     /// </summary>
     private void SingleplayerClick()
     {
-      ContentViewModel = new IntroSinglePlayerViewModel();
+      ContentViewModel = new CreateSinglePlayerViewModel(_windowManager, this);
     }
 
     /// <summary>
