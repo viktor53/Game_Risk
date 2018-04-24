@@ -189,7 +189,7 @@ namespace Risk.AI.NeuralNetwork
 
       foreach (var area in possibilities)
       {
-        PrepareSetUpInput(area, input);
+        InputBuilder.PrepareSetUpInput(_aiColor, area, _gamePlan.Areas, _gamePlan.Connections, _regionsInfo, input);
 
         double result = _setUpNetwork.Compute(input)[0];
 
@@ -209,45 +209,6 @@ namespace Risk.AI.NeuralNetwork
       //count[0]++;
     }
 
-    private void PrepareSetUpInput(Area area, double[] input)
-    {
-      const int levels = 2;
-
-      if (area.ArmyColor == ArmyColor.Neutral)
-      {
-        input[0] = 0;
-      }
-      else
-      {
-        input[0] = 1;
-      }
-
-      AddSurroundingsInfoToInput(area, levels, 1, input);
-
-      int offset = levels * 4;
-
-      input[offset] = _regionsInfo[area.RegionID].NumberOfAreas;
-      offset++;
-
-      Tuple<int, int> stateOfRegion = NeuroHelper.GetRegionState(_gamePlan.Areas, area.RegionID, _regionsInfo, _aiColor);
-
-      input[offset] = stateOfRegion.Item1;
-      offset++;
-      input[offset] = stateOfRegion.Item2;
-      offset++;
-
-      input[offset] = _regionsInfo[area.RegionID].BonusForRegion;
-      offset++;
-
-      input[offset] = _regionsInfo[area.RegionID].NumberOfAreasForOneArmy;
-      offset++;
-
-      input[offset] = _regionsInfo[area.RegionID].NumberOfDefendArmies;
-      offset++;
-
-      input[offset] = _regionsInfo[area.RegionID].DefendRate;
-    }
-
     public void PlayDraft()
     {
       //_sw.Restart();
@@ -265,7 +226,7 @@ namespace Risk.AI.NeuralNetwork
         {
           double[] inputEx = new double[4];
 
-          PrepareExchangeCardInput(inputEx);
+          InputBuilder.PrepareExchangeCardInput(_aiColor, FreeUnit, _game.GetNumberOfCombination(), _gamePlan.Areas, _gamePlan.Connections, inputEx);
 
           double result = _exchangeCardNetwork.Compute(inputEx)[0];
 
@@ -288,7 +249,7 @@ namespace Risk.AI.NeuralNetwork
 
         for (int i = 0; i < possibilities.Count; ++i)
         {
-          PrepareDraftInput(possibilities[i], input);
+          InputBuilder.PrepareDraftInput(_aiColor, possibilities[i], _gamePlan.Areas, _gamePlan.Connections, input);
 
           double[] result = _draftNetwork.Compute(input);
 
@@ -315,26 +276,6 @@ namespace Risk.AI.NeuralNetwork
       //count[1]++;
     }
 
-    private void PrepareExchangeCardInput(double[] input)
-    {
-      input[0] = FreeUnit;
-      input[1] = _game.GetNumberOfCombination();
-
-      Tuple<int, int> state = NeuroHelper.GetStateOfBorders(_gamePlan.Areas, _gamePlan.Connections, _aiColor);
-
-      input[2] = state.Item1;
-      input[3] = state.Item2;
-    }
-
-    private void PrepareDraftInput(Area area, double[] input)
-    {
-      const int levels = 2;
-
-      input[0] = area.SizeOfArmy;
-
-      AddSurroundingsInfoToInput(area, levels, 1, input);
-    }
-
     public void PlayAttack()
     {
       //_sw.Restart();
@@ -349,8 +290,8 @@ namespace Risk.AI.NeuralNetwork
 
         for (int j = 0; j < target.Count; ++j)
         {
-          PrepareAttackFromInput(possibilities[i], input);
-          PrepareAttackToInput(target[j], input);
+          InputBuilder.PrepareAttackFromInput(_aiColor, possibilities[i], _gamePlan.Areas, _gamePlan.Connections, input);
+          InputBuilder.PrepareAttackToInput(_aiColor, target[j], _gamePlan.Areas, _regionsInfo, input);
 
           double[] result = _attackNetwork.Compute(input);
           while (result[0] > 0.5 && possibilities[i].SizeOfArmy > 1)
@@ -358,7 +299,7 @@ namespace Risk.AI.NeuralNetwork
             int prevAtt = possibilities[i].SizeOfArmy;
             int prevDeff = target[j].SizeOfArmy;
 
-            AttackSize attackSize = GetAttackSize(result[1], prevAtt);
+            AttackSize attackSize = (AttackSize)InputBuilder.GetAttackSize(result[1], prevAtt);
 
             MoveResult moveResult = _game.MakeMove(new Attack(_aiColor, possibilities[i].ID, target[j].ID, attackSize));
 
@@ -406,68 +347,6 @@ namespace Risk.AI.NeuralNetwork
       //count[2]++;
     }
 
-    private AttackSize GetAttackSize(double result, int sizeOfArmy)
-    {
-      const double oneArmy = 0.33;
-      const double twoArmies = 0.66;
-
-      if (twoArmies <= result && 3 < sizeOfArmy)
-      {
-        return AttackSize.Three;
-      }
-
-      if (oneArmy <= result && result < twoArmies && 2 < sizeOfArmy)
-      {
-        return AttackSize.Two;
-      }
-
-      if (result < oneArmy)
-      {
-        return AttackSize.One;
-      }
-
-      return (AttackSize)(sizeOfArmy - 1);
-    }
-
-    private void PrepareAttackFromInput(Area area, double[] input)
-    {
-      const int levels = 2;
-
-      input[0] = area.SizeOfArmy;
-
-      AddSurroundingsInfoToInput(area, levels, 2, input);
-    }
-
-    private void PrepareAttackToInput(Area area, double[] input)
-    {
-      const int levels = 2;
-
-      input[1] = area.SizeOfArmy;
-
-      int offset = 2 + levels * 4;
-
-      input[offset] = _regionsInfo[area.RegionID].NumberOfAreas;
-      offset++;
-
-      Tuple<int, int> stateOfRegion = NeuroHelper.GetRegionState(_gamePlan.Areas, area.RegionID, _regionsInfo, _aiColor);
-
-      input[offset] = stateOfRegion.Item1;
-      offset++;
-      input[offset] = stateOfRegion.Item2;
-      offset++;
-
-      input[offset] = _regionsInfo[area.RegionID].BonusForRegion;
-      offset++;
-
-      input[offset] = _regionsInfo[area.RegionID].NumberOfAreasForOneArmy;
-      offset++;
-
-      input[offset] = _regionsInfo[area.RegionID].NumberOfDefendArmies;
-      offset++;
-
-      input[offset] = _regionsInfo[area.RegionID].DefendRate;
-    }
-
     public void PlayFortify()
     {
       //_sw.Restart();
@@ -484,13 +363,13 @@ namespace Risk.AI.NeuralNetwork
 
       for (int i = 0; i < possibilities.Count; ++i)
       {
-        PrepareFortifyFromInput(possibilities[i], input);
+        InputBuilder.PrepareFortifyFromInput(_aiColor, possibilities[i], _gamePlan.Areas, _gamePlan.Connections, input);
 
         IList<Area> target = Helper.WhereCanFortify(possibilities[i], _gamePlan.Areas, _gamePlan.Connections, _aiColor);
 
         for (int j = 0; j < target.Count; ++j)
         {
-          PrepareFortifyToInput(target[j], input);
+          InputBuilder.PrepareFortifyToInput(_aiColor, target[j], _gamePlan.Areas, _gamePlan.Connections, input);
 
           double[] result = _fortifyNetwork.Compute(input);
 
@@ -522,52 +401,6 @@ namespace Risk.AI.NeuralNetwork
       //_sw.Stop();
       //time[3] += _sw.Elapsed.TotalSeconds;
       //count[3]++;
-    }
-
-    private void PrepareFortifyFromInput(Area area, double[] input)
-    {
-      const int levels = 2;
-
-      input[0] = area.SizeOfArmy;
-
-      AddSurroundingsInfoToInput(area, levels, 2, input);
-    }
-
-    private void PrepareFortifyToInput(Area area, double[] input)
-    {
-      const int levels = 2;
-
-      input[1] = area.SizeOfArmy;
-
-      AddSurroundingsInfoToInput(area, levels, 10, input);
-    }
-
-    private void AddSurroundingsInfoToInput(Area area, int levels, int offset, double[] input)
-    {
-      SurroundingsInformation info = NeuroHelper.GetSurroundingsInfo(area, _gamePlan.Areas, _gamePlan.Connections, levels, _aiColor);
-
-      for (int i = 0; i < info.NumberOfFriends.Length; ++i)
-      {
-        input[offset + i] = info.NumberOfFriends[i];
-      }
-      offset += levels;
-
-      for (int i = 0; i < info.FriendlyArmies.Length; ++i)
-      {
-        input[offset + i] = info.FriendlyArmies[i];
-      }
-      offset += levels;
-
-      for (int i = 0; i < info.NumberOfEnemies.Length; ++i)
-      {
-        input[offset + i] = info.NumberOfEnemies[i];
-      }
-      offset += levels;
-
-      for (int i = 0; i < info.EnemyArmies.Length; ++i)
-      {
-        input[offset + i] = info.EnemyArmies[i];
-      }
     }
 
     public async Task UpdateGame(byte areaID, ArmyColor armyColor, int sizeOfArmy)

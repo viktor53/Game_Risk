@@ -212,8 +212,9 @@ namespace AIvsAI
       Console.WriteLine("** 1 - Random vs Random vs Random");
       Console.WriteLine("** 2 - MCTS vs Random vs Random");
       Console.WriteLine("** 3 - NN vs Random vs Random");
-      Console.WriteLine("** 4 - NN vs NN vs NN");
-      Console.WriteLine("** 5 - MCTS vs NN vs Random");
+      Console.WriteLine("** 4 - MCTS-NN vs Random vs Random");
+      Console.WriteLine("** 5 - NN vs NN vs NN");
+      Console.WriteLine("** 6 - MCTS vs NN vs MCTS-NN");
       Console.WriteLine();
       Console.Write("Choice: ");
 
@@ -235,11 +236,15 @@ namespace AIvsAI
             break;
 
           case 4:
-            Battle(GetNNOnly(), "NN agent 1", "NN agent 2", "NN agent 3");
+            Battle(GetMCTSNNAndRandom(), "MCTS-NN", "Random agent", "Random agent");
             break;
 
           case 5:
-            Battle(GetMCTSAndNNAndRandom(), "MCTS agent", "NN agent", "Random agent");
+            Battle(GetNNOnly(), "NN agent 1", "NN agent 2", "NN agent 3");
+            break;
+
+          case 6:
+            Battle(GetMCTSAndNNAndMCTSNN(), "MCTS agent", "NN agent", "MCTS-NN agent");
             break;
 
           default:
@@ -272,7 +277,7 @@ namespace AIvsAI
 
           if (int.TryParse(Console.ReadLine(), out choice))
           {
-            battle = new BattleOfAI(choice, 200);
+            battle = new BattleOfAI(choice, 1);
           }
           else
           {
@@ -286,8 +291,6 @@ namespace AIvsAI
       }
 
       Console.Clear();
-
-      battle = new BattleOfAI(21, 200);
 
       var result = battle.PlaySimulationDiagnostic(agents, Console.Out);
 
@@ -323,7 +326,7 @@ namespace AIvsAI
     private static IList<IAI> GetMCTSAndRandom()
     {
       List<IAI> agents = new List<IAI>();
-      agents.Add(new MCTSAI(ArmyColor.Green));
+      agents.Add(new MCTSAI(ArmyColor.Green, false));
       agents.Add(new RandomPlayer(ArmyColor.Red));
       agents.Add(new RandomPlayer(ArmyColor.Blue));
 
@@ -341,6 +344,16 @@ namespace AIvsAI
       return agents;
     }
 
+    private static IList<IAI> GetMCTSNNAndRandom()
+    {
+      List<IAI> agents = new List<IAI>();
+      agents.Add(new MCTSAI(ArmyColor.Green, true));
+      agents.Add(new RandomPlayer(ArmyColor.Red));
+      agents.Add(new RandomPlayer(ArmyColor.Blue));
+
+      return agents;
+    }
+
     private static IList<IAI> GetNNOnly()
     {
       List<IAI> agents = new List<IAI>();
@@ -351,12 +364,12 @@ namespace AIvsAI
       return agents;
     }
 
-    private static IList<IAI> GetMCTSAndNNAndRandom()
+    private static IList<IAI> GetMCTSAndNNAndMCTSNN()
     {
       List<IAI> agents = new List<IAI>();
-      agents.Add(new MCTSAI(ArmyColor.Green));
+      agents.Add(new MCTSAI(ArmyColor.Green, false));
       agents.Add(LoadNN(ArmyColor.Red));
-      agents.Add(new RandomPlayer(ArmyColor.Blue));
+      agents.Add(new MCTSAI(ArmyColor.Blue, true));
 
       return agents;
     }

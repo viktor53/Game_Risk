@@ -1,4 +1,5 @@
-﻿using Risk.Model.Cards;
+﻿using Risk.AI.NeuralNetwork;
+using Risk.Model.Cards;
 using Risk.Model.Enums;
 using Risk.Model.GameCore;
 using Risk.Model.GameCore.Moves;
@@ -28,6 +29,8 @@ namespace Risk.AI.MCTS
     private bool _isWinner;
 
     private Random _ran;
+
+    private bool _isWithNN;
 
     private MonteCarloTreeSearch _mcts;
 
@@ -79,12 +82,13 @@ namespace Risk.AI.MCTS
       _cardsInHand.Remove(card);
     }
 
-    public MCTSAI(ArmyColor playerColor)
+    public MCTSAI(ArmyColor playerColor, bool isWithNN)
     {
       PlayerColor = playerColor;
       _ran = new Random();
       Probibility = 12;
       _cardsInHand = new List<RiskCard>();
+      _isWithNN = isWithNN;
     }
 
     public async Task StartPlayer(IGame game)
@@ -94,7 +98,15 @@ namespace Risk.AI.MCTS
         _game = game;
         _gamePlan = game.GetGamePlan();
         var orderedPlayers = _game.GetOrderOfPlayers();
-        _mcts = new MonteCarloTreeSearch(orderedPlayers.Count, orderedPlayers);
+        if (_isWithNN)
+        {
+          var regionsInfo = NeuroHelper.GetRegionsInformation(_gamePlan.Areas, _gamePlan.Connections, _game.GetBonusForRegions());
+          _mcts = new MonteCarloTreeSearch(orderedPlayers.Count, orderedPlayers, new NeuroHeuristic(true, 3, regionsInfo));
+        }
+        else
+        {
+          _mcts = new MonteCarloTreeSearch(orderedPlayers.Count, orderedPlayers);
+        }
       });
     }
 

@@ -18,6 +18,8 @@ namespace Risk.AI.MCTS
 
     private Random _ran;
 
+    private NeuroHeuristic _heuristic;
+
     public MonteCarloTreeSearch(int numberOfPlayers, IList<ArmyColor> players)
     {
       _numberOfPlayers = numberOfPlayers;
@@ -27,11 +29,26 @@ namespace Risk.AI.MCTS
         _randomPlayers.Add(new RandomPlayer(player));
       }
       _ran = new Random();
+      _heuristic = null;
+    }
+
+    public MonteCarloTreeSearch(int numbersOfPlayers, IList<ArmyColor> players, NeuroHeuristic heuristic) : this(numbersOfPlayers, players)
+    {
+      _heuristic = heuristic;
     }
 
     public Moves GetNextMove(GameBoard gameBoard, IDictionary<ArmyColor, Game.PlayerInfo> playersInfo, int currentPlayer, Phase currentPhase)
     {
-      State rootState = new State((GameBoard)gameBoard.Clone(), _randomPlayers, State.GetPlayersInfoClone(playersInfo), currentPlayer, currentPhase);
+      State rootState;
+      if (_heuristic == null)
+      {
+        rootState = new HeuristicState((GameBoard)gameBoard.Clone(), _randomPlayers, State.GetPlayersInfoClone(playersInfo), currentPlayer, currentPhase);
+      }
+      else
+      {
+        rootState = new NeuroState((GameBoard)gameBoard.Clone(), _randomPlayers, State.GetPlayersInfoClone(playersInfo), currentPlayer, currentPhase, _heuristic);
+      }
+
       rootState.Status = StatusOfGame.ROOT;
 
       Node root = new Node(null, rootState);
@@ -108,7 +125,7 @@ namespace Risk.AI.MCTS
 
     private void ExpandeNode(Node node)
     {
-      var posibilities = node.State.GetAllPosibilities();
+      var posibilities = node.State.GetAllPossibilities();
 
       if (posibilities != null)
       {

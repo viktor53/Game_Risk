@@ -207,7 +207,7 @@ namespace Risk.AI
     {
       while (!GameBoardHelper.IsWinner(_currentPlayer.PlayerColor, _gameBoard, _playersInfo))
       {
-        sw.Start();
+        //sw.Start();
         foreach (var player in _players)
         {
           if (_playersInfo[player.PlayerColor].IsAlive)
@@ -232,11 +232,11 @@ namespace Risk.AI
           }
         }
 
-        sw.Stop();
-        if (sw.Elapsed.TotalSeconds > 1)
-        {
-          return;
-        }
+        //sw.Stop();
+        //if (sw.Elapsed.TotalSeconds > 1)
+        //{
+        //  return;
+        //}
       }
     }
 
