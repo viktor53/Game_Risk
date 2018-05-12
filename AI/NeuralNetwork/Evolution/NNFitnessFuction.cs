@@ -10,7 +10,10 @@ using System.IO;
 
 namespace Risk.AI.NeuralNetwork.Evolution
 {
-  public class NNFitnessFuction : IFitnessFunction
+  /// <summary>
+  /// Represents fitness funciton for neural networks.
+  /// </summary>
+  public class NNFitnessFunction : IFitnessFunction
   {
     private ActivationNetwork _setUpNetwork;
 
@@ -30,7 +33,7 @@ namespace Risk.AI.NeuralNetwork.Evolution
 
     private TextWriter _output;
 
-    private NNFitnessFuction(IAI enemy1, IAI enemy2, bool isComplexTopology, int numberOfGames, TextWriter output)
+    private NNFitnessFunction(IAI enemy1, IAI enemy2, bool isComplexTopology, int numberOfGames, TextWriter output)
     {
       _players = new List<IAI>();
       _players.Add(enemy1);
@@ -57,12 +60,12 @@ namespace Risk.AI.NeuralNetwork.Evolution
       _numberOfGames = numberOfGames;
     }
 
-    public NNFitnessFuction(IAI enemy1, IAI enemy2, bool isComplexTopology, bool isClassic, int numberOfGames, TextWriter output) : this(enemy1, enemy2, isComplexTopology, numberOfGames, output)
+    public NNFitnessFunction(IAI enemy1, IAI enemy2, bool isComplexTopology, bool isClassic, int numberOfGames, TextWriter output) : this(enemy1, enemy2, isComplexTopology, numberOfGames, output)
     {
       _battle = new BattleOfAI(isClassic, numberOfGames);
     }
 
-    public NNFitnessFuction(IAI enemy1, IAI enemy2, bool isComplexTopology, int numberOfAreas, int numberOfGames, TextWriter output) : this(enemy1, enemy2, isComplexTopology, numberOfGames, output)
+    public NNFitnessFunction(IAI enemy1, IAI enemy2, bool isComplexTopology, int numberOfAreas, int numberOfGames, TextWriter output) : this(enemy1, enemy2, isComplexTopology, numberOfGames, output)
     {
       _battle = new BattleOfAI(numberOfAreas, numberOfGames);
     }

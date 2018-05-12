@@ -207,7 +207,6 @@ namespace Risk.AI
     {
       while (!GameBoardHelper.IsWinner(_currentPlayer.PlayerColor, _gameBoard, _playersInfo))
       {
-        //sw.Start();
         foreach (var player in _players)
         {
           if (_playersInfo[player.PlayerColor].IsAlive)
@@ -231,12 +230,6 @@ namespace Risk.AI
             player.PlayFortify();
           }
         }
-
-        //sw.Stop();
-        //if (sw.Elapsed.TotalSeconds > 1)
-        //{
-        //  return;
-        //}
       }
     }
 
@@ -246,35 +239,6 @@ namespace Risk.AI
     private void PlayToTheEndFromThePoint()
     {
       int index = _players.IndexOf(_currentPlayer);
-
-      //int p = (int)_currentPhase;
-      //while (p % 4 != 0)
-      //{
-      //  switch ((Phase)p)
-      //  {
-      //    case Phase.DRAFT:
-      //      _currentPhase = Phase.DRAFT;
-      //      _players[index].PlayDraft();
-      //      break;
-
-      //    case Phase.ATTACK:
-      //      _currentPhase = Phase.ATTACK;
-      //      _players[index].PlayAttack();
-
-      //      if (IsWinner())
-      //      {
-      //        return;
-      //      }
-      //      break;
-
-      //    case Phase.FORTIFY:
-      //      _currentPhase = Phase.FORTIFY;
-      //      _players[index].PlayFortify();
-      //      break;
-      //  }
-
-      //  p++;
-      //}
 
       for (int i = index + 1; i < _players.Count; ++i)
       {
@@ -368,8 +332,7 @@ namespace Risk.AI
     /// </summary>
     /// <param name="move">setup move command</param>
     /// <returns>
-    ///   OK or corresponding error.
-    ///   (NotYourTurn, BadPhase, NotEnoughFreeUnit, NotYourArea, AlreadySetUpThisTurn)
+    ///   OK
     /// </returns>
     public MoveResult MakeMove(SetUp move)
     {
@@ -391,8 +354,7 @@ namespace Risk.AI
     /// </summary>
     /// <param name="move">draft move command</param>
     /// <returns>
-    ///   OK or corresponding error.
-    ///   (NotYourTurn, BadPhase, NotEnoughFreeUnit, NotYourArea)
+    ///   OK
     /// </returns>
     public MoveResult MakeMove(Draft move)
     {
@@ -410,8 +372,7 @@ namespace Risk.AI
     /// </summary>
     /// <param name="move">exchange card move command</param>
     /// <returns>
-    ///   OK or corresponding error.
-    ///   (NotYourTurn, BadPhase, InvalidCombination)
+    ///   OK
     /// </returns>
     public MoveResult MakeMove(ExchangeCard move)
     {
@@ -429,8 +390,7 @@ namespace Risk.AI
     /// </summary>
     /// <param name="move">attack move command</param>
     /// <returns>
-    ///   OK or corresponding error.
-    ///   (NotYourTurn, BadPhase, InvalidAttack, InvalidAttackerOrDefender, EmptyCapturedArea)
+    ///   OK or AreaCaptured or Winner
     /// </returns>
     public MoveResult MakeMove(Attack move)
     {
@@ -444,8 +404,7 @@ namespace Risk.AI
     /// </summary>
     /// <param name="move">capture move command</param>
     /// <returns>
-    ///   OK or corresponding error.
-    ///   (NotYourTurn, BadPhase, NoCapturedArea, InvalidNumberUnit)
+    ///   OK
     /// </returns>
     public MoveResult MakeMove(Capture move)
     {
@@ -469,8 +428,7 @@ namespace Risk.AI
     /// </summary>
     /// <param name="move">fortify move command</param>
     /// <returns>
-    ///   OK or corresponding error.
-    ///   (NotYourTurn, BadPhase, AlreadyFortifyThisTurn, NotConnected, InvalidNumberUnit)
+    ///   OK
     /// </returns>
     public MoveResult MakeMove(Fortify move)
     {

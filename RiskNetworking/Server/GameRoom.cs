@@ -74,7 +74,6 @@ namespace Risk.Networking.Server
           {
             pl.Value.SendNewPlayerConnected(player.PlayerName);
           }
-          player.PlayerColor = Model.Enums.ArmyColor.Green + _players.Count;
           _players.Add(player.PlayerName, player);
           player.OnReady += OnReady;
           player.ListenToReadyTag();
@@ -278,9 +277,12 @@ namespace Risk.Networking.Server
     {
       await Task.Run(() =>
       {
+        int index = 0;
         foreach (var player in _players)
         {
+          player.Value.PlayerColor = Model.Enums.ArmyColor.Green + index;
           _game.AddPlayer(player.Value);
+          index++;
         }
 
         _game.StartGame();

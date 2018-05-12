@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace Risk.AI.NeuralNetwork
 {
+  /// <summary>
+  /// Provides methods for building input data for neural networks.
+  /// </summary>
   internal static class InputBuilder
   {
     private static void AddSurroundingsInfoToInput(ArmyColor aiColor, Area area, IList<Area> areas, IList<IList<bool>> connections,

@@ -18,7 +18,7 @@ namespace Risk.AI.MCTS
 
     private Random _ran;
 
-    private NeuroHeuristic _heuristic;
+    private NeuroHeuristicHelper _heuristic;
 
     public MonteCarloTreeSearch(int numberOfPlayers, IList<ArmyColor> players)
     {
@@ -32,7 +32,7 @@ namespace Risk.AI.MCTS
       _heuristic = null;
     }
 
-    public MonteCarloTreeSearch(int numbersOfPlayers, IList<ArmyColor> players, NeuroHeuristic heuristic) : this(numbersOfPlayers, players)
+    public MonteCarloTreeSearch(int numbersOfPlayers, IList<ArmyColor> players, NeuroHeuristicHelper heuristic) : this(numbersOfPlayers, players)
     {
       _heuristic = heuristic;
     }

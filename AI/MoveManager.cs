@@ -11,6 +11,9 @@ using Risk.Model.Cards;
 
 namespace Risk.AI
 {
+  /// <summary>
+  /// Provides methods for making moves without IGame. Needed in MCTS.
+  /// </summary>
   internal static class MoveManager
   {
     public static void MakeMove(SetUp move, GameBoard gameBoard, IDictionary<ArmyColor, Game.PlayerInfo> playersInfo)

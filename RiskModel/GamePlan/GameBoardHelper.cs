@@ -96,15 +96,6 @@ namespace Risk.Model.GamePlan
       }
 
       return true;
-
-      //foreach (var area in gameBoard.Areas)
-      //{
-      //  if (area.RegionID == regionID && area.ArmyColor != playerColor)
-      //  {
-      //    return false;
-      //  }
-      //}
-      //return true;
     }
 
     /// <summary>

@@ -50,7 +50,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\RiskServer\RiskNetworking.csproj">
+    <ProjectReference Include="..\RiskNetworking\RiskNetworking.csproj">
       <Project>{837679e1-0df3-4c20-983a-346de5233715}</Project>
       <Name>RiskNetworking</Name>
     </ProjectReference>

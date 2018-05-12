@@ -269,7 +269,7 @@ namespace AIvsAI
       {
         if (choice == 1)
         {
-          battle = new BattleOfAI(true, 200);
+          battle = new BattleOfAI(true, 500);
         }
         else
         {
@@ -277,7 +277,7 @@ namespace AIvsAI
 
           if (int.TryParse(Console.ReadLine(), out choice))
           {
-            battle = new BattleOfAI(choice, 1);
+            battle = new BattleOfAI(choice, 500);
           }
           else
           {
@@ -316,9 +316,12 @@ namespace AIvsAI
     private static IList<IAI> GetRandomOnly()
     {
       List<IAI> agents = new List<IAI>();
-      agents.Add(new RandomPlayer(ArmyColor.Green));
-      agents.Add(new RandomPlayer(ArmyColor.Red));
-      agents.Add(new RandomPlayer(ArmyColor.Blue));
+      RandomPlayer green = new RandomPlayer(ArmyColor.Green);
+      RandomPlayer red = new RandomPlayer(ArmyColor.Red);
+      RandomPlayer blue = new RandomPlayer(ArmyColor.Blue);
+      agents.Add(green);
+      agents.Add(red);
+      agents.Add(blue);
 
       return agents;
     }
@@ -379,7 +382,7 @@ namespace AIvsAI
       Console.Write("NN with complex topology (1 - ano, 0 - ne): ");
 
       bool isComplex = false;
-      int generation = 0;
+      string generation;
 
       int choice = -1;
       if (int.TryParse(Console.ReadLine(), out choice))
@@ -400,15 +403,7 @@ namespace AIvsAI
 
       Console.Write("Number of NN generation to load: ");
 
-      choice = 0;
-      if (int.TryParse(Console.ReadLine(), out choice))
-      {
-        generation = choice;
-      }
-      else
-      {
-        throw new ArgumentException("Not a number!");
-      }
+      generation = Console.ReadLine();
 
       ActivationNetwork setUpNetwork;
       ActivationNetwork draftNetwork;
@@ -418,7 +413,7 @@ namespace AIvsAI
 
       if (isComplex)
       {
-        if (generation == -1)
+        if (generation == "-1")
         {
           setUpNetwork = NeuralNetworkFactory.CreateSetUpNetworkComplexTopology();
           draftNetwork = NeuralNetworkFactory.CreateDraftNetworkComplexTopology();
@@ -437,7 +432,7 @@ namespace AIvsAI
       }
       else
       {
-        if (generation == -1)
+        if (generation == "-1")
         {
           setUpNetwork = NeuralNetworkFactory.CreateSetUpNetwork();
           draftNetwork = NeuralNetworkFactory.CreateDraftNetwork();
@@ -496,7 +491,7 @@ namespace AIvsAI
 
       using (TextWriter output = new StreamWriter(AppDomain.CurrentDomain.BaseDirectory + "\\AI\\" + nameOfEvolutionLog))
       {
-        NNFitnessFuction fitnessFunc = new NNFitnessFuction(enemy1, enemy2, isComplex, 21, 200, output);
+        NNFitnessFunction fitnessFunc = new NNFitnessFunction(enemy1, enemy2, isComplex, 21, 200, output);
 
         Console.Clear();
         Console.WriteLine("**** Learn starts ****");
@@ -579,7 +574,7 @@ namespace AIvsAI
 
       using (TextWriter output = new StreamWriter(AppDomain.CurrentDomain.BaseDirectory + "\\AI\\" + nameOfEvolutionLog))
       {
-        NNFitnessFuction fitnessFunc = new NNFitnessFuction(enemy1, enemy2, isComplex, 21, 200, output);
+        NNFitnessFunction fitnessFunc = new NNFitnessFunction(enemy1, enemy2, isComplex, 21, 200, output);
 
         Console.Clear();
         Console.WriteLine("**** Learn starts ****");

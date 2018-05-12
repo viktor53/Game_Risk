@@ -62,7 +62,9 @@ namespace Risk.Model.GameCore
     /// <summary>
     /// Asynchronously updates game plan.
     /// </summary>
-    /// <param name="area">changed area</param>
+    /// <param name="areaID">ID of area</param>
+    /// <param name="armyColor">color of army</param>
+    /// <param name="sizeOfArmy">size of army</param>
     /// <returns>async call</returns>
     Task UpdateGame(byte areaID, ArmyColor armyColor, int sizeOfArmy);
 

@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Risk.AI.NeuralNetwork
 {
+  /// <summary>
+  /// Represents information about region.
+  /// </summary>
   internal class RegionInformation
   {
     public double BonusForRegion { get; private set; }

@@ -14,6 +14,9 @@ using System.Threading.Tasks;
 
 namespace Risk.AI.MCTS
 {
+  /// <summary>
+  /// Player who uses monte carlo tree search to making move.
+  /// </summary>
   public class MCTSAI : IAI
   {
     private int _freeUnit;
@@ -62,8 +65,6 @@ namespace Risk.AI.MCTS
 
     public bool IsWinner => _isWinner;
 
-    public double Probibility { get; set; }
-
     public double GetAvgTimeSetUp => time[0] / count[0];
 
     public double GetAvgTimeDraft => time[1] / count[1];
@@ -71,6 +72,14 @@ namespace Risk.AI.MCTS
     public double GetAvgTimeAttack => time[2] / count[2];
 
     public double GetAvgTimeFortify => time[3] / count[3];
+
+    private Stopwatch _sw = new Stopwatch();
+
+    private double[] time = new double[] { 0, 0, 0, 0 };
+
+    private int[] count = new int[] { 0, 0, 0, 0 };
+
+    private Moves moves;
 
     public void AddCard(RiskCard card)
     {
@@ -86,7 +95,6 @@ namespace Risk.AI.MCTS
     {
       PlayerColor = playerColor;
       _ran = new Random();
-      Probibility = 12;
       _cardsInHand = new List<RiskCard>();
       _isWithNN = isWithNN;
     }
@@ -101,7 +109,7 @@ namespace Risk.AI.MCTS
         if (_isWithNN)
         {
           var regionsInfo = NeuroHelper.GetRegionsInformation(_gamePlan.Areas, _gamePlan.Connections, _game.GetBonusForRegions());
-          _mcts = new MonteCarloTreeSearch(orderedPlayers.Count, orderedPlayers, new NeuroHeuristic(true, 3, regionsInfo));
+          _mcts = new MonteCarloTreeSearch(orderedPlayers.Count, orderedPlayers, new NeuroHeuristicHelper(true, 3, regionsInfo));
         }
         else
         {
@@ -127,14 +135,6 @@ namespace Risk.AI.MCTS
         _gamePlan.Areas[areaID].SizeOfArmy = sizeOfArmy;
       });
     }
-
-    private Stopwatch _sw = new Stopwatch();
-
-    private double[] time = new double[] { 0, 0, 0, 0 };
-
-    private int[] count = new int[] { 0, 0, 0, 0 };
-
-    private Moves moves;
 
     public void PlaySetUp()
     {

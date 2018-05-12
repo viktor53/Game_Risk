@@ -7,6 +7,9 @@ using Accord.Neuro;
 
 namespace Risk.AI.NeuralNetwork
 {
+  /// <summary>
+  /// Provides methods for creating and loading neural networks.
+  /// </summary>
   public static class NeuralNetworkFactory
   {
     public static ActivationNetwork CreateSetUpNetwork()

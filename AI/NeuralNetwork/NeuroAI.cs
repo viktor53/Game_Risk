@@ -13,6 +13,9 @@ using System.Diagnostics;
 
 namespace Risk.AI.NeuralNetwork
 {
+  /// <summary>
+  /// Player who uses neural networks to making move.
+  /// </summary>
   public class NeuroAI : IAI
   {
     private ActivationNetwork _setUpNetwork;
@@ -173,7 +176,7 @@ namespace Risk.AI.NeuralNetwork
 
     public void PlaySetUp()
     {
-      //_sw.Restart();
+      _sw.Restart();
 
       double[] input = new double[16];
 
@@ -204,14 +207,14 @@ namespace Risk.AI.NeuralNetwork
 
       bool bad = mr != MoveResult.OK;
 
-      //_sw.Stop();
-      //time[0] += _sw.Elapsed.TotalSeconds;
-      //count[0]++;
+      _sw.Stop();
+      time[0] += _sw.Elapsed.TotalSeconds;
+      count[0]++;
     }
 
     public void PlayDraft()
     {
-      //_sw.Restart();
+      _sw.Restart();
 
       while (_cardsInHand.Count >= 5)
       {
@@ -271,14 +274,14 @@ namespace Risk.AI.NeuralNetwork
         bool bad = mr != MoveResult.OK;
       }
 
-      //_sw.Stop();
-      //time[1] += _sw.Elapsed.TotalSeconds;
-      //count[1]++;
+      _sw.Stop();
+      time[1] += _sw.Elapsed.TotalSeconds;
+      count[1]++;
     }
 
     public void PlayAttack()
     {
-      //_sw.Restart();
+      _sw.Restart();
 
       IList<Area> possibilities = Helper.WhoCanAttack(_gamePlan.Areas, _gamePlan.Connections, _aiColor);
 
@@ -342,14 +345,14 @@ namespace Risk.AI.NeuralNetwork
         }
       }
 
-      //_sw.Stop();
-      //time[2] += _sw.Elapsed.TotalSeconds;
-      //count[2]++;
+      _sw.Stop();
+      time[2] += _sw.Elapsed.TotalSeconds;
+      count[2]++;
     }
 
     public void PlayFortify()
     {
-      //_sw.Restart();
+      _sw.Restart();
 
       IList<Area> possibilities = Helper.WhoCanFortify(_gamePlan.Areas, _gamePlan.Connections, _aiColor);
 
@@ -398,9 +401,9 @@ namespace Risk.AI.NeuralNetwork
         bool bad = mr != MoveResult.OK;
       }
 
-      //_sw.Stop();
-      //time[3] += _sw.Elapsed.TotalSeconds;
-      //count[3]++;
+      _sw.Stop();
+      time[3] += _sw.Elapsed.TotalSeconds;
+      count[3]++;
     }
 
     public async Task UpdateGame(byte areaID, ArmyColor armyColor, int sizeOfArmy)

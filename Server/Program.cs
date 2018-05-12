@@ -12,7 +12,7 @@ namespace Server
   {
     private static void Main(string[] args)
     {
-      RiskServer server = new RiskServer("Enterprise", 11000);
+      RiskServer server = new RiskServer("localhost", 11000);
 
       server.Start();
     }

@@ -135,14 +135,14 @@ namespace Risk.ViewModel.Main
         case "MCTS":
           for (int i = 0; i < Players - 1; ++i)
           {
-            game.AddPlayer(new MCTSAI(color + i));
+            game.AddPlayer(new MCTSAI(color + i, false));
           }
           break;
 
         case "MCTS with NN":
           for (int i = 0; i < Players - 1; ++i)
           {
-            game.AddPlayer(new NeuroAI(color + i, true, 3));
+            game.AddPlayer(new MCTSAI(color + i, true));
           }
           break;
 

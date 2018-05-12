@@ -13,11 +13,11 @@ namespace Risk.AI.MCTS
 {
   internal class NeuroState : State
   {
-    private NeuroHeuristic _heuristic;
+    private NeuroHeuristicHelper _heuristic;
 
     public NeuroState(GameBoard gameBoard, IList<IPlayer> players,
       IDictionary<ArmyColor, Game.PlayerInfo> playersInfo,
-      int currentPlayer, Phase currentPhase, NeuroHeuristic heuristic) : base(gameBoard, players, playersInfo, currentPlayer, currentPhase)
+      int currentPlayer, Phase currentPhase, NeuroHeuristicHelper heuristic) : base(gameBoard, players, playersInfo, currentPlayer, currentPhase)
     {
       _heuristic = heuristic;
     }

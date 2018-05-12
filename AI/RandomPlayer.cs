@@ -13,6 +13,9 @@ using System.Threading;
 
 namespace Risk.AI
 {
+  /// <summary>
+  /// Player who makes random moves.
+  /// </summary>
   public class RandomPlayer : IAI
   {
     private int _freeUnit;
@@ -69,22 +72,31 @@ namespace Risk.AI
       _cardsInHand.Remove(card);
     }
 
-    public double Probibility { get; set; }
+    /// <summary>
+    /// Probability of attacking.
+    /// </summary>
+    public double Probability { get; set; }
 
-    public double GetAvgTimeSetUp => 0;
+    public double GetAvgTimeSetUp => time[0] / count[0];
 
-    public double GetAvgTimeDraft => 0;
+    public double GetAvgTimeDraft => time[1] / count[1];
 
-    public double GetAvgTimeAttack => 0;
+    public double GetAvgTimeAttack => time[2] / count[2];
 
-    public double GetAvgTimeFortify => 0;
+    public double GetAvgTimeFortify => time[3] / count[3];
+
+    private Stopwatch _sw = new Stopwatch();
+
+    private double[] time = new double[] { 0, 0, 0, 0 };
+
+    private int[] count = new int[] { 0, 0, 0, 0 };
 
     public RandomPlayer(ArmyColor playerColor)
     {
       _aiColor = playerColor;
       _ran = new Random();
       _gamePlanLock = new object();
-      Probibility = 13;
+      Probability = 87;
       _cardsInHand = new List<RiskCard>();
     }
 
@@ -99,10 +111,12 @@ namespace Risk.AI
 
     public void PlayAttack()
     {
+      _sw.Restart();
+
       IList<Area> canAttack = Helper.WhoCanAttack(_gamePlan.Areas, _gamePlan.Connections, _aiColor);
 
       int probibility = _ran.Next(100);
-      while (probibility >= Probibility && canAttack.Count > 0)
+      while (probibility >= (100 - Probability) && canAttack.Count > 0)
       {
         int attacker = _ran.Next(canAttack.Count);
         IList<Area> canBeAttacked = Helper.WhoCanBeAttacked(canAttack[attacker], _gamePlan.Areas, _gamePlan.Connections, _aiColor);
@@ -149,10 +163,16 @@ namespace Risk.AI
 
         probibility = _ran.Next(100);
       }
+
+      _sw.Stop();
+      time[2] += _sw.Elapsed.TotalSeconds;
+      count[2]++;
     }
 
     public void PlayDraft()
     {
+      _sw.Restart();
+
       while (_cardsInHand.Count >= 5)
       {
         IList<RiskCard> combination = Helper.GetCombination(_cardsInHand);
@@ -180,10 +200,16 @@ namespace Risk.AI
         int numberOfarmies = _ran.Next(FreeUnit + 1);
         MoveResult r = _game.MakeMove(new Draft(_aiColor, posibilities[result].ID, numberOfarmies));
       }
+
+      _sw.Stop();
+      time[1] += _sw.Elapsed.TotalSeconds;
+      count[1]++;
     }
 
     public void PlayFortify()
     {
+      _sw.Restart();
+
       int probibility = _ran.Next(100);
       if (probibility >= 50)
       {
@@ -198,10 +224,16 @@ namespace Risk.AI
           MoveResult result = _game.MakeMove(new Fortify(_aiColor, canFortify[from].ID, where[to].ID, sizeOfArmy));
         }
       }
+
+      _sw.Stop();
+      time[3] += _sw.Elapsed.TotalSeconds;
+      count[3]++;
     }
 
     public void PlaySetUp()
     {
+      _sw.Restart();
+
       while (_gamePlan == null)
       {
         Thread.Sleep(5);
@@ -219,6 +251,10 @@ namespace Risk.AI
       int result = _ran.Next(possibilities.Count);
 
       MoveResult r = _game.MakeMove(new SetUp(_aiColor, possibilities[result].ID));
+
+      _sw.Stop();
+      time[0] += _sw.Elapsed.TotalSeconds;
+      count[0]++;
     }
 
     public async Task EndPlayer(bool isWinner)

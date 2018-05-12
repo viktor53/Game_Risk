@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Risk.AI.NeuralNetwork
 {
+  /// <summary>
+  /// Represents inforamtion about surroundings of an area.
+  /// </summary>
   internal class SurroundingsInformation
   {
     public int[] NumberOfFriends { get; private set; }

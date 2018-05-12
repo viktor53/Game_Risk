@@ -59,7 +59,7 @@ namespace Risk.AI.MCTS
 
       if (nextMoves.Count == 0)
       {
-        nextMoves = HeuristicHelper.GetDraftPosibilities(_gameBoard.Areas, _gameBoard.Connections, playerColor);
+        nextMoves = HeuristicHelper.GetDraftPossibilities(_gameBoard.Areas, _gameBoard.Connections, playerColor);
       }
 
       foreach (var area in nextMoves)
@@ -93,7 +93,7 @@ namespace Risk.AI.MCTS
 
       ArmyColor playerColor = _players[_currentPlayer].PlayerColor;
 
-      IList<Area> nextMoves = HeuristicHelper.GetDraftPosibilities(gameBoard.Areas, gameBoard.Connections, playerColor);
+      IList<Area> nextMoves = HeuristicHelper.GetDraftPossibilities(gameBoard.Areas, gameBoard.Connections, playerColor);
 
       Moves moves = new Moves();
 

@@ -8,8 +8,18 @@ using System.Threading.Tasks;
 
 namespace Risk.AI.NeuralNetwork
 {
+  /// <summary>
+  /// Provides methods for getting data for neural networks.
+  /// </summary>
   internal static class NeuroHelper
   {
+    /// <summary>
+    /// Gets information about regions.
+    /// </summary>
+    /// <param name="areas">areas on game plan</param>
+    /// <param name="connections">connections of areas</param>
+    /// <param name="bonusForRegion">bonus for region</param>
+    /// <returns>inforamtion about regions</returns>
     public static IDictionary<int, RegionInformation> GetRegionsInformation(IList<Area> areas, IList<IList<bool>> connections, IList<int> bonusForRegion)
     {
       int numberOfAreas = 0;
@@ -78,6 +88,14 @@ namespace Risk.AI.NeuralNetwork
       return regionsInfo;
     }
 
+    /// <summary>
+    /// Gets a state of region. Number of owned areas and number of enemy areas.
+    /// </summary>
+    /// <param name="areas">areas on game plan</param>
+    /// <param name="regionID">region ID</param>
+    /// <param name="regionsInfo">information about regions</param>
+    /// <param name="aiColor">color of AI</param>
+    /// <returns>state of region</returns>
     public static Tuple<int, int> GetRegionState(IList<Area> areas, int regionID, IDictionary<int, RegionInformation> regionsInfo, ArmyColor aiColor)
     {
       int friends = 0;
@@ -104,6 +122,15 @@ namespace Risk.AI.NeuralNetwork
       return new Tuple<int, int>(friends, enemies);
     }
 
+    /// <summary>
+    /// Gets information about surroundings of the area.
+    /// </summary>
+    /// <param name="area">the area</param>
+    /// <param name="areas">areas on game plan</param>
+    /// <param name="connections">connections of areas</param>
+    /// <param name="levels">levels of surroundings</param>
+    /// <param name="aiColor">color of AI</param>
+    /// <returns>information about surroundings of the area</returns>
     public static SurroundingsInformation GetSurroundingsInfo(Area area, IList<Area> areas, IList<IList<bool>> connecitons, int levels, ArmyColor aiColor)
     {
       var visited = new HashSet<Area>();
@@ -142,6 +169,14 @@ namespace Risk.AI.NeuralNetwork
       return new SurroundingsInformation(numberOfFriends, numberOfEnemies, friendlyArmies, enemyArmies);
     }
 
+    /// <summary>
+    /// Adds neighbors of the area to toVisit and visited.
+    /// </summary>
+    /// <param name="area">the area</param>
+    /// <param name="toVisit">areas that needs to be visit</param>
+    /// <param name="visited">visited areas</param>
+    /// <param name="areas">areas on game plan</param>
+    /// <param name="connections">connections of areas</param>
     private static void AddNeighbors(Area area, Queue<Area> toVisit, HashSet<Area> visited, IList<Area> areas, IList<IList<bool>> connecitons)
     {
       for (int i = 0; i < connecitons[area.ID].Count; ++i)
@@ -154,6 +189,13 @@ namespace Risk.AI.NeuralNetwork
       }
     }
 
+    /// <summary>
+    /// Gets a state of borders. Number of friendly armies and number of enemy armies.
+    /// </summary>
+    /// <param name="areas">areas on game plan</param>
+    /// <param name="connections">connections of areas</param>
+    /// <param name="aiColor">color of AI</param>
+    /// <returns>state of borders</returns>
     public static Tuple<int, int> GetStateOfBorders(IList<Area> areas, IList<IList<bool>> connections, ArmyColor aiColor)
     {
       int friendlyArmies = 0;

@@ -17,6 +17,9 @@ using Risk.Model.GameCore.Moves;
 
 namespace Risk.Networking.Client
 {
+  /// <summary>
+  /// Represents offline client.
+  /// </summary>
   public class RiskOfflineClient : IPlayer
   {
     private OfflinePlayer _player;

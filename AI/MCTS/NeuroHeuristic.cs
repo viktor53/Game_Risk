@@ -11,7 +11,7 @@ using Risk.Model.GamePlan;
 
 namespace Risk.AI.MCTS
 {
-  internal class NeuroHeuristic
+  internal class NeuroHeuristicHelper
   {
     private ActivationNetwork _setUpNetwork;
 
@@ -23,7 +23,13 @@ namespace Risk.AI.MCTS
 
     private IDictionary<int, RegionInformation> _regionsInfo;
 
-    public NeuroHeuristic(bool isComplex, int generation, IDictionary<int, RegionInformation> regionsInfo)
+    /// <summary>
+    /// Creates a heuristic helper with neural networks.
+    /// </summary>
+    /// <param name="isComplex">if neural networks have complex topology</param>
+    /// <param name="generation">generation of neural network</param>
+    /// <param name="regionsInfo">informations about regions</param>
+    public NeuroHeuristicHelper(bool isComplex, int generation, IDictionary<int, RegionInformation> regionsInfo)
     {
       if (isComplex)
       {
@@ -43,6 +49,13 @@ namespace Risk.AI.MCTS
       _regionsInfo = regionsInfo;
     }
 
+    /// <summary>
+    /// Gets all SetUp possibilities using a neural netowrk.
+    /// </summary>
+    /// <param name="aiColor">color if AI</param>
+    /// <param name="areas">areas on game plan</param>
+    /// <param name="connections">connections of areas</param>
+    /// <returns>SetUp possibilities</returns>
     public IList<SetUp> GetSetUpPossibilities(ArmyColor aiColor, IList<Area> areas, IList<IList<bool>> connections)
     {
       IList<SetUp> possibilites = new List<SetUp>();
@@ -71,6 +84,14 @@ namespace Risk.AI.MCTS
       return possibilites;
     }
 
+    /// <summary>
+    /// Gets all Draft possibilities using a neural network.
+    /// </summary>
+    /// <param name="aiColor">color if AI</param>
+    /// <param name="freeUnit">free units</param>
+    /// <param name="areas">areas on game plan</param>
+    /// <param name="connections">connections of areas</param>
+    /// <returns></returns>
     public IList<Draft> GetDraftPossibilities(ArmyColor aiColor, int freeUnit, IList<Area> areas, IList<IList<bool>> connections)
     {
       IList<Draft> possibilites = new List<Draft>();
@@ -100,6 +121,15 @@ namespace Risk.AI.MCTS
       return possibilites;
     }
 
+    /// <summary>
+    /// Gets size of attack using a neural network.
+    /// </summary>
+    /// <param name="aiColor">color if AI</param>
+    /// <param name="attacker">attacking area</param>
+    /// <param name="defender">defending area</param>
+    /// <param name="areas">areas on game plan</param>
+    /// <param name="connections">connections of areas</param>
+    /// <returns></returns>
     public int GetAttackSize(ArmyColor aiColor, Area attacker, Area defender, IList<Area> areas, IList<IList<bool>> connections)
     {
       double[] input = new double[17];
@@ -119,6 +149,16 @@ namespace Risk.AI.MCTS
       }
     }
 
+    /// <summary>
+    /// Gets a number of armies to move from the attacking area to the defending area
+    /// </summary>
+    /// <param name="aiColor">color if AI</param>
+    /// <param name="attacker">attacking area</param>
+    /// <param name="defender">defending area</param>
+    /// <param name="attackSize">size of previous attack</param>
+    /// <param name="areas">areas on game plan</param>
+    /// <param name="connections">connections of areas</param>
+    /// <returns></returns>
     public int GetNumberOfArmiesToMove(ArmyColor aiColor, Area attacker, Area defender, int attackSize, IList<Area> areas, IList<IList<bool>> connections)
     {
       double[] input = new double[17];
@@ -131,6 +171,13 @@ namespace Risk.AI.MCTS
       return (int)Math.Round((attacker.SizeOfArmy - attackSize - 1) * result) + attackSize;
     }
 
+    /// <summary>
+    /// Gets fortify possibilities using a neural network.
+    /// </summary>
+    /// <param name="aiColor">color if AI</param>
+    /// <param name="areas">areas on game plan</param>
+    /// <param name="connections">connections of areas</param>
+    /// <returns></returns>
     public IList<Fortify> GetFortifyPossibilities(ArmyColor aiColor, IList<Area> areas, IList<IList<bool>> connections)
     {
       IList<Fortify> possibilities = new List<Fortify>();

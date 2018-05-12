@@ -39,6 +39,12 @@ namespace Risk.AI
       _sw = new Stopwatch();
     }
 
+    /// <summary>
+    /// Plays simulate games with diagnostic.
+    /// </summary>
+    /// <param name="ais">agents</param>
+    /// <param name="writer">writer</param>
+    /// <returns>result of games</returns>
     public IDictionary<ArmyColor, int> PlaySimulationDiagnostic(IEnumerable<IAI> ais, TextWriter writer)
     {
       Dictionary<ArmyColor, int> wins = new Dictionary<ArmyColor, int>();
@@ -93,6 +99,11 @@ namespace Risk.AI
       return wins;
     }
 
+    /// <summary>
+    /// Playes simulation games without diagnostic.
+    /// </summary>
+    /// <param name="ais">agents</param>
+    /// <returns>result of games</returns>
     public IDictionary<ArmyColor, double> PlaySimulation(IEnumerable<IAI> ais)
     {
       Dictionary<ArmyColor, double> wins = new Dictionary<ArmyColor, double>();
@@ -142,6 +153,11 @@ namespace Risk.AI
       return wins;
     }
 
+    /// <summary>
+    /// Playes real games wihtout diagnostic.
+    /// </summary>
+    /// <param name="ais">agents</param>
+    /// <returns>result of games</returns>
     public IDictionary<ArmyColor, int> PlayRealGame(IEnumerable<IAI> ais)
     {
       Dictionary<ArmyColor, int> wins = new Dictionary<ArmyColor, int>();
@@ -182,6 +198,12 @@ namespace Risk.AI
       return wins;
     }
 
+    /// <summary>
+    /// Playes real games with diagnostic.
+    /// </summary>
+    /// <param name="ais">agents</param>
+    /// <param name="writer">writer</param>
+    /// <returns>result of games</returns>
     public IDictionary<ArmyColor, int> PlayRealGameDiagnostic(IEnumerable<IAI> ais, TextWriter writer)
     {
       Dictionary<ArmyColor, int> wins = new Dictionary<ArmyColor, int>();

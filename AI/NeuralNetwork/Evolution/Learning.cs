@@ -10,7 +10,10 @@ using System.IO;
 
 namespace Risk.AI.NeuralNetwork.Evolution
 {
-  public class Learning
+  /// <summary>
+  /// Provides methods for learning neural networks.
+  /// </summary>
+  public static class Learning
   {
     public static int SetWeights(ActivationNetwork network, int index, double[] weights)
     {
