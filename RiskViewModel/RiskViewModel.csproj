@@ -71,7 +71,7 @@
     <Compile Include="Multiplayer\MultiplayerViewModel.cs" />
     <Compile Include="ParameterCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Main\IntroSinglePlayerViewModel.cs" />
+    <Compile Include="Main\CreateSinglePlayerViewModel.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -80,9 +80,7 @@
     <Compile Include="ViewModelBase.cs" />
     <Compile Include="WindowManagerViewModel.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Singleplayer\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -100,12 +98,16 @@
     </Resource>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\AI\AI.csproj">
+      <Project>{54ECBEE7-6E81-4339-BE7A-F1DD26472772}</Project>
+      <Name>AI</Name>
+    </ProjectReference>
     <ProjectReference Include="..\RiskModel\RiskModel.csproj">
       <Project>{d6d0c096-efe2-43a5-a8be-9098dbf7e792}</Project>
       <Name>RiskModel</Name>
     </ProjectReference>
-    <ProjectReference Include="..\RiskServer\RiskNetworking.csproj">
-      <Project>{837679E1-0DF3-4C20-983A-346DE5233715}</Project>
+    <ProjectReference Include="..\RiskNetworking\RiskNetworking.csproj">
+      <Project>{837679e1-0df3-4c20-983a-346de5233715}</Project>
       <Name>RiskNetworking</Name>
     </ProjectReference>
   </ItemGroup>

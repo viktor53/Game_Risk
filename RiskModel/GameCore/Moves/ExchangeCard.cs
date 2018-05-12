@@ -7,7 +7,7 @@ namespace Risk.Model.GameCore.Moves
   /// <summary>
   /// Represents game move exchange card.
   /// </summary>
-  public class ExchangeCard : Move
+  public sealed class ExchangeCard : Move
   {
     /// <summary>
     /// Combination of three risk cards.

@@ -1,0 +1,115 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{837679E1-0DF3-4C20-983A-346DE5233715}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Risk.Networking</RootNamespace>
+    <AssemblyName>RiskNetworking</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\builds\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\builds\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\Risk\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\Risk\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json.Schema, Version=3.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\Risk\packages\Newtonsoft.Json.Schema.3.0.4\lib\net45\Newtonsoft.Json.Schema.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Client\ArmyColorEventArgs.cs" />
+    <Compile Include="Client\ConfirmationEventArgs.cs" />
+    <Compile Include="Client\EndGameEventArgs.cs" />
+    <Compile Include="Client\FreeUnitEventArgs.cs" />
+    <Compile Include="Client\IClient.cs" />
+    <Compile Include="Client\InicializationEventArgs.cs" />
+    <Compile Include="Client\IPlayer.cs" />
+    <Compile Include="Client\MoveResultEventArgs.cs" />
+    <Compile Include="Client\RiskOfflineClient.cs" />
+    <Compile Include="Client\UpdateCardEventArgs.cs" />
+    <Compile Include="Client\UpdateGameEventArgs.cs" />
+    <Compile Include="Deserializer.cs" />
+    <Compile Include="Enums\ErrorType.cs" />
+    <Compile Include="Enums\MessageType.cs" />
+    <Compile Include="Exceptions\ServerErrorException.cs" />
+    <Compile Include="Exceptions\UnknownResponseException.cs" />
+    <Compile Include="Messages\Data\Coordinates.cs" />
+    <Compile Include="Messages\Data\CreateGameInfo.cs" />
+    <Compile Include="Messages\Data\Error.cs" />
+    <Compile Include="Messages\IMessage.cs" />
+    <Compile Include="Messages\Message.cs" />
+    <Compile Include="Client\RiskClient.cs" />
+    <Compile Include="Messages\Data\AreaInfo.cs" />
+    <Compile Include="Messages\Data\GameBoardInfo.cs" />
+    <Compile Include="Server\CombinationPicker.cs" />
+    <Compile Include="Server\GameRoom.cs" />
+    <Compile Include="Messages\Data\GameRoomInfo.cs" />
+    <Compile Include="Server\IClientManager.cs" />
+    <Compile Include="Server\IGameRoom.cs" />
+    <Compile Include="Server\Player.cs" />
+    <Compile Include="Server\RiskServer.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AI\AI.csproj">
+      <Project>{54ecbee7-6e81-4339-be7a-f1dd26472772}</Project>
+      <Name>AI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RiskModel\RiskModel.csproj">
+      <Project>{d6d0c096-efe2-43a5-a8be-9098dbf7e792}</Project>
+      <Name>RiskModel</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Config\DefaultLogger.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

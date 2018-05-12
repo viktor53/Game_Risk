@@ -81,7 +81,7 @@ namespace Risk.ViewModel.Main
     /// </summary>
     private void SingleplayerClick()
     {
-      ContentViewModel = new IntroSinglePlayerViewModel();
+      ContentViewModel = new CreateSinglePlayerViewModel(_windowManager, this);
     }
 
     /// <summary>
@@ -89,7 +89,7 @@ namespace Risk.ViewModel.Main
     /// </summary>
     private void MultiplayerClick()
     {
-      ContentViewModel = new ConnectionViewModel(_windowManager, this, new Networking.Client.RiskClient("Enterprise"));
+      ContentViewModel = new ConnectionViewModel(_windowManager, this, new Networking.Client.RiskClient("localhost"));
       IsEnabled = false;
     }
 

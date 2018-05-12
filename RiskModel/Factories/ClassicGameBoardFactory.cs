@@ -61,6 +61,16 @@ namespace Risk.Model.Factories
     }
 
     /// <summary>
+    /// Creates new game board.
+    /// </summary>
+    /// <param name="numberOfAreas">number of areas on game board</param>
+    /// <returns>new game board</returns>
+    public GameBoard CreateGameBoard(int numberOfAreas)
+    {
+      throw new NotSupportedException("Classic game has 42 areas not more and not less!");
+    }
+
+    /// <summary>
     /// Gets free units fro the region with ID as index.
     /// </summary>
     /// <returns>free units for the region</returns>
@@ -109,7 +119,7 @@ namespace Risk.Model.Factories
       // creating areas
       for (int i = id; i < id + _areasOfNorthAmerica; i++)
       {
-        board.Areas[i] = new Area(i, (int)Region.NorthAmerica);
+        board.Areas[i] = new Area((byte)i, (int)Region.NorthAmerica);
       }
 
       // creating edges between Aliaska and its neighbours
@@ -159,7 +169,7 @@ namespace Risk.Model.Factories
       // creating areas
       for (int i = id; i < id + _areasOfSouthAmerica; i++)
       {
-        board.Areas[i] = new Area(i, (int)Region.SouthAmerica);
+        board.Areas[i] = new Area((byte)i, (int)Region.SouthAmerica);
       }
 
       // creating edges between Venezuela and its neighbours
@@ -189,7 +199,7 @@ namespace Risk.Model.Factories
       // creating areas
       for (int i = id; i < id + _areasOfAfrica; i++)
       {
-        board.Areas[i] = new Area(i, (int)Region.Africa);
+        board.Areas[i] = new Area((byte)i, (int)Region.Africa);
       }
 
       // creating edges between North Africa and its neighbours
@@ -226,7 +236,7 @@ namespace Risk.Model.Factories
       // creating areas
       for (int i = id; i < id + _areasOfAustralia; i++)
       {
-        board.Areas[i] = new Area(i, (int)Region.Australie);
+        board.Areas[i] = new Area((byte)i, (int)Region.Australie);
       }
 
       // creating edges between Indonesia and its neighbours
@@ -256,7 +266,7 @@ namespace Risk.Model.Factories
       // creating areas
       for (int i = id; i < id + _areasOfAsia; i++)
       {
-        board.Areas[i] = new Area(i, (int)Region.Asia);
+        board.Areas[i] = new Area((byte)i, (int)Region.Asia);
       }
 
       // creating edges between Ural and its neighbours
@@ -314,7 +324,7 @@ namespace Risk.Model.Factories
       // creating areas
       for (int i = id; i < id + _areasOfEuropa; i++)
       {
-        board.Areas[i] = new Area(i, (int)Region.Europa);
+        board.Areas[i] = new Area((byte)i, (int)Region.Europa);
       }
 
       // creating edges between Island and its neighbours

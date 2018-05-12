@@ -62,6 +62,7 @@
     <Compile Include="Factories\ClassicGameBoardFactory.cs" />
     <Compile Include="Factories\RandomGameBoardFactory.cs" />
     <Compile Include="GameCore\Game.cs" />
+    <Compile Include="GamePlan\GameBoardHelper.cs" />
     <Compile Include="GameCore\IGame.cs" />
     <Compile Include="GameCore\IPlayer.cs" />
     <Compile Include="GameCore\Loggers\Loggers.cs" />

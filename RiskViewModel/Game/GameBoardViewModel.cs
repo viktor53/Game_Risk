@@ -445,6 +445,11 @@ namespace Risk.ViewModel.Game
         IsEnabled = true;
         GameDialogViewModel = new WinnerViewModel(_windowManager, viewModel, ((EndGameEventArgs)ev).Data);
       }
+      else
+      {
+        IsEnabled = true;
+        GameDialogViewModel = new WinnerViewModel(_windowManager, new Main.MainMenuViewModel(_windowManager), ((EndGameEventArgs)ev).Data);
+      }
     }
 
     /// <summary>
